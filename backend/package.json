@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "webpack --mode production",
+    "test": "jest",
     "start": "node ./bin/www"
   },
   "dependencies": {
@@ -13,5 +13,9 @@
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "morgan": "~1.9.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   }
 }
