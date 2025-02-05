@@ -2,7 +2,7 @@
 const request = require('supertest');
 const app = require('./app'); // Import your app
 
-describe('GET /api/hello', () => {
+describe('GET /api/test', () => {
   it('should return a 200 status and a message', async () => {
     const response = await request(app).get('/api/hello');
     

@@ -21,8 +21,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.get('/api/hello', (req, res) => {
-  res.status(200).json({ message: 'Hello, world!' });
+app.get('/api/test', (req, res) => {
+  res.status(200).json({ message: 'Project has been tested succefully ' });
 });
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
