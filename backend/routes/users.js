@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,
-  getAllRH,findMyProject} = require('../controllers/auth');
+  getAllRH,findMyProject,sendVerificationCode,forgotPassword,resetPassword,verifyCode} = require('../controllers/auth');
 const { authenticateJWT } = require('../config/autorisation');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -22,4 +22,8 @@ router.get("/getAllAccountants",authenticateJWT,getAllAccountants)
 router.get("/getAllFinancialManagers",authenticateJWT,getAllFinancialManagers)
 router.get("/getAllRH",authenticateJWT,getAllRH)
 router.get('/findMyProject', authenticateJWT, findMyProject);
+router.post("/send-code", sendVerificationCode);
+router.post("/forgot-password",forgotPassword);
+router.post("/reset-password", resetPassword);
+router.post("/verify-code", verifyCode);
 module.exports = router;

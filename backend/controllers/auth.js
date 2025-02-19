@@ -468,11 +468,97 @@ const AddPicture = async (req, res) => {
       console.error("Erreur lors de la récupération du projet : ", error);
       res.status(500).json({ message: 'Erreur serveur' });
     }
-  };
+  }
+  // Envoi du code de vérification par e-mail
+async function sendVerificationCode(req, res) {
+  try {
+    const { email } = req.body;
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000); // Code 6 chiffres
+    verificationCodes[email] = code;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Code de vérification",
+      text: `Votre code de vérification est : ${code}`,
+    });
+
+    res.json({ message: "Code envoyé par e-mail" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur lors de l'envoi du code", error: err });
+  }
+}
+async function verifyCode(req, res) {
+  const { email, code } = req.body;
+
+  try {
+    // Vérifier si le code est valide pour l'utilisateur
+    const storedCode = verificationCodes[email];
+
+    if (!storedCode) {
+      return res.status(404).json({ message: "Aucun code de vérification trouvé pour cet utilisateur" });
+    }
+
+    if (parseInt(code) === storedCode) {
+      // Code vérifié avec succès, tu peux ici faire des actions supplémentaires
+      return res.status(200).json({ message: "Code vérifié avec succès" });
+    } else {
+      return res.status(400).json({ message: "Code de vérification incorrect" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Erreur lors de la vérification du code", error: err });
+  }
+}
+
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "15m" });
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Réinitialisation du mot de passe",
+      text: `Cliquez ici pour réinitialiser votre mot de passe : ${resetLink}`,
+    });
+
+    res.json({ message: "Lien de réinitialisation envoyé par e-mail" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur interne du serveur", error: err });
+  }
+}
+async function resetPassword(req, res) {
+  try {
+    const { token, newPassword } = req.body;
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+    await userModel.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+
+    res.json({ message: "Mot de passe mis à jour avec succès" });
+  } catch (err) {
+    res.status(400).json({ message: "Lien invalide ou expiré" });
+  }
+}
+
   
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
-    getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject
+    getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject, sendVerificationCode, verifyCode, forgotPassword, resetPassword
+    
 };
