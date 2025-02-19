@@ -6,9 +6,15 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-
+var projectRouter = require('./routes/project.router');
 var app = express();
-
+var mongo=require("mongoose");
+var connection=require("./config/database.json");
+mongo.connect(connection.url).then(()=>{
+ console.log("connected to db")
+}).catch(()=>{
+  console.log("error connecting to db")
+});
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -21,6 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/project', projectRouter);
 app.get('/api/test', (req, res) => {
   res.status(200).json({ message: 'Project tested ' });
 });
