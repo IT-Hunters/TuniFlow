@@ -14,6 +14,7 @@ const BusinessOwner = require("../model/BusinessOwner");
 const Accountant = require("../model/Accountant");
 const BusinessManager = require("../model/BusinessManager");
 const RH = require("../model/RH");
+const Project=require("../model/Project")
 
 
 async function getAll(req,res) {
@@ -470,9 +471,129 @@ const AddPicture = async (req, res) => {
     }
   };
   
+  const Registerwithproject = async (req, res, projectId) => {
+    try {
+        // 1️⃣ Validation des données
+        const { errors, isValid } = validateRegister(req.body);
+        if (!isValid) {
+            return res.status(400).json(errors);
+        }
+
+        // 2️⃣ Vérifier si l'utilisateur existe déjà
+        const exist = await userModel.findOne({ email: req.body.email });
+        if (exist) {
+            return res.status(409).json({ email: "Utilisateur déjà existant" });
+        }
+
+        // 3️⃣ Vérifier si le projet existe
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ projectId: "Projet non trouvé" });
+        }
+
+        // 4️⃣ Hachage du mot de passe
+        req.body.password = await bcryptjs.hash(req.body.password, 10);
+
+        // 5️⃣ Sélection du modèle en fonction du rôle
+        let userType;
+        switch (req.body.role) {
+            case "BUSINESS_OWNER":
+                userType = new BusinessOwner({
+                    email: req.body.email,
+                    password: req.body.password,
+                    fullname: req.body.fullname,
+                    lastname: req.body.lastname,
+                    role: req.body.role,
+                    project: projectId // Ajout de l'ID du projet
+                });
+                break;
+
+            case "ACCOUNTANT":
+                userType = new Accountant({
+                    email: req.body.email,
+                    password: req.body.password,
+                    fullname: req.body.fullname,
+                    lastname: req.body.lastname,
+                    role: req.body.role,
+                    project: projectId // Ajout de l'ID du projet
+                });
+                break;
+
+            case "RH":
+                userType = new RH({
+                    email: req.body.email,
+                    password: req.body.password,
+                    fullname: req.body.fullname,
+                    lastname: req.body.lastname,
+                    role: req.body.role,
+                    project: projectId // Ajout de l'ID du projet
+                });
+                break;
+
+            case "FINANCIAL_MANAGER":
+                userType = new FinancialManager({
+                    email: req.body.email,
+                    password: req.body.password,
+                    fullname: req.body.fullname,
+                    lastname: req.body.lastname,
+                    role: req.body.role,
+                    project: projectId // Ajout de l'ID du projet
+                });
+                break;
+
+            case "BUSINESS_MANAGER":
+                userType = new BusinessManager({
+                    email: req.body.email,
+                    password: req.body.password,
+                    fullname: req.body.fullname,
+                    lastname: req.body.lastname,
+                    role: req.body.role,
+                    project: projectId // Ajout de l'ID du projet
+                });
+                break;
+
+            default:
+                return res.status(400).json({ role: "Rôle invalide" });
+        }
+
+        // 6️⃣ Sauvegarde de l'utilisateur
+        const result = await userType.save();
+
+        // 7️⃣ Ajouter l'utilisateur au projet
+        switch (req.body.role) {
+            case "BUSINESS_OWNER":
+                project.businessOwner = result._id;
+                break;
+            case "ACCOUNTANT":
+                project.accountants.push(result._id);
+                break;
+            case "RH":
+                project.rhManagers.push(result._id);
+                break;
+            case "FINANCIAL_MANAGER":
+                project.financialManagers.push(result._id);
+                break;
+            case "BUSINESS_MANAGER":
+                project.businessManager = result._id;
+                break;
+        }
+
+        await project.save();
+
+        // 8️⃣ Réponse
+        res.status(201).json({ message: "Inscription réussie", user: result });
+
+    } catch (error) {
+        console.error("Erreur lors de l'inscription:", error);
+        res.status(500).json({ message: "Erreur interne du serveur", error });
+    }
+};
+
+
+
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
-    getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject
+    getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject
 };
