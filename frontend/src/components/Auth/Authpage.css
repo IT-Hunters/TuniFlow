@@ -4,7 +4,8 @@
   padding: 0;
   box-sizing: border-box;
 }
-body {
+/* Apply styles to the body only when inside the auth component */
+.auth-page {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f5f7fb;
   display: flex;
@@ -12,6 +13,7 @@ body {
   align-items: center;
   height: 100vh;
 }
+
 
 /* Main container: 900x550, with two "boxes" inside (form + blue) */
 .auth-container {
@@ -24,29 +26,29 @@ body {
 }
 
 /* We will move each box with transform for a smooth slide */
-.form-box,
-.blue-box {
+.auth-form-box,
+.auth-blue-box {
   position: absolute;
   top: 0;
   width: 50%;
   height: 100%;
   transition: transform 0.6s ease; /* Smooth animation */
 }
-.image{
+.auth-image {
   transition: transform 0.6s ease; /* Smooth animation */
-
 }
+
 /* By default (Sign Up mode):
-   - form-box is on the left (left: 0)
-   - blue-box is on the right (left: 50%) */
-.form-box {
+   - auth-form-box is on the left (left: 0)
+   - auth-blue-box is on the right (left: 50%) */
+.auth-form-box {
   left: 0;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.blue-box {
+.auth-blue-box {
   left: 50%;
   background: #081c37;
   display: flex;
@@ -54,19 +56,19 @@ body {
   justify-content: center;
 }
 
-/* When user clicks "Already have an account?" => .login-mode
-   We'll slide the form-box to the right and the blue-box to the left. */
-.auth-container.login-mode .form-box {
+/* When user clicks "Already have an account?" => .auth-login-mode
+   We'll slide the auth-form-box to the right and the auth-blue-box to the left. */
+.auth-container.auth-login-mode .auth-form-box {
   transform: translateX(100%);
 }
-.auth-container.login-mode .blue-box {
+.auth-container.auth-login-mode .auth-blue-box {
   transform: translateX(-100%);
 }
 
-/* The two forms inside .form-box:
-   We animate them with the same state, using sign-up-form as default, sign-in-form hidden. */
-.sign-up-form,
-.sign-in-form {
+/* The two forms inside .auth-form-box:
+   We animate them with the same state, using auth-sign-up-form as default, auth-sign-in-form hidden. */
+.auth-sign-up-form,
+.auth-sign-in-form {
   position: absolute;
   width: 80%;
   max-width: 320px;
@@ -76,17 +78,17 @@ body {
 }
 
 /* SIGN UP FORM is visible by default */
-.sign-up-form {
+.auth-sign-up-form {
   transform: translateX(0);
   opacity: 1;
 }
 
-/* In .login-mode, sign-up-form slides out to the left, sign-in-form slides in from the right */
-.auth-container.login-mode .sign-up-form {
+/* In .auth-login-mode, auth-sign-up-form slides out to the left, auth-sign-in-form slides in from the right */
+.auth-container.auth-login-mode .auth-sign-up-form {
   transform: translateX(-100%);
   opacity: 0;
 }
-.auth-container.login-mode .sign-in-form {
+.auth-container.auth-login-mode .auth-sign-in-form {
   transform: translateX(0);
   opacity: 1;
 }
@@ -95,16 +97,16 @@ body {
 h2 {
   margin-bottom: 1rem;
 }
-.input-field {
+.auth-input-field {
   margin-bottom: 0.5rem;
 }
-.input-field input {
+.auth-input-field input {
   width: 100%;
   padding: 0.7rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-.btn {
+.auth-btn {
   margin-top: 0.5rem;
   background: #081c37;
   color: #fff;
@@ -114,32 +116,32 @@ h2 {
   cursor: pointer;
   font-weight: 600;
 }
-.switch-text {
+.auth-switch-text {
   font-size: 0.9rem;
   margin-top: 1rem;
 }
-.toggle-link {
+.auth-toggle-link {
   color: #081c37;
   cursor: pointer;
   text-decoration: underline;
 }
 
 /* Blue box image */
-.blue-image {
+.auth-blue-image {
   max-width: 300px;
   border-radius: 8px;
   object-fit: cover;
 }
-.input-field {
+.auth-input-field {
   position: relative;
 }
 
-.input-field input {
+.auth-input-field input {
   width: 100%;
   padding-right: 40px; /* Space for eye icon */
 }
 
-.eye-icon {
+.auth-eye-icon {
   position: absolute;
   right: 10px;
   top: 50%;

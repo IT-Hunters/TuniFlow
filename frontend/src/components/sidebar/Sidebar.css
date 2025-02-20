@@ -1,0 +1,33 @@
+/* ----- Sidebar ----- */
+.sidebar {
+    width: 240px;
+    background-color: #081c37;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .sidebar .brand {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    color: #fff;
+  }
+  .sidebar ul {
+    list-style: none;
+  }
+  .sidebar li {
+    margin-bottom: 1.2rem;
+    font-weight: 500;
+  }
+  .sidebar li a {
+    display: block;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+  .sidebar li a:hover {
+    background-color: #eef3fb;
+    color: #3F8CFF;
+  }
+  

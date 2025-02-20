@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Dashbord from "./components/Dashbord";
+import Dashbord from "./components/dashboard/Dashbord";
 import AuthPage from "./components/Auth/Authpage";
+import Profile from "./components/Profile/Profile";
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<AuthPage />} />
         <Route path="/dashboard" element={<Dashbord />} />
+        <Route path="/profile" element={<Profile  />} />
       </Routes>
     </Router>
   );

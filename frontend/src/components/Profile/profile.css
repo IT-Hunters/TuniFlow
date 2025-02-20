@@ -1,1 +1,48 @@
- 
+.profile-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 24px;
+  }
+  
+  .profile-card {
+    background: white;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  .profile-content {
+    padding: 16px;
+  }
+  
+  .avatar {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+  }
+  
+  .text-green-600 {
+    color: #16a34a;
+  }
+  
+  .text-xl {
+    font-size: 1.25rem;
+  }
+  
+  .font-semibold {
+    font-weight: 600;
+  }
+  
+  .mb-2 {
+    margin-bottom: 0.5rem;
+  }
+  
+  .text-2xl {
+    font-size: 1.5rem;
+  }
+  
+  .font-bold {
+    font-weight: 700;
+  }
+  

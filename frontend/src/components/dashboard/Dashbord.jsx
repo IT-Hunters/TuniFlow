@@ -6,7 +6,8 @@ import profit from './assets/profit.png'
 import expenses from './assets/expenses.png'
 import chart from './assets/chart.png'
 import chart2 from './assets/chart2.png'
-import user from './assets/user.png'
+import Sidebar from "../sidebar/Sidebar";
+import Navbar from "../navbar/Navbar";
 const Dashbord = () => {
   // Vous pouvez déplacer ce CSS dans un fichier .css séparé
   
@@ -19,40 +20,13 @@ const Dashbord = () => {
       {/* Le HTML principal du dashboard */}
       <div className="container">
         {/* Sidebar */}
-        <nav className="sidebar">
-          <div className="brand">TUNIFLOW</div>
-          <ul>
-            <li><a href="#0">Dashboard</a></li>
-            <li><a href="#0">Products</a></li>
-            <li><a href="#0">Store</a></li>
-            <li><a href="#0">Orders</a></li>
-            <li><a href="#0">Customers</a></li>
-            <li><a href="#0">Reports</a></li>
-            <li><a href="#0">Settings</a></li>
-            <li><a href="#0">Help & Center</a></li>
-            <li><a href="#0">Log Out</a></li>
-          </ul>
-        </nav>
+        <Sidebar /> 
+
 
         {/* Main Content */}
         <div className="main">
           {/* Navbar */}
-          <nav className="navbar">
-            <div className="welcome-text">Welcome Back, Dhia Borji</div>
-            <div className="profile-area">
-              {/* Barre de recherche (optionnelle) */}
-              <div className="search-bar">
-                <input type="text" placeholder="Search Anything..." />
-                {/* <i className="fas fa-search"></i>  (pour Font Awesome) */}
-              </div>
-              {/* <i className="fas fa-bell"></i>  (icône notification éventuelle) */}
-              <div className="username">Dhia Borji</div>
-              <img
-                src={user}
-                alt="User Profile"
-              />
-            </div>
-          </nav>
+          <Navbar />
 
           {/* Contenu */}
           <div className="content">
