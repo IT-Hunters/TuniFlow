@@ -23,8 +23,5 @@ router.get("/getAllAccountants",authenticateJWT,getAllAccountants)
 router.get("/getAllFinancialManagers",authenticateJWT,getAllFinancialManagers)
 router.get("/getAllRH",authenticateJWT,getAllRH)
 router.get('/findMyProject', authenticateJWT, findMyProject);
-router.post("/registerwithproject/:projectId", async (req, res) => {
-  const { projectId } = req.params;
-  await Registerwithproject(req, res, projectId);
-});
+
 module.exports = router;

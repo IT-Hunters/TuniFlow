@@ -469,131 +469,99 @@ const AddPicture = async (req, res) => {
       console.error("Erreur lors de la récupération du projet : ", error);
       res.status(500).json({ message: 'Erreur serveur' });
     }
-  };
-  
-  const Registerwithproject = async (req, res, projectId) => {
-    try {
-        // 1️⃣ Validation des données
-        const { errors, isValid } = validateRegister(req.body);
-        if (!isValid) {
-            return res.status(400).json(errors);
-        }
+  }
+  // Envoi du code de vérification par e-mail
+async function sendVerificationCode(req, res) {
+  try {
+    const { email } = req.body;
+    const user = await userModel.findOne({ email });
 
-        // 2️⃣ Vérifier si l'utilisateur existe déjà
-        const exist = await userModel.findOne({ email: req.body.email });
-        if (exist) {
-            return res.status(409).json({ email: "Utilisateur déjà existant" });
-        }
-
-        // 3️⃣ Vérifier si le projet existe
-        const project = await Project.findById(projectId);
-        if (!project) {
-            return res.status(404).json({ projectId: "Projet non trouvé" });
-        }
-
-        // 4️⃣ Hachage du mot de passe
-        req.body.password = await bcryptjs.hash(req.body.password, 10);
-
-        // 5️⃣ Sélection du modèle en fonction du rôle
-        let userType;
-        switch (req.body.role) {
-            case "BUSINESS_OWNER":
-                userType = new BusinessOwner({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    role: req.body.role,
-                    project: projectId // Ajout de l'ID du projet
-                });
-                break;
-
-            case "ACCOUNTANT":
-                userType = new Accountant({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    role: req.body.role,
-                    project: projectId // Ajout de l'ID du projet
-                });
-                break;
-
-            case "RH":
-                userType = new RH({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    role: req.body.role,
-                    project: projectId // Ajout de l'ID du projet
-                });
-                break;
-
-            case "FINANCIAL_MANAGER":
-                userType = new FinancialManager({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    role: req.body.role,
-                    project: projectId // Ajout de l'ID du projet
-                });
-                break;
-
-            case "BUSINESS_MANAGER":
-                userType = new BusinessManager({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    role: req.body.role,
-                    project: projectId // Ajout de l'ID du projet
-                });
-                break;
-
-            default:
-                return res.status(400).json({ role: "Rôle invalide" });
-        }
-
-        // 6️⃣ Sauvegarde de l'utilisateur
-        const result = await userType.save();
-
-        // 7️⃣ Ajouter l'utilisateur au projet
-        switch (req.body.role) {
-            case "BUSINESS_OWNER":
-                project.businessOwner = result._id;
-                break;
-            case "ACCOUNTANT":
-                project.accountants.push(result._id);
-                break;
-            case "RH":
-                project.rhManagers.push(result._id);
-                break;
-            case "FINANCIAL_MANAGER":
-                project.financialManagers.push(result._id);
-                break;
-            case "BUSINESS_MANAGER":
-                project.businessManager = result._id;
-                break;
-        }
-
-        await project.save();
-
-        // 8️⃣ Réponse
-        res.status(201).json({ message: "Inscription réussie", user: result });
-
-    } catch (error) {
-        console.error("Erreur lors de l'inscription:", error);
-        res.status(500).json({ message: "Erreur interne du serveur", error });
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
-};
 
+    const code = Math.floor(100000 + Math.random() * 900000); // Code 6 chiffres
+    verificationCodes[email] = code;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Code de vérification",
+      text: `Votre code de vérification est : ${code}`,
+    });
+
+    res.json({ message: "Code envoyé par e-mail" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur lors de l'envoi du code", error: err });
+  }
+}
+async function verifyCode(req, res) {
+  const { email, code } = req.body;
+
+  try {
+    // Vérifier si le code est valide pour l'utilisateur
+    const storedCode = verificationCodes[email];
+
+    if (!storedCode) {
+      return res.status(404).json({ message: "Aucun code de vérification trouvé pour cet utilisateur" });
+    }
+
+    if (parseInt(code) === storedCode) {
+      // Code vérifié avec succès, tu peux ici faire des actions supplémentaires
+      return res.status(200).json({ message: "Code vérifié avec succès" });
+    } else {
+      return res.status(400).json({ message: "Code de vérification incorrect" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Erreur lors de la vérification du code", error: err });
+  }
+}
+
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "15m" });
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Réinitialisation du mot de passe",
+      text: `Cliquez ici pour réinitialiser votre mot de passe : ${resetLink}`,
+    });
+
+    res.json({ message: "Lien de réinitialisation envoyé par e-mail" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur interne du serveur", error: err });
+  }
+}
+async function resetPassword(req, res) {
+  try {
+    const { token, newPassword } = req.body;
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+    await userModel.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+
+    res.json({ message: "Mot de passe mis à jour avec succès" });
+  } catch (err) {
+    res.status(400).json({ message: "Lien invalide ou expiré" });
+  }
+}
+
+  
+ 
 
 
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
-    getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject
+    getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject
 };
