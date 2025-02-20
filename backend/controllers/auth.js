@@ -14,7 +14,22 @@ const BusinessOwner = require("../model/BusinessOwner");
 const Accountant = require("../model/Accountant");
 const BusinessManager = require("../model/BusinessManager");
 const RH = require("../model/RH");
+<<<<<<< HEAD
 const Project=require("../model/Project")
+=======
+const nodemailer = require('nodemailer');
+
+
+let verificationCodes = {};
+// Configuration de l'email
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS, 
+  },
+});
+>>>>>>> 8d60298bcf0fd53106656060a6c0350b4d28f278
 
 
 async function getAll(req,res) {
@@ -541,19 +556,49 @@ async function forgotPassword(req, res) {
     res.status(500).json({ message: "Erreur interne du serveur", error: err });
   }
 }
+
+
 async function resetPassword(req, res) {
+  const { email } = req.body;  // Récupère l'e-mail de la requête
+
   try {
-    const { token, newPassword } = req.body;
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    // Vérifie si l'utilisateur existe
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
 
-    const hashedPassword = await bcryptjs.hash(newPassword, 10);
-    await userModel.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+    // Crée un token JWT avec l'ID de l'utilisateur
+    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: '1h' });
 
-    res.json({ message: "Mot de passe mis à jour avec succès" });
+    // Crée le lien de réinitialisation avec le token
+    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+
+    // Envoie un e-mail avec le lien de réinitialisation
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // ou tout autre service d'envoi d'e-mails
+      auth: {
+        user: process.env.EMAIL_USER, // Adresse e-mail de l'expéditeur
+        pass: process.env.EMAIL_PASS, // Mot de passe de l'expéditeur
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: 'Réinitialisation de votre mot de passe',
+      text: `Cliquez sur ce lien pour réinitialiser votre mot de passe : ${resetLink}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ message: 'Un lien de réinitialisation a été envoyé à votre e-mail' });
   } catch (err) {
-    res.status(400).json({ message: "Lien invalide ou expiré" });
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur lors de l'envoi de l'e-mail" });
   }
 }
+
 
   
  
