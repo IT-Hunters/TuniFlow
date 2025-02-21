@@ -1,48 +1,269 @@
 .profile-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .cards-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 30px;
+    width: 100%;
+  }
+
+  .card {
+    width: 190px;
+    height: 254px;
+    background: #07182E;
+    position: relative;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    gap: 24px;
-    padding: 24px;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 20px;
   }
   
-  .profile-card {
-    background: white;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+  .card::before {
+    content: '';
+    position: absolute;
+    width: 100px;
+    background-image: linear-gradient(180deg, rgb(11, 76, 102), rgb(18, 188, 226));
+    height: 130%;
+    animation: rotBGimg 3s linear infinite;
+    transition: all 0.2s linear;
   }
   
-  .profile-content {
-    padding: 16px;
+  @keyframes rotBGimg {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
   
-  .avatar {
-    width: 128px;
-    height: 128px;
+ 
+  .card:hover:before {
+    background-image: linear-gradient(180deg, rgb(181, 28, 31), purple);
+    animation: rotBGimg 3.5s linear infinite;
+  }
+  .img-card {
+    width: 170px;
+    height: 170px;
+    object-fit: cover;
     border-radius: 50%;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease;
+    /* Remove margin-bottom */
+    margin-bottom: 0;
+    /* Add positioning */
+    top: -10px; /* Adjust this value as needed */
   }
   
-  .text-green-600 {
-    color: #16a34a;
+  /* Add these new styles */
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
   }
   
-  .text-xl {
-    font-size: 1.25rem;
+  .card:hover .card-inner {
+    transform: rotateY(180deg);
   }
   
-  .font-semibold {
-    font-weight: 600;
+  .card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden; /* Safari */
+    backface-visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding-top: 20px; /* Create space for image */
+
   }
   
-  .mb-2 {
-    margin-bottom: 0.5rem;
+  .card-back {
+    transform: rotateY(180deg);
+    color: white; /* Add text color for visibility */
+    padding: 20px; /* Add spacing for text */
+    text-align: center;
   }
   
-  .text-2xl {
-    font-size: 1.5rem;
+  /* Keep all your existing styles below */
+  .card {
+    width: 190px;
+    height: 254px;
+    /* ... rest of your existing card styles */
   }
   
-  .font-bold {
-    font-weight: 700;
+  .user-info-card {
+    position: relative; /* Add this */
+
+    grid-column: 1 / 3; /* Spans across both columns */
+    grid-row: 2 / 3;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+    font-size: 18px;
+    width: 670px;
+    height: 700px;
+    font-weight: bold;
   }
   
+  
+  
+  .user-info-card h2 {
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .user-info-card p {
+    color: #555;
+    font-size: 16px;
+  }
+  .Btn {
+    position: absolute;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100px;
+    height: 40px;
+    border: none;
+    padding: 0px 20px;
+    background-color: #081c37;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 10px;
+    box-shadow: 5px 5px 0px #0a2951;
+    transition-duration: .3s;
+  }
+  
+  .svg {
+    width: 13px;
+    position: absolute;
+    right: 0;
+    margin-right: 20px;
+    fill: white;
+    transition-duration: .3s;
+  }
+  
+  .Btn:hover {
+    color: transparent;
+  }
+  
+  .Btn:hover svg {
+    right: 43%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    transition-duration: .3s;
+  }
+  
+  .Btn:active {
+    transform: translate(3px , 3px);
+    transition-duration: .3s;
+    box-shadow: 2px 2px 0px #081c37(140, 32, 212);
+  }
+  /* Replace existing balance-card styles with these */
+.balance-card-new {
+  padding: 1rem;
+  background-color: #fff;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-width: 320px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.title span {
+  position: relative;
+  padding: 0.5rem;
+  background-color: #10B981;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+}
+
+.title span svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ffffff;
+  height: 1rem;
+}
+
+.title-text {
+  margin-left: 0.5rem;
+  color: #374151;
+  font-size: 18px;
+}
+
+.data p {
+  color: #1F2937;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  font-weight: 700;
+  text-align: left;
+  margin: 0;
+}
+
+/* Keep your existing card styles for the profile card */
+.card {
+  width: 190px;
+  height: 254px;
+  background: #07182E;
+  /* ... rest of your original card styles */
+}
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  
+  .projects-card {
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    max-width: 320px;
+  }
+  
+  .project-list {
+    margin-top: 1rem;
+  }
+  
+  .project-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .project-item:last-child {
+    border-bottom: none;
+  }
+  
+  .project-item h4 {
+    margin: 0 0 0.5rem 0;
+    color: #1F2937;
+  }
+  
+  .project-item p {
+    margin: 0;
+    color: #6B7280;
+    font-size: 0.9rem;
+  }

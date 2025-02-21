@@ -32,7 +32,7 @@ const Dashbord = () => {
           <div className="content">
             {/* Stat Cards */}
             <div className="stats-cards">
-              <div className="card" style={{display: 'flex'}}>
+              <div className="card-dashboard" style={{display: 'flex'}}>
              <div><img src={customer} alt="Logo" className="icon" /></div> 
              <div>
                 <h3>Customers</h3>
@@ -41,7 +41,7 @@ const Dashbord = () => {
               </div>
               </div>
 
-              <div className="card" style={{display: 'flex'}}>
+              <div className="card-dashboard" style={{display: 'flex'}}>
               <div><img src={revenue} alt="Logo" className="iconrevenue" /></div> 
               <div style={{marginLeft: '50px'}}>
                 <h3>Revenue</h3>
@@ -50,7 +50,7 @@ const Dashbord = () => {
               </div>
               </div>
               
-              <div className="card" style={{display: 'flex'}}>
+              <div className="card-dashboard" style={{display: 'flex'}}>
               <div><img src={profit} alt="Logo" className="iconrevenue" /></div> 
               <div style={{marginLeft: '50px'}}>
                 <h3>Profit</h3>
@@ -58,7 +58,7 @@ const Dashbord = () => {
                 <small>+ 6% last week</small>
               </div>
               </div>
-              <div className="card" style={{display: 'flex'}}>
+              <div className="card-dashboard" style={{display: 'flex'}}>
               <div><img src={expenses} alt="Logo" className="iconexpenses" /></div> 
               <div style={{marginLeft: '40px'}}>
             
