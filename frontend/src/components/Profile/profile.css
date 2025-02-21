@@ -249,3 +249,233 @@
   color: #6B7280;
   font-size: 0.9rem;
 }
+
+
+
+.balance-card {
+  font-family: Arial, sans-serif;
+  width: 310px;
+  padding: 32px;
+  border-radius: 24px;
+  background: linear-gradient(to bottom right, #60a5fa, #081c37);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.balance-card::before,
+.balance-card::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+
+.balance-card::before {
+  width: 160px;
+  height: 160px;
+  top: -80px;
+  right: -80px;
+}
+
+.balance-card::after {
+  width: 128px;
+  height: 128px;
+  bottom: -64px;
+  left: -64px;
+}
+
+.balance-card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.balance {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 0 0 12px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.balance-account {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  margin-bottom: 22px;
+}
+
+.balance-account svg {
+  margin-right: 8px;
+}
+
+.balance-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.balance-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+
+.balance-button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.balance-button svg {
+  margin-right: 8px;
+}
+
+.button-transfer {
+  background-color: rgb(253, 253, 253);
+  color: #3b82f6;
+  margin-right: 16px;
+  z-index: 2;
+}
+
+.button-save {
+  background-color: #2c73ce;
+  color: white;
+}
+
+.balance-dollar-sign {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  opacity: 0.5;
+}
+
+
+
+.project-card {
+  width: 310px;
+  height: 350px;
+  background: #E8EAEA;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.project-title, .project-more {
+  padding: 10px 15px;
+}
+
+.project-user {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+}
+
+.project-user__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.project-user__container {
+  display: flex;
+  flex-direction: column;
+}
+
+.project-title {
+  font-weight: 900;
+  font-size: 1.3em;
+}
+
+.project-name {
+  font-weight: 800;
+}
+
+.project-username {
+  font-size: .9em;
+  color: #64696e;
+}
+
+.project-image {
+  width: 60px;
+  height: 60px;
+  background: rgb(22,19,70);
+  background: linear-gradient(295deg, rgba(22,19,70,1) 41%, rgba(89,177,237,1) 100%);
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.project-follow {
+  border: none;
+  border-radius: 25px;
+  background-color: #0f1113;
+  color: white;
+  padding: 8px 15px;
+  font-weight: 700;
+}
+
+.project-more {
+  display: block;
+  text-decoration: none;
+  color: rgb(29, 155, 240);
+  font-weight: 800;
+}
+
+.project-user:hover {
+  background-color: #b3b6b6;
+}
+
+.project-more:hover {
+  background-color: #b3b6b6;
+  border-radius: 0px 0px 15px 15px;
+}
+
+.project-follow:hover {
+  background-color: #2c3136;
+}
+
+
+
+.profile-user-info-list {
+  list-style: none; /* Remove default bullet points */
+  padding: 0; /* Remove default padding */
+  margin: 0; /* Remove default margin */
+}
+
+.profile-user-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee; /* Add a separator between items */
+}
+
+.profile-user-info-item:last-child {
+  border-bottom: none; /* Remove border for the last item */
+}
+
+.profile-user-info-label {
+  font-weight: bold;
+  color: #333; /* Darker color for labels */
+  font-size: 16px;
+}
+
+.profile-user-info-value {
+  color: #555; /* Lighter color for values */
+  font-size: 16px;
+}
