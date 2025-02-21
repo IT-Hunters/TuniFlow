@@ -1,5 +1,5 @@
 // src/components/Sidebar.js
-
+import './Sidebar.css';
 const Sidebar = () => {
   return (
     <nav className="sidebar">
