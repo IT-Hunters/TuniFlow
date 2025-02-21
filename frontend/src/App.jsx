@@ -3,7 +3,6 @@ import Dashbord from "./components/dashboard/Dashbord";
 import AuthPage from "./components/Auth/Authpage";
 import Profile from "./components/Profile/Profile";
 import AssetsLayer from "./layers/assetActif/AssetsLayer";
-
 function App() {
   return (
     <Router>

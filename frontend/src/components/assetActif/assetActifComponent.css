@@ -47,136 +47,171 @@
     margin-top: var(--bs-gutter-y);
   }
   
-.card {
+  .card {
+    box-shadow: 0 0 0 0 rgba(90, 113, 208, 0.11), 0 4px 16px 0 rgba(167, 175, 183, 0.33);
+    -webkit-box-shadow: 0 0 0 0 rgba(90, 113, 208, 0.11), 0 4px 16px 0 rgba(167, 175, 183, 0.33);
+    -moz-box-shadow: 0 0 0 0 rgba(90, 113, 208, 0.11), 0 4px 16px 0 rgba(167, 175, 183, 0.33);
+    -ms-box-shadow: 0 0 0 0 rgba(90, 113, 208, 0.11), 0 4px 16px 0 rgba(167, 175, 183, 0.33);
+    transition: background 0.25s ease;
+    -webkit-transition: background 0.25s ease;
+    -moz-transition: background 0.25s ease;
+    -ms-transition: background 0.25s ease;
+    border: none;
+    border: none;
+  }
+  
+  .card.card-rounded {
+    border-radius: 15px;
+    box-shadow: none;
+    border: none;
+  }
+  
+  .card.table-darkBGImg {
+    background: #1E283D url("../../images/dashboard/darkBG.png") repeat-y right top;
+  }
+  
+  .card.tale-bg {
+    background: #DAE7FF;
+  }
+  
+  .card.transparent {
+    background: transparent;
+  }
+  
+  .card .card-body {
+    padding: 1.5rem 1.5rem;
+  }
+  
+  .card .card-body + .card-body {
+    padding-top: 1rem;
+  }
+  
+  .card .card-title {
+    color: #010101;
+    margin-bottom: 1.2rem;
+    text-transform: capitalize;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  
+  .card .card-title.card-title-dash {
+    font-style: normal;
+    font-weight: 800;
+    font-size: 16px;
+    line-height: 22px;
+    color: #1F1F1F;
+    margin-bottom: 2px;
+  }
+  
+  .card .card-title.card-title-dash.card-subtitle-dash {
+    font-style: normal;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 18px;
+    color: #1F1F1F;
+    margin: 0;
+  }
+  
+  .card .card-subtitle {
+    font-weight: 400;
+    margin-top: 0.625rem;
+    margin-bottom: 0.625rem;
+  }
+  
+  .card .card-description {
+    margin-bottom: .875rem;
+    font-weight: 400;
+    color: #76838f;
+  }
+  
+  .card.card-outline-success {
+    border: 1px solid theme-color("success");
+  }
+  
+  .card.card-outline-primary {
+    border: 1px solid theme-color("primary");
+  }
+  
+  .card.card-outline-warning {
+    border: 1px solid theme-color("warning");
+  }
+  
+  .card.card-outline-danger {
+    border: 1px solid theme-color("danger");
+  }
+  
+  .card.card-faded {
+    background: #b5b0b2;
+    border-color: #b5b0b2;
+  }
+  
+  .card.card-circle-progress {
+    color: #ffffff;
+    text-align: center;
+  }
+  
+  .card.card-img-holder {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    word-wrap: break-word;
-    background-color: #fff;
-    background-clip: border-box;
-    border: 1px solid #e3e3e3;
-    border-radius: 20px;
   }
   
-  .card > hr {
-    margin-right: 0;
-    margin-left: 0;
-  }
-  
-  .card > .list-group {
-    border-top: inherit;
-    border-bottom: inherit;
-  }
-  
-  .card > .list-group:first-child {
-    border-top-width: 0;
-    border-top-left-radius: calc(0.25rem - 1px);
-    border-top-right-radius: calc(0.25rem - 1px);
-  }
-  
-  .card > .list-group:last-child {
-    border-bottom-width: 0;
-    border-bottom-right-radius: calc(0.25rem - 1px);
-    border-bottom-left-radius: calc(0.25rem - 1px);
-  }
-  
-  .card > .card-header + .list-group,
-  .card > .list-group + .card-footer {
-    border-top: 0;
-  }
-  
-  .card-body {
-    flex: 1 1 auto;
-    padding: 1rem 1rem;
-  }
-  
-  .card-title {
-    margin-bottom: 0.5rem;
-  }
-  
-  .card-subtitle {
-    margin-top: -0.25rem;
-    margin-bottom: 0;
-  }
-  
-  .card-text:last-child {
-    margin-bottom: 0;
-  }
-  
-  .card-link:hover {
-    text-decoration: none;
-  }
-  
-  .card-link + .card-link {
-    margin-left: 1rem;
-  }
-  
-  .card-header {
-    padding: 0.5rem 1rem;
-    margin-bottom: 0;
-    background-color: rgba(0, 0, 0, 0.03);
-    border-bottom: 1px solid #e3e3e3;
-  }
-  
-  .card-header:first-child {
-    border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;
-  }
-  
-  .card-footer {
-    padding: 0.5rem 1rem;
-    background-color: rgba(0, 0, 0, 0.03);
-    border-top: 1px solid #e3e3e3;
-  }
-  
-  .card-footer:last-child {
-    border-radius: 0 0 calc(0.25rem - 1px) calc(0.25rem - 1px);
-  }
-  
-  .card-header-tabs {
-    margin-right: -0.5rem;
-    margin-bottom: -0.5rem;
-    margin-left: -0.5rem;
-    border-bottom: 0;
-  }
-  
-  .card-header-pills {
-    margin-right: -0.5rem;
-    margin-left: -0.5rem;
-  }
-  
-  .card-img-overlay {
+  .card.card-img-holder .card-img-absolute {
     position: absolute;
     top: 0;
     right: 0;
-    bottom: 0;
-    left: 0;
-    padding: 1rem;
-    border-radius: calc(0.25rem - 1px);
+    height: 100%;
   }
   
-  .card-img,
-  .card-img-top,
-  .card-img-bottom {
-    width: 100%;
+  .card.card-weather .weather-daily .weather-day {
+    opacity: .5;
+    font-weight: 900;
   }
   
-  .card-img,
-  .card-img-top {
-    border-top-left-radius: calc(0.25rem - 1px);
-    border-top-right-radius: calc(0.25rem - 1px);
+  .card.card-weather .weather-daily i {
+    font-size: 20px;
   }
   
-  .card-img,
-  .card-img-bottom {
-    border-bottom-right-radius: calc(0.25rem - 1px);
-    border-bottom-left-radius: calc(0.25rem - 1px);
+  .card.card-weather .weather-daily .weather-temp {
+    margin-top: .5rem;
+    margin-bottom: 0;
+    opacity: .5;
+    font-size: .75rem;
   }
   
-  .card-group > .card {
-    margin-bottom: 0.75rem;
+  .card.card-tale {
+    background: #7DA0FA;
+    color: #ffffff;
   }
   
+  .card.card-tale:hover {
+    background: #96b2fb;
+  }
+  
+  .card.card-dark-blue {
+    background: #4747A1;
+    color: #ffffff;
+  }
+  
+  .card.card-dark-blue:hover {
+    background: #5050b2;
+  }
+  
+  .card.card-light-blue {
+    background: #7978E9;
+    color: #ffffff;
+  }
+  
+  .card.card-light-blue:hover {
+    background: #8f8eed;
+  }
+  
+  .card.card-light-danger {
+    background: #F3797E;
+    color: #ffffff;
+  }
+  
+  .card.card-light-danger:hover {
+    background: #f59095;
+  }
   @media (min-width: 576px) {
     .card-group {
       display: flex;
@@ -218,171 +253,515 @@
 
 /* Forms */
 .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group-append,
+.input-group-prepend {
+  color: #c9c8c8;
+  width: auto;
+  border: none;
+}
+
+.input-group-append .input-group-text,
+.input-group-prepend .input-group-text {
+  border-color: #dee2e6;
+  padding: .5rem .75rem;
+  color: #c9c8c8;
+}
+
+.form-control, .asColorPicker-input, .dataTables_wrapper select, .select2-container--default .select2-selection--single, .select2-container--default .select2-selection--single .select2-search__field, .typeahead,
+.tt-query,
+.tt-hint {
+  border: 1px solid #dee2e6;
+  font-weight: 400;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  height: 2rem;
+}
+
+select.form-control, select.asColorPicker-input, .dataTables_wrapper select, .select2-container--default select.select2-selection--single, .select2-container--default .select2-selection--single select.select2-search__field, select.typeahead,
+select.tt-query,
+select.tt-hint {
+  padding: .4375rem .75rem;
+  border: 0;
+  outline: 1px solid #dee2e6;
+  color: #c9c8c8;
+}
+
+select.form-control:focus, select.asColorPicker-input:focus, .dataTables_wrapper select:focus, .select2-container--default select.select2-selection--single:focus, .select2-container--default .select2-selection--single select.select2-search__field:focus, select.typeahead:focus,
+select.tt-query:focus,
+select.tt-hint:focus {
+  outline: 1px solid #dee2e6;
+}
+
+select.form-control.border-primary, select.border-primary.asColorPicker-input, .dataTables_wrapper select.border-primary, .select2-container--default select.border-primary.select2-selection--single, .select2-container--default .select2-selection--single select.border-primary.select2-search__field, select.border-primary.typeahead,
+select.border-primary.tt-query,
+select.border-primary.tt-hint {
+  outline: 1px solid #1F3BB3;
+}
+
+select.form-control.border-primary:focus, select.border-primary.asColorPicker-input:focus, .dataTables_wrapper select.border-primary:focus, .select2-container--default select.border-primary.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-primary.select2-search__field:focus, select.border-primary.typeahead:focus,
+select.border-primary.tt-query:focus,
+select.border-primary.tt-hint:focus {
+  outline: 1px solid #1F3BB3;
+}
+
+select.form-control.border-secondary, select.form-control.loader-demo-box, select.loader-demo-box.asColorPicker-input, .dataTables_wrapper select.loader-demo-box, .select2-container--default select.loader-demo-box.select2-selection--single, .select2-container--default .select2-selection--single select.loader-demo-box.select2-search__field, select.loader-demo-box.typeahead,
+select.loader-demo-box.tt-query,
+select.loader-demo-box.tt-hint, select.border-secondary.asColorPicker-input, .dataTables_wrapper select.border-secondary, .select2-container--default select.border-secondary.select2-selection--single, .select2-container--default .select2-selection--single select.border-secondary.select2-search__field, select.border-secondary.typeahead,
+select.border-secondary.tt-query,
+select.border-secondary.tt-hint {
+  outline: 1px solid #F1F1F1;
+}
+
+select.form-control.border-secondary:focus, select.form-control.loader-demo-box:focus, select.loader-demo-box.asColorPicker-input:focus, .dataTables_wrapper select.loader-demo-box:focus, .select2-container--default select.loader-demo-box.select2-selection--single:focus, .select2-container--default .select2-selection--single select.loader-demo-box.select2-search__field:focus, select.loader-demo-box.typeahead:focus,
+select.loader-demo-box.tt-query:focus,
+select.loader-demo-box.tt-hint:focus, select.border-secondary.asColorPicker-input:focus, .dataTables_wrapper select.border-secondary:focus, .select2-container--default select.border-secondary.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-secondary.select2-search__field:focus, select.border-secondary.typeahead:focus,
+select.border-secondary.tt-query:focus,
+select.border-secondary.tt-hint:focus {
+  outline: 1px solid #F1F1F1;
+}
+
+select.form-control.border-success, select.border-success.asColorPicker-input, .swal2-modal .swal2-buttonswrapper select.asColorPicker-input.swal2-styled.swal2-confirm, .dataTables_wrapper select.border-success, .dataTables_wrapper .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper .dataTables_wrapper select.swal2-styled.swal2-confirm, .select2-container--default select.border-success.select2-selection--single, .select2-container--default .swal2-modal .swal2-buttonswrapper select.select2-selection--single.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper .select2-container--default select.select2-selection--single.swal2-styled.swal2-confirm, .select2-container--default .select2-selection--single select.border-success.select2-search__field, .select2-container--default .select2-selection--single .swal2-modal .swal2-buttonswrapper select.select2-search__field.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper .select2-container--default .select2-selection--single select.select2-search__field.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper select.form-control.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.typeahead,
+.swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.tt-query,
+.swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.tt-hint, select.border-success.typeahead,
+select.border-success.tt-query,
+select.border-success.tt-hint {
+  outline: 1px solid #34B1AA;
+}
+
+select.form-control.border-success:focus, select.border-success.asColorPicker-input:focus, .swal2-modal .swal2-buttonswrapper select.asColorPicker-input.swal2-styled.swal2-confirm:focus, .dataTables_wrapper select.border-success:focus, .dataTables_wrapper .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper .dataTables_wrapper select.swal2-styled.swal2-confirm:focus, .select2-container--default select.border-success.select2-selection--single:focus, .select2-container--default .swal2-modal .swal2-buttonswrapper select.select2-selection--single.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper .select2-container--default select.select2-selection--single.swal2-styled.swal2-confirm:focus, .select2-container--default .select2-selection--single select.border-success.select2-search__field:focus, .select2-container--default .select2-selection--single .swal2-modal .swal2-buttonswrapper select.select2-search__field.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper .select2-container--default .select2-selection--single select.select2-search__field.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper select.form-control.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.typeahead:focus,
+.swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.tt-query:focus,
+.swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.tt-hint:focus, select.border-success.typeahead:focus,
+select.border-success.tt-query:focus,
+select.border-success.tt-hint:focus {
+  outline: 1px solid #34B1AA;
+}
+
+select.form-control.border-info, select.border-info.asColorPicker-input, .dataTables_wrapper select.border-info, .select2-container--default select.border-info.select2-selection--single, .select2-container--default .select2-selection--single select.border-info.select2-search__field, select.border-info.typeahead,
+select.border-info.tt-query,
+select.border-info.tt-hint {
+  outline: 1px solid #52CDFF;
+}
+
+select.form-control.border-info:focus, select.border-info.asColorPicker-input:focus, .dataTables_wrapper select.border-info:focus, .select2-container--default select.border-info.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-info.select2-search__field:focus, select.border-info.typeahead:focus,
+select.border-info.tt-query:focus,
+select.border-info.tt-hint:focus {
+  outline: 1px solid #52CDFF;
+}
+
+select.form-control.border-warning, select.border-warning.asColorPicker-input, .dataTables_wrapper select.border-warning, .select2-container--default select.border-warning.select2-selection--single, .select2-container--default .select2-selection--single select.border-warning.select2-search__field, select.border-warning.typeahead,
+select.border-warning.tt-query,
+select.border-warning.tt-hint {
+  outline: 1px solid #ffaf00;
+}
+
+select.form-control.border-warning:focus, select.border-warning.asColorPicker-input:focus, .dataTables_wrapper select.border-warning:focus, .select2-container--default select.border-warning.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-warning.select2-search__field:focus, select.border-warning.typeahead:focus,
+select.border-warning.tt-query:focus,
+select.border-warning.tt-hint:focus {
+  outline: 1px solid #ffaf00;
+}
+
+select.form-control.border-danger, select.border-danger.asColorPicker-input, .dataTables_wrapper select.border-danger, .select2-container--default select.border-danger.select2-selection--single, .select2-container--default .select2-selection--single select.border-danger.select2-search__field, select.border-danger.typeahead,
+select.border-danger.tt-query,
+select.border-danger.tt-hint {
+  outline: 1px solid #F95F53;
+}
+
+select.form-control.border-danger:focus, select.border-danger.asColorPicker-input:focus, .dataTables_wrapper select.border-danger:focus, .select2-container--default select.border-danger.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-danger.select2-search__field:focus, select.border-danger.typeahead:focus,
+select.border-danger.tt-query:focus,
+select.border-danger.tt-hint:focus {
+  outline: 1px solid #F95F53;
+}
+
+select.form-control.border-light, select.border-light.asColorPicker-input, .dataTables_wrapper select.border-light, .select2-container--default select.border-light.select2-selection--single, .select2-container--default .select2-selection--single select.border-light.select2-search__field, select.border-light.typeahead,
+select.border-light.tt-query,
+select.border-light.tt-hint {
+  outline: 1px solid #fbfbfb;
+}
+
+select.form-control.border-light:focus, select.border-light.asColorPicker-input:focus, .dataTables_wrapper select.border-light:focus, .select2-container--default select.border-light.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-light.select2-search__field:focus, select.border-light.typeahead:focus,
+select.border-light.tt-query:focus,
+select.border-light.tt-hint:focus {
+  outline: 1px solid #fbfbfb;
+}
+
+select.form-control.border-dark, select.border-dark.asColorPicker-input, .dataTables_wrapper select.border-dark, .select2-container--default select.border-dark.select2-selection--single, .select2-container--default .select2-selection--single select.border-dark.select2-search__field, select.border-dark.typeahead,
+select.border-dark.tt-query,
+select.border-dark.tt-hint {
+  outline: 1px solid #1E283D;
+}
+
+select.form-control.border-dark:focus, select.border-dark.asColorPicker-input:focus, .dataTables_wrapper select.border-dark:focus, .select2-container--default select.border-dark.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-dark.select2-search__field:focus, select.border-dark.typeahead:focus,
+select.border-dark.tt-query:focus,
+select.border-dark.tt-hint:focus {
+  outline: 1px solid #1E283D;
+}
+
+.form-group label {
+  font-size: 0.812rem;
+  line-height: 1.4rem;
+  vertical-align: top;
+  margin-bottom: .5rem;
+}
+
+.form-group.has-danger .form-control, .form-group.has-danger .asColorPicker-input, .form-group.has-danger .dataTables_wrapper select, .dataTables_wrapper .form-group.has-danger select, .form-group.has-danger .select2-container--default .select2-selection--single, .select2-container--default .form-group.has-danger .select2-selection--single, .form-group.has-danger .select2-container--default .select2-selection--single .select2-search__field, .select2-container--default .select2-selection--single .form-group.has-danger .select2-search__field, .form-group.has-danger .typeahead,
+.form-group.has-danger .tt-query,
+.form-group.has-danger .tt-hint {
+  border-color: #F95F53;
+}
+
+.form-group .file-upload-default {
+  visibility: hidden;
+  position: absolute;
+}
+
+.form-group .file-upload-info {
+  background: transparent;
+}
+
+.form-check {
+    display: block;
+    min-height: 1.5rem;
+    padding-left: 1.5em;
+    margin-bottom: 0.125rem;
+  }
+  
+  .form-check .form-check-input {
+    float: left;
+    margin-left: -1.5em;
+  }
+  
+  .form-check-input {
+    width: 1em;
+    height: 1em;
+    margin-top: 0.25em;
+    vertical-align: top;
+    background-color: #fff;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    appearance: none;
+    color-adjust: exact;
+  }
+  
+  .form-check-input[type="checkbox"] {
+    border-radius: 0.25em;
+  }
+  
+  .form-check-input[type="radio"] {
+    border-radius: 50%;
+  }
+  
+  .form-check-input:active {
+    filter: brightness(90%);
+  }
+  
+  .form-check-input:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+  
+  .form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+  }
+  
+  .form-check-input:checked[type="checkbox"] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+  }
+  
+  .form-check-input:checked[type="radio"] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e");
+  }
+  
+  .form-check-input[type="checkbox"]:indeterminate {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/%3e%3c/svg%3e");
+  }
+  
+  .form-check-input:disabled {
+    pointer-events: none;
+    filter: none;
+    opacity: 0.5;
+  }
+  
+  .form-check-input[disabled] ~ .form-check-label, .form-check-input:disabled ~ .form-check-label {
+    opacity: 0.5;
+  }
+  
+  .form-switch {
+    padding-left: 2.5em;
+  }
+  
+  .form-switch .form-check-input {
+    width: 2em;
+    margin-left: -2.5em;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e");
+    background-position: left center;
+    border-radius: 2em;
+    transition: background-position 0.15s ease-in-out;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .form-switch .form-check-input {
+      transition: none;
+    }
+  }
+  
+  .form-switch .form-check-input:focus {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2386b7fe'/%3e%3c/svg%3e");
+  }
+  
+  .form-switch .form-check-input:checked {
+    background-position: right center;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+  }
+  
+  .form-check-inline {
+    display: inline-block;
+    margin-right: 1rem;
+  }
+  
+.btn, .ajax-upload-dragdrop .ajax-file-upload, .swal2-modal .swal2-buttonswrapper .swal2-styled, .swal2-modal .swal2-buttonswrapper .swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper .swal2-styled.swal2-cancel {
+    font-size: 0.875rem;
+    line-height: 1;
+    font-weight: 400;
+    border-radius: 5px;
+    /* Buttons with only icons */
+    /* Buttons with icon and text */
+  }
+  .btn i, .ajax-upload-dragdrop .ajax-file-upload i, .swal2-modal .swal2-buttonswrapper .swal2-styled i, .swal2-modal .swal2-buttonswrapper .swal2-styled.swal2-confirm i, .swal2-modal .swal2-buttonswrapper .swal2-styled.swal2-cancel i {
+    font-size: 1rem;
+  }
+  
+  .btn.btn-rounded, .ajax-upload-dragdrop .btn-rounded.ajax-file-upload, .swal2-modal .swal2-buttonswrapper .btn-rounded.swal2-styled {
+    border-radius: 50px;
+  }
+  
+  .btn.btn-sm, .btn-group-sm > .btn, .ajax-upload-dragdrop .btn-group-sm > .ajax-file-upload, .swal2-modal .swal2-buttonswrapper .btn-group-sm > .swal2-styled, .ajax-upload-dragdrop .btn-sm.ajax-file-upload, .swal2-modal .swal2-buttonswrapper .btn-sm.swal2-styled {
+    font-size: 0.812rem;
+    border-radius: 15px;
+  }
+  
+  .btn.btn-lg, .btn-group-lg > .btn, .ajax-upload-dragdrop .btn-group-lg > .ajax-file-upload, .swal2-modal .swal2-buttonswrapper .btn-group-lg > .swal2-styled, .ajax-upload-dragdrop .btn-lg.ajax-file-upload, .swal2-modal .swal2-buttonswrapper .btn-lg.swal2-styled {
+    font-size: 0.875rem;
+    padding: 1.375rem 3.4rem;
+  }
+  
+  .btn.btn-xs, .ajax-upload-dragdrop .btn-xs.ajax-file-upload, .ajax-upload-dragdrop .editable-container.editable-inline .editableform .control-group .editable-buttons .ajax-file-upload.editable-submit, .editable-container.editable-inline .editableform .control-group .editable-buttons .ajax-upload-dragdrop .ajax-file-upload.editable-submit, .ajax-upload-dragdrop .editable-container.editable-inline .editableform .control-group .editable-buttons .ajax-file-upload.editable-cancel, .editable-container.editable-inline .editableform .control-group .editable-buttons .ajax-upload-dragdrop .ajax-file-upload.editable-cancel, .swal2-modal .swal2-buttonswrapper .btn-xs.swal2-styled, .swal2-modal .swal2-buttonswrapper .editable-container.editable-inline .editableform .control-group .editable-buttons .swal2-styled.editable-submit, .editable-container.editable-inline .editableform .control-group .editable-buttons .swal2-modal .swal2-buttonswrapper .swal2-styled.editable-submit, .swal2-modal .swal2-buttonswrapper .editable-container.editable-inline .editableform .control-group .editable-buttons .swal2-styled.editable-cancel, .editable-container.editable-inline .editableform .control-group .editable-buttons .swal2-modal .swal2-buttonswrapper .swal2-styled.editable-cancel, .editable-container.editable-inline .editableform .control-group .editable-buttons .btn.editable-submit, .editable-container.editable-inline .editableform .control-group .editable-buttons .btn.editable-cancel {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.625rem;
+  }
+  
+  .btn.btn-icons, .ajax-upload-dragdrop .btn-icons.ajax-file-upload, .swal2-modal .swal2-buttonswrapper .btn-icons.swal2-styled {
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .btn.btn-icons.todo-list-add-btn, .ajax-upload-dragdrop .btn-icons.todo-list-add-btn.ajax-file-upload, .swal2-modal .swal2-buttonswrapper .btn-icons.todo-list-add-btn.swal2-styled {
+    border-radius: 100%;
+  }
+  
+  .btn.btn-icons.todo-list-add-btn i, .ajax-upload-dragdrop .btn-icons.todo-list-add-btn.ajax-file-upload i, .swal2-modal .swal2-buttonswrapper .btn-icons.todo-list-add-btn.swal2-styled i {
+    line-height: 1;
+  }
+  
+  .btn.btn-icons i, .ajax-upload-dragdrop .btn-icons.ajax-file-upload i, .swal2-modal .swal2-buttonswrapper .btn-icons.swal2-styled i {
+    margin: auto;
+    line-height: initial;
+  }
+  
+  .btn.btn-icon-text .btn-icon-prepend, .ajax-upload-dragdrop .btn-icon-text.ajax-file-upload .btn-icon-prepend, .swal2-modal .swal2-buttonswrapper .btn-icon-text.swal2-styled .btn-icon-prepend {
+    margin-right: .5rem;
+  }
+  
+  .btn.btn-icon-text .btn-icon-append, .ajax-upload-dragdrop .btn-icon-text.ajax-file-upload .btn-icon-append, .swal2-modal .swal2-buttonswrapper .btn-icon-text.swal2-styled .btn-icon-append {
+    margin-left: .5rem;
+  }
+  
+  .btn.btn-social-icon, .ajax-upload-dragdrop .btn-social-icon.ajax-file-upload, .swal2-modal .swal2-buttonswrapper .btn-social-icon.swal2-styled {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+  }
+  
+  .btn:focus, .ajax-upload-dragdrop .ajax-file-upload:focus, .swal2-modal .swal2-buttonswrapper .swal2-styled:focus,
+  .btn:active,
+  .ajax-upload-dragdrop .ajax-file-upload:active,
+  .swal2-modal .swal2-buttonswrapper .swal2-styled:active {
+    outline: 0;
+    box-shadow: none;
+  }
+  
+  .btn-group .btn + .btn, .btn-group .ajax-upload-dragdrop .ajax-file-upload + .btn, .ajax-upload-dragdrop .btn-group .ajax-file-upload + .btn, .btn-group .swal2-modal .swal2-buttonswrapper .swal2-styled + .btn, .swal2-modal .swal2-buttonswrapper .btn-group .swal2-styled + .btn, .btn-group .ajax-upload-dragdrop .btn + .ajax-file-upload, .ajax-upload-dragdrop .btn-group .btn + .ajax-file-upload, .btn-group .ajax-upload-dragdrop .ajax-file-upload + .ajax-file-upload, .ajax-upload-dragdrop .btn-group .ajax-file-upload + .ajax-file-upload, .btn-group .swal2-modal .swal2-buttonswrapper .ajax-upload-dragdrop .swal2-styled + .ajax-file-upload, .ajax-upload-dragdrop .btn-group .swal2-modal .swal2-buttonswrapper .swal2-styled + .ajax-file-upload, .swal2-modal .swal2-buttonswrapper .btn-group .ajax-upload-dragdrop .swal2-styled + .ajax-file-upload, .ajax-upload-dragdrop .swal2-modal .swal2-buttonswrapper .btn-group .swal2-styled + .ajax-file-upload, .btn-group .swal2-modal .swal2-buttonswrapper .btn + .swal2-styled, .swal2-modal .swal2-buttonswrapper .btn-group .btn + .swal2-styled, .btn-group .ajax-upload-dragdrop .swal2-modal .swal2-buttonswrapper .ajax-file-upload + .swal2-styled, .swal2-modal .swal2-buttonswrapper .btn-group .ajax-upload-dragdrop .ajax-file-upload + .swal2-styled, .ajax-upload-dragdrop .btn-group .swal2-modal .swal2-buttonswrapper .ajax-file-upload + .swal2-styled, .swal2-modal .swal2-buttonswrapper .ajax-upload-dragdrop .btn-group .ajax-file-upload + .swal2-styled, .btn-group .swal2-modal .swal2-buttonswrapper .swal2-styled + .swal2-styled, .swal2-modal .swal2-buttonswrapper .btn-group .swal2-styled + .swal2-styled {
+    border-left: 0;
+  }
+  
+
+  .btn-primary {
+    color: #fff;
+    background-color: #1F3BB3;
+    border-color: #1F3BB3;
+  }
+  
+  .btn-primary:hover {
+    color: #fff;
+    background-color: #1a3298;
+    border-color: #192f8f;
+  }
+  
+  .btn-check:focus + .btn-primary, .btn-primary:focus {
+    color: #fff;
+    background-color: #1a3298;
+    border-color: #192f8f;
+    box-shadow: 0 0 0 0.25rem rgba(65, 88, 190, 0.5);
+  }
+  
+  .btn-check:checked + .btn-primary,
+  .btn-check:active + .btn-primary, .btn-primary:active, .btn-primary.active,
+  .show > .btn-primary.dropdown-toggle {
+    color: #fff;
+    background-color: #192f8f;
+    border-color: #172c86;
+  }
+  
+  .btn-check:checked + .btn-primary:focus,
+  .btn-check:active + .btn-primary:focus, .btn-primary:active:focus, .btn-primary.active:focus,
+  .show > .btn-primary.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.25rem rgba(65, 88, 190, 0.5);
+  }
+  
+  .btn-primary:disabled, .btn-primary.disabled {
+    color: #fff;
+    background-color: #1F3BB3;
+    border-color: #1F3BB3;
+  }
+  
+.btn-light {
+    color: #000;
+    background-color: #fbfbfb;
+    border-color: #fbfbfb;
+  }
+  
+  .btn-light:hover {
+    color: #000;
+    background-color: #fcfcfc;
+    border-color: #fbfbfb;
+  }
+  
+  .btn-check:focus + .btn-light, .btn-light:focus {
+    color: #000;
+    background-color: #fcfcfc;
+    border-color: #fbfbfb;
+    box-shadow: 0 0 0 0.25rem rgba(213, 213, 213, 0.5);
+  }
+  
+  .btn-check:checked + .btn-light,
+  .btn-check:active + .btn-light, .btn-light:active, .btn-light.active,
+  .show > .btn-light.dropdown-toggle {
+    color: #000;
+    background-color: #fcfcfc;
+    border-color: #fbfbfb;
+  }
+  
+  .btn-check:checked + .btn-light:focus,
+  .btn-check:active + .btn-light:focus, .btn-light:active:focus, .btn-light.active:focus,
+  .show > .btn-light.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.25rem rgba(213, 213, 213, 0.5);
+  }
+  
+  .btn-light:disabled, .btn-light.disabled {
+    color: #000;
+    background-color: #fbfbfb;
+    border-color: #fbfbfb;
+  }
+   
+/* Utilities */
+.grid-margin {
     margin-bottom: 1.5rem;
   }
   
-  .input-group-append,
-  .input-group-prepend {
-    color: #c9c8c8;
-    width: auto;
-    border: none;
+  @media (min-width: 576px) {
+    .grid-margin-sm-0 {
+      margin-bottom: 0;
+    }
   }
   
-  .input-group-append .input-group-text,
-  .input-group-prepend .input-group-text {
-    border-color: #dee2e6;
-    padding: .5rem .75rem;
-    color: #c9c8c8;
+  @media (min-width: 768px) {
+    .grid-margin-md-0 {
+      margin-bottom: 0;
+    }
   }
   
-  .form-control, .asColorPicker-input, .dataTables_wrapper select, .select2-container--default .select2-selection--single, .select2-container--default .select2-selection--single .select2-search__field, .typeahead,
-  .tt-query,
-  .tt-hint {
-    border: 1px solid #dee2e6;
-    font-weight: 400;
-    font-size: 0.875rem;
-    border-radius: 4px;
-    height: 2rem;
+  @media (min-width: 992px) {
+    .grid-margin-lg-0 {
+      margin-bottom: 0;
+    }
   }
   
-  select.form-control, select.asColorPicker-input, .dataTables_wrapper select, .select2-container--default select.select2-selection--single, .select2-container--default .select2-selection--single select.select2-search__field, select.typeahead,
-  select.tt-query,
-  select.tt-hint {
-    padding: .4375rem .75rem;
-    border: 0;
-    outline: 1px solid #dee2e6;
-    color: #c9c8c8;
+  @media (min-width: 1200px) {
+    .grid-margin-xl-0 {
+      margin-bottom: 0;
+    }
   }
   
-  select.form-control:focus, select.asColorPicker-input:focus, .dataTables_wrapper select:focus, .select2-container--default select.select2-selection--single:focus, .select2-container--default .select2-selection--single select.select2-search__field:focus, select.typeahead:focus,
-  select.tt-query:focus,
-  select.tt-hint:focus {
-    outline: 1px solid #dee2e6;
+.stretch-card {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+    -webkit-justify-content: stretch;
+    justify-content: stretch;
   }
   
-  select.form-control.border-primary, select.border-primary.asColorPicker-input, .dataTables_wrapper select.border-primary, .select2-container--default select.border-primary.select2-selection--single, .select2-container--default .select2-selection--single select.border-primary.select2-search__field, select.border-primary.typeahead,
-  select.border-primary.tt-query,
-  select.border-primary.tt-hint {
-    outline: 1px solid #1F3BB3;
+  .stretch-card > .card {
+    width: 100%;
+    min-width: 100%;
   }
   
-  select.form-control.border-primary:focus, select.border-primary.asColorPicker-input:focus, .dataTables_wrapper select.border-primary:focus, .select2-container--default select.border-primary.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-primary.select2-search__field:focus, select.border-primary.typeahead:focus,
-  select.border-primary.tt-query:focus,
-  select.border-primary.tt-hint:focus {
-    outline: 1px solid #1F3BB3;
+.btn-light {
+    color: #000;
+    background-color: #fbfbfb;
+    border-color: #fbfbfb;
   }
   
-  select.form-control.border-secondary, select.form-control.loader-demo-box, select.loader-demo-box.asColorPicker-input, .dataTables_wrapper select.loader-demo-box, .select2-container--default select.loader-demo-box.select2-selection--single, .select2-container--default .select2-selection--single select.loader-demo-box.select2-search__field, select.loader-demo-box.typeahead,
-  select.loader-demo-box.tt-query,
-  select.loader-demo-box.tt-hint, select.border-secondary.asColorPicker-input, .dataTables_wrapper select.border-secondary, .select2-container--default select.border-secondary.select2-selection--single, .select2-container--default .select2-selection--single select.border-secondary.select2-search__field, select.border-secondary.typeahead,
-  select.border-secondary.tt-query,
-  select.border-secondary.tt-hint {
-    outline: 1px solid #F1F1F1;
+  .btn-light:hover {
+    color: #000;
+    background-color: #fcfcfc;
+    border-color: #fbfbfb;
   }
   
-  select.form-control.border-secondary:focus, select.form-control.loader-demo-box:focus, select.loader-demo-box.asColorPicker-input:focus, .dataTables_wrapper select.loader-demo-box:focus, .select2-container--default select.loader-demo-box.select2-selection--single:focus, .select2-container--default .select2-selection--single select.loader-demo-box.select2-search__field:focus, select.loader-demo-box.typeahead:focus,
-  select.loader-demo-box.tt-query:focus,
-  select.loader-demo-box.tt-hint:focus, select.border-secondary.asColorPicker-input:focus, .dataTables_wrapper select.border-secondary:focus, .select2-container--default select.border-secondary.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-secondary.select2-search__field:focus, select.border-secondary.typeahead:focus,
-  select.border-secondary.tt-query:focus,
-  select.border-secondary.tt-hint:focus {
-    outline: 1px solid #F1F1F1;
+  .btn-check:focus + .btn-light, .btn-light:focus {
+    color: #000;
+    background-color: #fcfcfc;
+    border-color: #fbfbfb;
+    box-shadow: 0 0 0 0.25rem rgba(213, 213, 213, 0.5);
   }
   
-  select.form-control.border-success, select.border-success.asColorPicker-input, .swal2-modal .swal2-buttonswrapper select.asColorPicker-input.swal2-styled.swal2-confirm, .dataTables_wrapper select.border-success, .dataTables_wrapper .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper .dataTables_wrapper select.swal2-styled.swal2-confirm, .select2-container--default select.border-success.select2-selection--single, .select2-container--default .swal2-modal .swal2-buttonswrapper select.select2-selection--single.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper .select2-container--default select.select2-selection--single.swal2-styled.swal2-confirm, .select2-container--default .select2-selection--single select.border-success.select2-search__field, .select2-container--default .select2-selection--single .swal2-modal .swal2-buttonswrapper select.select2-search__field.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper .select2-container--default .select2-selection--single select.select2-search__field.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper select.form-control.swal2-styled.swal2-confirm, .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.typeahead,
-  .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.tt-query,
-  .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.tt-hint, select.border-success.typeahead,
-  select.border-success.tt-query,
-  select.border-success.tt-hint {
-    outline: 1px solid #34B1AA;
+  .btn-check:checked + .btn-light,
+  .btn-check:active + .btn-light, .btn-light:active, .btn-light.active,
+  .show > .btn-light.dropdown-toggle {
+    color: #000;
+    background-color: #fcfcfc;
+    border-color: #fbfbfb;
   }
   
-  select.form-control.border-success:focus, select.border-success.asColorPicker-input:focus, .swal2-modal .swal2-buttonswrapper select.asColorPicker-input.swal2-styled.swal2-confirm:focus, .dataTables_wrapper select.border-success:focus, .dataTables_wrapper .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper .dataTables_wrapper select.swal2-styled.swal2-confirm:focus, .select2-container--default select.border-success.select2-selection--single:focus, .select2-container--default .swal2-modal .swal2-buttonswrapper select.select2-selection--single.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper .select2-container--default select.select2-selection--single.swal2-styled.swal2-confirm:focus, .select2-container--default .select2-selection--single select.border-success.select2-search__field:focus, .select2-container--default .select2-selection--single .swal2-modal .swal2-buttonswrapper select.select2-search__field.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper .select2-container--default .select2-selection--single select.select2-search__field.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper select.form-control.swal2-styled.swal2-confirm:focus, .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.typeahead:focus,
-  .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.tt-query:focus,
-  .swal2-modal .swal2-buttonswrapper select.swal2-styled.swal2-confirm.tt-hint:focus, select.border-success.typeahead:focus,
-  select.border-success.tt-query:focus,
-  select.border-success.tt-hint:focus {
-    outline: 1px solid #34B1AA;
+  .btn-check:checked + .btn-light:focus,
+  .btn-check:active + .btn-light:focus, .btn-light:active:focus, .btn-light.active:focus,
+  .show > .btn-light.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.25rem rgba(213, 213, 213, 0.5);
   }
   
-  select.form-control.border-info, select.border-info.asColorPicker-input, .dataTables_wrapper select.border-info, .select2-container--default select.border-info.select2-selection--single, .select2-container--default .select2-selection--single select.border-info.select2-search__field, select.border-info.typeahead,
-  select.border-info.tt-query,
-  select.border-info.tt-hint {
-    outline: 1px solid #52CDFF;
+  .btn-light:disabled, .btn-light.disabled {
+    color: #000;
+    background-color: #fbfbfb;
+    border-color: #fbfbfb;
   }
-  
-  select.form-control.border-info:focus, select.border-info.asColorPicker-input:focus, .dataTables_wrapper select.border-info:focus, .select2-container--default select.border-info.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-info.select2-search__field:focus, select.border-info.typeahead:focus,
-  select.border-info.tt-query:focus,
-  select.border-info.tt-hint:focus {
-    outline: 1px solid #52CDFF;
-  }
-  
-  select.form-control.border-warning, select.border-warning.asColorPicker-input, .dataTables_wrapper select.border-warning, .select2-container--default select.border-warning.select2-selection--single, .select2-container--default .select2-selection--single select.border-warning.select2-search__field, select.border-warning.typeahead,
-  select.border-warning.tt-query,
-  select.border-warning.tt-hint {
-    outline: 1px solid #ffaf00;
-  }
-  
-  select.form-control.border-warning:focus, select.border-warning.asColorPicker-input:focus, .dataTables_wrapper select.border-warning:focus, .select2-container--default select.border-warning.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-warning.select2-search__field:focus, select.border-warning.typeahead:focus,
-  select.border-warning.tt-query:focus,
-  select.border-warning.tt-hint:focus {
-    outline: 1px solid #ffaf00;
-  }
-  
-  select.form-control.border-danger, select.border-danger.asColorPicker-input, .dataTables_wrapper select.border-danger, .select2-container--default select.border-danger.select2-selection--single, .select2-container--default .select2-selection--single select.border-danger.select2-search__field, select.border-danger.typeahead,
-  select.border-danger.tt-query,
-  select.border-danger.tt-hint {
-    outline: 1px solid #F95F53;
-  }
-  
-  select.form-control.border-danger:focus, select.border-danger.asColorPicker-input:focus, .dataTables_wrapper select.border-danger:focus, .select2-container--default select.border-danger.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-danger.select2-search__field:focus, select.border-danger.typeahead:focus,
-  select.border-danger.tt-query:focus,
-  select.border-danger.tt-hint:focus {
-    outline: 1px solid #F95F53;
-  }
-  
-  select.form-control.border-light, select.border-light.asColorPicker-input, .dataTables_wrapper select.border-light, .select2-container--default select.border-light.select2-selection--single, .select2-container--default .select2-selection--single select.border-light.select2-search__field, select.border-light.typeahead,
-  select.border-light.tt-query,
-  select.border-light.tt-hint {
-    outline: 1px solid #fbfbfb;
-  }
-  
-  select.form-control.border-light:focus, select.border-light.asColorPicker-input:focus, .dataTables_wrapper select.border-light:focus, .select2-container--default select.border-light.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-light.select2-search__field:focus, select.border-light.typeahead:focus,
-  select.border-light.tt-query:focus,
-  select.border-light.tt-hint:focus {
-    outline: 1px solid #fbfbfb;
-  }
-  
-  select.form-control.border-dark, select.border-dark.asColorPicker-input, .dataTables_wrapper select.border-dark, .select2-container--default select.border-dark.select2-selection--single, .select2-container--default .select2-selection--single select.border-dark.select2-search__field, select.border-dark.typeahead,
-  select.border-dark.tt-query,
-  select.border-dark.tt-hint {
-    outline: 1px solid #1E283D;
-  }
-  
-  select.form-control.border-dark:focus, select.border-dark.asColorPicker-input:focus, .dataTables_wrapper select.border-dark:focus, .select2-container--default select.border-dark.select2-selection--single:focus, .select2-container--default .select2-selection--single select.border-dark.select2-search__field:focus, select.border-dark.typeahead:focus,
-  select.border-dark.tt-query:focus,
-  select.border-dark.tt-hint:focus {
-    outline: 1px solid #1E283D;
-  }
-  
-  .form-group label {
-    font-size: 0.812rem;
-    line-height: 1.4rem;
-    vertical-align: top;
-    margin-bottom: .5rem;
-  }
-  
-  .form-group.has-danger .form-control, .form-group.has-danger .asColorPicker-input, .form-group.has-danger .dataTables_wrapper select, .dataTables_wrapper .form-group.has-danger select, .form-group.has-danger .select2-container--default .select2-selection--single, .select2-container--default .form-group.has-danger .select2-selection--single, .form-group.has-danger .select2-container--default .select2-selection--single .select2-search__field, .select2-container--default .select2-selection--single .form-group.has-danger .select2-search__field, .form-group.has-danger .typeahead,
-  .form-group.has-danger .tt-query,
-  .form-group.has-danger .tt-hint {
-    border-color: #F95F53;
-  }
-  
-  .form-group .file-upload-default {
-    visibility: hidden;
-    position: absolute;
-  }
-  
-  .form-group .file-upload-info {
-    background: transparent;
-  }
-    
