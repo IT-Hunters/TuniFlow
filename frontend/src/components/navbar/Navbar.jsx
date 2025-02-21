@@ -1,5 +1,6 @@
 // src/components/Navbar.js
 import user from '../assets/user.png';
+import './Navbar.css';
 
 const Navbar = () => {
   return (

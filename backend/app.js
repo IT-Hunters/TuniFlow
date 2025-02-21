@@ -6,6 +6,8 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var assetsactifsRoutes = require('./routes/assetActifRoutes');
+var assetspassifsRoutes = require('./routes/assetPassifRoutes');
 var projectRouter = require('./routes/project.router');
 var app = express();
 var mongo=require("mongoose");
@@ -28,6 +30,24 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/project', projectRouter);
+
+
+
+// ------------------- ASSETS---------------------
+var assetsactifsRoutes = require('./routes/assetActifRoutes');
+var assetspassifsRoutes = require('./routes/assetPassifRoutes');
+app.use('/assetspassifs', assetspassifsRoutes);
+app.use('/assetsactifs', assetsactifsRoutes);
+// ------------------- END ASSETS---------------------
+
+
+// ------------------- TAXE CALCULATIONS---------------------
+var taxeRoutes = require('./routes/taxeRoutes');
+app.use('/taxes', taxeRoutes);
+// ------------------- END TAXE CALCULATIONS---------------------
+
+
+
 app.get('/api/test', (req, res) => {
   res.status(200).json({ message: 'Project tested ' });
 });
