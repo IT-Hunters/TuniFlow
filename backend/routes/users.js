@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,
-  getAllRH,findMyProject,Registerwithproject
+  getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode
   } = require('../controllers/auth');
 const { authenticateJWT } = require('../config/autorisation');
 /* GET users listing. */
@@ -22,7 +22,10 @@ router.get("/getAllBusinessManagers",authenticateJWT,getAllBusinessManagers)
 router.get("/getAllAccountants",authenticateJWT,getAllAccountants)
 router.get("/getAllFinancialManagers",authenticateJWT,getAllFinancialManagers)
 router.get("/getAllRH",authenticateJWT,getAllRH)
-router.get('/findMyProject', authenticateJWT, findMyProject);
+router.get('/findMyProject', authenticateJWT, findMyProject);router.post("/send-code", sendVerificationCode);
+router.post("/forgot-password",forgotPassword);
+router.post("/reset-password", resetPassword);
+router.post("/verify-code", verifyCode);
 router.post("/registerwithproject/:projectId", async (req, res) => {
   const { projectId } = req.params;
   await Registerwithproject(req, res, projectId);
