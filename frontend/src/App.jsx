@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashbord from "./components/dashboard/Dashbord";
 import AuthPage from "./components/Auth/Authpage";
 import Profile from "./components/Profile/Profile";
-import AssetsLayer from "./layers/assetActif/AssetsLayer";
+import AssetsLayer from "./layers/ProjectAssets/AssetsLayer";
 import EditProfile from "./components/Profile/EditProfile";
 function App() {
   return (

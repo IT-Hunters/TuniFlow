@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const assetPassifController = require('../controllers/assetPassifController');
+const assetPassifController = require('../controllers/LiabilityController');
 
 router.get('/', assetPassifController.getAllPassifs);
 router.get('/:id', assetPassifController.getPassifById);
