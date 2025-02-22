@@ -58,47 +58,41 @@ const AuthPage = () => {
     }
 
     try {
-      if (isLogin) {
-       
-        const response = await axios.post(
-          "http://localhost:3000/users/login",  
-          { email: formData.email, password: formData.password }
-        );
-        
-        
-        const { token, role } = response.data;
+  if (isLogin) {
+    const response = await axios.post("http://localhost:3000/users/login", { 
+      email: formData.email, 
+      password: formData.password 
+    });
 
-        
-        localStorage.setItem("token", token);
+    const { token, role } = response.data;
+    localStorage.setItem("token", token);
+    navigate(role === "admin" ? "/dashboard" : "/profile");
+    alert("Connexion réussie !");
+    setError("");
+  } else {
+    const response = await axios.post("http://localhost:3000/users/register", { 
+      fullname: formData.fullname,
+      lastname: formData.lastname,
+      email: formData.email,
+      password: formData.password,
+      confirm: formData.confirm,
+      role: "BUSINESS_OWNER",
+    });
 
-        
-        if (role === "admin") {
-          navigate("/dashboard");  
-        } else {
-          navigate("/profile");  
-        }
-
-        alert("Connexion réussie !");
-      } else {
-        const response = await axios.post(
-          "http://localhost:3000/users/register",  
-          {
-            fullname: formData.fullname,
-            lastname: formData.lastname,
-            email: formData.email,
-            password: formData.password,
-            confirm: formData.confirm, 
-            role: "BUSINESS_OWNER", 
-          }
-        );
-        alert("Inscription réussie !");
-        setIsLogin(true);  
-      }
-      setError(""); 
-    } catch (err) {
-      setError(err.response?.data?.message || "Une erreur s'est produite.");
-    }
-  };
+    alert("Inscription réussie !");
+    setIsLogin(true);
+    setError("");
+  }
+} catch (err) {
+  if (err.response?.data) {
+    // Si l'erreur est sous forme d'objet avec des clés
+    const errorMessage = Object.values(err.response.data).join("\n");
+    setError(errorMessage);
+  } else {
+    setError("Une erreur s'est produite.");
+  }
+}
+};
 
   return (
     <div className={`auth-container ${isLogin ? "auth-login-mode" : ""}`}>
@@ -137,7 +131,8 @@ const AuthPage = () => {
               </span>
             </div>
 
-            {error && <p className="auth-error-text">{error}</p>}
+            {/* Affichage de l'erreur sous le champ email */}
+      {error && <p className="auth-error-text">{error}</p>}
             
             <button className="auth-btn" type="submit">
               Log In
