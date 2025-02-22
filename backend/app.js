@@ -11,23 +11,27 @@ var usersRouter = require('./routes/users');
 var assetsactifsRoutes = require('./routes/assetActifRoutes');
 var assetspassifsRoutes = require('./routes/assetPassifRoutes');
 var projectRouter = require('./routes/project.router');
+var taxeRoutes = require('./routes/taxeRoutes');
+
+var walletRoutes = require('./routes/walletRoutes');
+
 var app = express();
-var mongo=require("mongoose");
-var connection=require("./config/database.json");
-mongo.connect(connection.url).then(()=>{
- console.log("connected to db")
-}).catch(()=>{
-  console.log("error connecting to db")
-});
+var mongoose = require("mongoose");
+var connection = require("./config/database.json");
+
+// Connexion à MongoDB
+mongoose.connect(connection.url)
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => console.error("❌ Error connecting to MongoDB:", err));
 
 // Active CORS pour le frontend React (http://localhost:5173)
 app.use(cors({
-  origin: 'http://localhost:5173', 
+  origin: 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// view engine setup
+// Configuration du moteur de vue
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
@@ -37,42 +41,34 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Définition des routes
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/project', projectRouter);
-
-
-
-// ------------------- ASSETS---------------------
-var assetsactifsRoutes = require('./routes/assetActifRoutes');
-var assetspassifsRoutes = require('./routes/assetPassifRoutes');
-app.use('/assetspassifs', assetspassifsRoutes);
 app.use('/assetsactifs', assetsactifsRoutes);
-// ------------------- END ASSETS---------------------
+app.use('/assetspassifs', assetspassifsRoutes);
 
 
-// ------------------- TAXE CALCULATIONS---------------------
-var taxeRoutes = require('./routes/taxeRoutes');
+
 app.use('/taxes', taxeRoutes);
-// ------------------- END TAXE CALCULATIONS---------------------
 
+app.use('/wallets', walletRoutes);
 
-
+// Test API
 app.get('/api/test', (req, res) => {
-  res.status(200).json({ message: 'Project tested ' });
+  res.status(200).json({ message: 'Project tested' });
 });
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
+
+// Gestion des erreurs 404
+app.use((req, res, next) => {
   next(createError(404));
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
+// Gestion globale des erreurs
+app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
   res.status(err.status || 500);
   res.render('error');
 });
