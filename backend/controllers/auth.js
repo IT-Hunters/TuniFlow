@@ -143,7 +143,7 @@ const Login = async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "1d" });
-    return res.status(200).json({ token: token });
+    return res.status(200).json({ token: token, role: existUser.role });
   } catch (error) {
     console.error('Erreur lors de la connexion:', error);
     return res.status(500).json({ message: 'Erreur interne du serveur' });
