@@ -8,13 +8,15 @@ const multerPicture= require("../config/multer-picture")
 const uploadPicture= multerPicture.single("picture");
 require('dotenv').config();
 const jwt=require("jsonwebtoken");
+const xlsx = require('xlsx');
 // Import des modèles discriminants
 const FinancialManager = require("../model/FinancialManager");
 const BusinessOwner = require("../model/BusinessOwner");
 const Accountant = require("../model/Accountant");
 const BusinessManager = require("../model/BusinessManager");
 const RH = require("../model/RH");
-const Project=require("../model/Project")
+const Project=require("../model/Project");
+const Employe = require('../model/Employe');
 
 
 async function getAll(req,res) {
@@ -703,7 +705,42 @@ const Registerwithproject = async (req, res, projectId) => {
   }
 };
   
- 
+ // Ajouter des employés à partir d'un fichier Excel
+const addEmployeesFromExcel = async (req, res) => {
+  try {
+      if (!req.file) {
+          return res.status(400).json({ message: 'Aucun fichier fourni' });
+      }
+
+      const workbook = xlsx.readFile(req.file.path);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const employeesData = xlsx.utils.sheet_to_json(worksheet);
+
+      const employees = employeesData.map(emp => ({
+          id: emp.id,
+          name: emp.name,
+          email: emp.email,
+          password: emp.password,
+          role: emp.role
+      }));
+
+      await Employe.insertMany(employees);
+      res.status(201).json({ message: 'Employés ajoutés avec succès' });
+  } catch (error) {
+      console.error("Erreur lors de l'ajout des employés :", error);
+      res.status(500).json({ message: 'Erreur interne du serveur', error });
+  }
+}; 
+async function getAllempl(req,res) {
+  try{
+      const data = await Employe.find()
+      res.send(data);
+  }
+  catch(err){
+      res.send(err);
+  }
+}
 
 
 module.exports = {
@@ -711,5 +748,5 @@ module.exports = {
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
-    resetPassword,forgotPassword,verifyCode,sendVerificationCode
+    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel
 };

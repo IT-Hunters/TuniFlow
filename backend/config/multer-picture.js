@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
 });
 
 const filter = (file, cb) => {
-    const fileType = /png|jpg|jpeg|pdf/; // Ajouter "pdf" aux types de fichiers acceptés
+    const fileType = /png|jpg|jpeg/; // Ajouter "pdf" aux types de fichiers acceptés
     const extname = fileType.test(path.extname(file.originalname).toLowerCase());
     if (extname) {
         cb(null, true);
