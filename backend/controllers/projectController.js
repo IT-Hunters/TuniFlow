@@ -77,49 +77,72 @@ async function addProject(businessManagerName, projectData) {
         throw error; // L'erreur sera gérée dans le contrôleur
     }
 }
-
-async function assignAccountantToProject(projectId, accountantId) {
+async function assignAccountantToProject(req, res) {
     try {
-        const project = await Project.findById(projectId);
-        if (!project) {
-            throw new Error("Projet non trouvé");
+        const accountantId = req.params.accountantId;
+        const userId = req.user.userId; // Récupération de l'ID de l'utilisateur connecté
+
+        // Vérification si l'utilisateur a des projets associés
+        const user = await userModel.findById(userId);
+        if (!user || !user.projects || user.projects.length === 0) {
+            return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
         }
 
+        // Récupération du premier projet associé à cet utilisateur
+        const projectId = user.projects[0];
+        const project = await Project.findById(projectId);
+
+        if (!project) {
+            return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
+        }
+
+        // Vérification de l'existence de l'accountant
         const accountant = await Accountant.findById(accountantId);
         if (!accountant) {
-            throw new Error("Accountant non trouvé");
+            return res.status(404).json({ message: "Comptable non trouvé" });
         }
 
         if (accountant.project) {
-            throw new Error("Cet Accountant est déjà assigné à un projet");
+            return res.status(400).json({ message: "Ce comptable est déjà assigné à un projet" });
         }
 
+        // Assignation de l'accountant au projet
         project.accountants.push(accountant._id);
         await project.save();
 
         accountant.project = project._id;
         await accountant.save();
 
-        return { message: "Accountant ajouté au projet avec succès", project };
+        return res.status(200).json({ message: "Comptable assigné au projet avec succès", project });
     } catch (error) {
-        throw error;
+        console.error("Erreur lors de l'assignation:", error);
+        return res.status(500).json({ message: "Erreur interne du serveur" });
     }
 }
 
-async function assignFinancialManagerToProject(projectId, financialManagerId) {
+async function assignFinancialManagerToProject(req, res) {
     try {
+        const financialManagerId = req.params.financialManagerId;
+        const userId = req.user.userId;
+
+        const user = await userModel.findById(userId);
+        if (!user || !user.projects || user.projects.length === 0) {
+            return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
+        }
+
+        const projectId = user.projects[0];
         const project = await Project.findById(projectId);
         if (!project) {
-            throw new Error("Projet non trouvé");
+            return res.status(404).json({ message: "Projet non trouvé" });
         }
 
         const financialManager = await FinancialManager.findById(financialManagerId);
         if (!financialManager) {
-            throw new Error("FinancialManager non trouvé");
+            return res.status(404).json({ message: "Financial Manager non trouvé" });
         }
 
         if (financialManager.project) {
-            throw new Error("Ce FinancialManager est déjà assigné à un projet");
+            return res.status(400).json({ message: "Ce Financial Manager est déjà assigné à un projet" });
         }
 
         project.financialManagers.push(financialManager._id);
@@ -128,27 +151,36 @@ async function assignFinancialManagerToProject(projectId, financialManagerId) {
         financialManager.project = project._id;
         await financialManager.save();
 
-        return { message: "FinancialManager ajouté au projet avec succès", project };
+        return res.status(200).json({ message: "Financial Manager assigné au projet avec succès", project });
     } catch (error) {
-        throw error;
+        console.error("Erreur lors de l'assignation:", error);
+        return res.status(500).json({ message: "Erreur interne du serveur" });
     }
 }
 
-// Fonction pour affecter un RH à un Project
-async function assignRHManagerToProject(projectId, rhId) {
+async function assignRHManagerToProject(req, res) {
     try {
+        const rhId = req.params.rhId;
+        const userId = req.user.userId;
+
+        const user = await userModel.findById(userId);
+        if (!user || !user.projects || user.projects.length === 0) {
+            return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
+        }
+
+        const projectId = user.projects[0];
         const project = await Project.findById(projectId);
         if (!project) {
-            throw new Error("Projet non trouvé");
+            return res.status(404).json({ message: "Projet non trouvé" });
         }
 
         const rh = await RH.findById(rhId);
         if (!rh) {
-            throw new Error("RH Manager non trouvé");
+            return res.status(404).json({ message: "RH Manager non trouvé" });
         }
 
         if (rh.project) {
-            throw new Error("Ce RH est déjà assigné à un projet");
+            return res.status(400).json({ message: "Ce RH est déjà assigné à un projet" });
         }
 
         project.rhManagers.push(rh._id);
@@ -157,12 +189,133 @@ async function assignRHManagerToProject(projectId, rhId) {
         rh.project = project._id;
         await rh.save();
 
-        return { message: "RH Manager ajouté au projet avec succès", project };
+        return res.status(200).json({ message: "RH Manager assigné au projet avec succès", project });
     } catch (error) {
-        throw error;
+        console.error("Erreur lors de l'assignation:", error);
+        return res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+}
+
+
+async function unassignAccountantFromProject(req, res) {
+    try {
+        const accountantId = req.params.accountantId;
+        const userId = req.user.userId;
+
+        const user = await userModel.findById(userId);
+        if (!user || !user.projects || user.projects.length === 0) {
+            return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
+        }
+
+        const projectId = user.projects[0];
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Projet non trouvé" });
+        }
+
+        const accountant = await Accountant.findById(accountantId);
+        if (!accountant) {
+            return res.status(404).json({ message: "Comptable non trouvé" });
+        }
+
+        if (!accountant.project || accountant.project.toString() !== project._id.toString()) {
+            return res.status(400).json({ message: "Ce comptable n'est pas assigné à ce projet" });
+        }
+
+        // Suppression de l'assignation
+        project.accountants = project.accountants.filter(id => id.toString() !== accountantId);
+        await project.save();
+
+        accountant.project = null;
+        await accountant.save();
+
+        return res.status(200).json({ message: "Comptable retiré du projet avec succès", project });
+    } catch (error) {
+        console.error("Erreur lors de la désaffectation:", error);
+        return res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+}
+
+async function unassignFinancialManagerFromProject(req, res) {
+    try {
+        const financialManagerId = req.params.financialManagerId;
+        const userId = req.user.userId;
+
+        const user = await userModel.findById(userId);
+        if (!user || !user.projects || user.projects.length === 0) {
+            return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
+        }
+
+        const projectId = user.projects[0];
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Projet non trouvé" });
+        }
+
+        const financialManager = await FinancialManager.findById(financialManagerId);
+        if (!financialManager) {
+            return res.status(404).json({ message: "Financial Manager non trouvé" });
+        }
+
+        if (!financialManager.project || financialManager.project.toString() !== project._id.toString()) {
+            return res.status(400).json({ message: "Ce Financial Manager n'est pas assigné à ce projet" });
+        }
+
+        // Suppression de l'assignation
+        project.financialManagers = project.financialManagers.filter(id => id.toString() !== financialManagerId);
+        await project.save();
+
+        financialManager.project = null;
+        await financialManager.save();
+
+        return res.status(200).json({ message: "Financial Manager retiré du projet avec succès", project });
+    } catch (error) {
+        console.error("Erreur lors de la désaffectation:", error);
+        return res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+}
+
+async function unassignRHManagerFromProject(req, res) {
+    try {
+        const rhId = req.params.rhId;
+        const userId = req.user.userId;
+
+        const user = await userModel.findById(userId);
+        if (!user || !user.projects || user.projects.length === 0) {
+            return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
+        }
+
+        const projectId = user.projects[0];
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Projet non trouvé" });
+        }
+
+        const rh = await RH.findById(rhId);
+        if (!rh) {
+            return res.status(404).json({ message: "RH Manager non trouvé" });
+        }
+
+        if (!rh.project || rh.project.toString() !== project._id.toString()) {
+            return res.status(400).json({ message: "Ce RH n'est pas assigné à ce projet" });
+        }
+
+        // Suppression de l'assignation
+        project.rhManagers = project.rhManagers.filter(id => id.toString() !== rhId);
+        await project.save();
+
+        rh.project = null;
+        await rh.save();
+
+        return res.status(200).json({ message: "RH Manager retiré du projet avec succès", project });
+    } catch (error) {
+        console.error("Erreur lors de la désaffectation:", error);
+        return res.status(500).json({ message: "Erreur interne du serveur" });
     }
 }
 
 
 
-module.exports = { addProject,assignAccountantToProject,assignRHManagerToProject,assignFinancialManagerToProject };
+module.exports = { addProject,assignAccountantToProject,assignRHManagerToProject,assignFinancialManagerToProject,
+    unassignRHManagerFromProject,unassignFinancialManagerFromProject,unassignAccountantFromProject
+ };
