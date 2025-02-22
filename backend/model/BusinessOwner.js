@@ -11,6 +11,7 @@ const BusinessOwnerSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   picture: { type: String },
   autorization: { type: Boolean, default: false },
+  evidence: { type: String },
   projects: [{ type: Schema.Types.ObjectId, ref: "Project" }] // Utiliser Schema
 });
 

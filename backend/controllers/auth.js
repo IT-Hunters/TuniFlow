@@ -53,7 +53,8 @@ const Register = async (req, res) => {
                     password: req.body.password,
                     fullname: req.body.fullname,
                     lastname: req.body.lastname,
-                    role: req.body.role
+                    role: req.body.role,
+                    evidence: req.file ? req.file.path : null
                   
                 });
                 break;

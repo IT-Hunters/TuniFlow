@@ -4,12 +4,13 @@ const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acc
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,
   getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode
   } = require('../controllers/auth');
+  const multerImage = require("../config/multer-picture");
 const { authenticateJWT } = require('../config/autorisation');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
-router.post("/register",Register)
+router.post("/register", multerImage.single("evidence"), Register);
 router.post("/login",Login)
 router.get("/getall",authenticateJWT,getAll)
 router.get("/findMyProfile",authenticateJWT,findMyProfile)
