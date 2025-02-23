@@ -20,7 +20,7 @@ const ResetPassword = () => {
     if (response.ok) {
       setMessage("Mot de passe réinitialisé avec succès !");
       setTimeout(() => {
-        navigate("/");  // Redirection après 2s
+        navigate("/");  
       }, 2000);
     } else {
       setMessage(data.message || "Erreur lors de la réinitialisation.");

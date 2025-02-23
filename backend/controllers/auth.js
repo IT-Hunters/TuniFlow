@@ -353,24 +353,24 @@ const AddPicture = async (req, res) => {
 
 
     const acceptAutorisation = async (req, res) => {
-      const { id } = req.params; // ID du BusinessManager
-      const { accept } = req.body; // true ou false
+      const { id } = req.params; // ID du BusinessOwner
     
       try {
-        // Trouver le BusinessManager par son ID
+        // Trouver le BusinessOwner par son ID
         const owner = await BusinessOwner.findById(id);
         if (!owner) {
-          return res.status(404).json({ message: 'BusinessOuwner non trouvé' });
+          return res.status(404).json({ message: "BusinessOwner non trouvé" });
         }
     
-        // Appeler la méthode acceptAutorisation
-        await owner.acceptAutorisation(accept);
+        // Mettre à jour directement l'autorisation à true
+        owner.autorization = true;
+        await owner.save();
     
-        // Répondre avec le BusinessManager mis à jour
-        res.status(200).json({ message: 'Autorisation mise à jour', owner });
+        // Répondre avec l'utilisateur mis à jour
+        res.status(200).json({ message: "Autorisation accordée", owner });
       } catch (error) {
-        console.error('Erreur lors de la mise à jour de l\'autorisation :', error);
-        res.status(500).json({ message: 'Erreur serveur' });
+        console.error("Erreur lors de la mise à jour de l'autorisation :", error);
+        res.status(500).json({ message: "Erreur serveur" });
       }
     };
  
@@ -406,6 +406,20 @@ const AddPicture = async (req, res) => {
       res.status(200).json(businessManagers);
     } catch (error) {
       console.error("Erreur lors de la récupération des Business Managers : ", error);
+      res.status(500).json({ message: 'Erreur serveur' });
+    }
+  };
+  const getAllBusinessOwners = async (req, res) => {
+    try {
+      const businessOwners = await userModel.find({ userType: 'BusinessOwner' });
+  
+      if (!businessOwners || businessOwners.length === 0) {
+        return res.status(404).json({ message: 'Aucun Business owner trouvé' });
+      }
+  
+      res.status(200).json(businessOwners);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des Business Owners : ", error);
       res.status(500).json({ message: 'Erreur serveur' });
     }
   };
@@ -754,5 +768,5 @@ module.exports = {
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
-    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel
+    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners
 };

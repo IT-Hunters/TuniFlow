@@ -2,11 +2,11 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./forgetpassword.css"; // Utilisation du même CSS mais avec des classes modifiées
+import "./forgetpassword.css"; 
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // S'il y a un champ de mot de passe
+  const [showPassword, setShowPassword] = useState(false); 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -21,11 +21,11 @@ const ForgotPassword = () => {
       const response = await axios.post("http://localhost:3000/users/forgot-password", {
         email: email,
       });
-      setMessage(response.data.message);  // Message de succès
-      setError("");  // Réinitialisation des erreurs
+      setMessage(response.data.message);  
+      setError(""); 
     } catch (err) {
       setError(err.response?.data.message || "Erreur lors de l'envoi du lien");
-      setMessage("");  // Réinitialisation du message
+      setMessage("");  
     }
   };
 
@@ -60,7 +60,7 @@ const ForgotPassword = () => {
 
       <div className="forgot-password-blue-box">
         <img
-          src="/forgot-password.png" // Image spécifique à la page de réinitialisation
+          src="/forgot-password.png" 
           alt="Forgot Password Illustration"
           className="forgot-password-blue-image"
         />

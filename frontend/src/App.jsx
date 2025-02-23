@@ -7,6 +7,7 @@ import EditProfile from "./components/Profile/EditProfile";
 import HomePage from "./components/Homepage/HomePage";
 import ResetPassword from "./components/forgetpassword/resetpassword";
 import ForgotPassword from "./components/forgetpassword/forgetpassword";
+import AdminUsers from "./components/Admin/AdminUsers";
 function App() {
   return (
     <Router>
@@ -19,6 +20,7 @@ function App() {
         <Route path="/Assets" element={<AssetsLayer  />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/Adminusers" element={<AdminUsers />} />
       </Routes>
     </Router>
   );
