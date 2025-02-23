@@ -92,6 +92,34 @@
   transform: translateX(0);
   opacity: 1;
 }
+.auth-file-input {
+  display: none; /* Cache l'input natif */
+}
+
+.auth-file-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #007bff; /* Bleu dynamique */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.auth-file-label:hover {
+  background-color: #0056b3; /* Bleu plus foncé au survol */
+}
+
+.auth-file-name {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+}
 
 /* Form styling */
 h2 {

@@ -8,6 +8,7 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [file, setFile] = useState(null);
   const [formData, setFormData] = useState({
     fullname: "",
     lastname: "",
@@ -29,17 +30,17 @@ const AuthPage = () => {
       confirm: "",
     });
     setError(""); 
+    setFile(null);
   };
 
   useEffect(() => {
-    document.body.classList.add('auth-page');
+    document.body.classList.add("auth-page");
 
     return () => {
-      document.body.classList.remove('auth-page');
+      document.body.classList.remove("auth-page");
     };
   }, []);
 
-  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -48,7 +49,10 @@ const AuthPage = () => {
     }));
   };
 
-  
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -58,47 +62,53 @@ const AuthPage = () => {
     }
 
     try {
-  if (isLogin) {
-    const response = await axios.post("http://localhost:3000/users/login", { 
-      email: formData.email, 
-      password: formData.password 
-    });
+      if (isLogin) {
+        const response = await axios.post("http://localhost:3000/users/login", { 
+          email: formData.email, 
+          password: formData.password 
+        });
 
-    const { token, role } = response.data;
-    localStorage.setItem("token", token);
-    navigate(role === "admin" ? "/dashboard" : "/profile");
-    alert("Connexion réussie !");
-    setError("");
-  } else {
-    const response = await axios.post("http://localhost:3000/users/register", { 
-      fullname: formData.fullname,
-      lastname: formData.lastname,
-      email: formData.email,
-      password: formData.password,
-      confirm: formData.confirm,
-      role: "BUSINESS_OWNER",
-    });
+        const { token, role } = response.data;
+        localStorage.setItem("token", token);
+        navigate(role === "admin" ? "/dashboard" : "/profile");
+        alert("Connexion réussie !");
+        setError("");
+      } else {
+        // Utilisation de FormData pour l'inscription
+        const formDataToSend = new FormData();
+        formDataToSend.append("fullname", formData.fullname);
+        formDataToSend.append("lastname", formData.lastname);
+        formDataToSend.append("email", formData.email);
+        formDataToSend.append("password", formData.password);
+        formDataToSend.append("confirm", formData.confirm);
+        formDataToSend.append("role", "BUSINESS_OWNER");
 
-    alert("Inscription réussie !");
-    setIsLogin(true);
-    setError("");
-  }
-} catch (err) {
-  if (err.response?.data) {
-    // Si l'erreur est sous forme d'objet avec des clés
-    const errorMessage = Object.values(err.response.data).join("\n");
-    setError(errorMessage);
-  } else {
-    setError("Une erreur s'est produite.");
-  }
-}
-};
+        if (file) {
+          formDataToSend.append("evidence", file);
+        }
+
+        const response = await axios.post("http://localhost:3000/users/register", formDataToSend, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        alert("Inscription réussie !");
+        setIsLogin(true);
+        setError("");
+      }
+    } catch (err) {
+      if (err.response?.data) {
+        setError(Object.values(err.response.data)[0]); // Afficher la première erreur
+      } else {
+        setError("Une erreur s'est produite.");
+      }
+    }
+  };
 
   return (
     <div className={`auth-container ${isLogin ? "auth-login-mode" : ""}`}>
-      {/* LEFT BOX: Holds both Sign Up and Log In forms */}
       <div className="auth-form-box">
-        {/* SWITCH BETWEEN LOGIN AND SIGN UP FORM */}
         {isLogin ? (
           <form onSubmit={handleSubmit} className="auth-sign-in-form">
             <h2>Log In</h2>
@@ -113,7 +123,6 @@ const AuthPage = () => {
               />
             </div>
 
-            {/* PASSWORD INPUT WITH EYE ICON */}
             <div className="auth-input-field">
               <input
                 type={showPassword ? "text" : "password"}
@@ -123,16 +132,12 @@ const AuthPage = () => {
                 onChange={handleChange}
                 required
               />
-              <span
-                className="auth-eye-icon"
-                onClick={() => setShowPassword(!showPassword)}
-              >
+              <span className="auth-eye-icon" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
 
-            {/* Affichage de l'erreur sous le champ email */}
-      {error && <p className="auth-error-text">{error}</p>}
+            {error && <p className="auth-error-text">{error}</p>}
             
             <button className="auth-btn" type="submit">
               Log In
@@ -155,6 +160,7 @@ const AuthPage = () => {
                 name="fullname"
                 value={formData.fullname}
                 onChange={handleChange}
+                required
               />
             </div>
             <div className="auth-input-field">
@@ -164,6 +170,7 @@ const AuthPage = () => {
                 name="lastname"
                 value={formData.lastname}
                 onChange={handleChange}
+                required
               />
             </div>
             <div className="auth-input-field">
@@ -173,10 +180,10 @@ const AuthPage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                required
               />
             </div>
 
-            {/* PASSWORD INPUT WITH EYE ICON */}
             <div className="auth-input-field">
               <input
                 type={showPassword ? "text" : "password"}
@@ -184,16 +191,13 @@ const AuthPage = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
+                required
               />
-              <span
-                className="auth-eye-icon"
-                onClick={() => setShowPassword(!showPassword)}
-              >
+              <span className="auth-eye-icon" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
 
-            {/* CONFIRM PASSWORD INPUT */}
             <div className="auth-input-field">
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -201,14 +205,30 @@ const AuthPage = () => {
                 name="confirm"
                 value={formData.confirm}
                 onChange={handleChange}
+                required
               />
-              <span
-                className="auth-eye-icon"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
+              <span className="auth-eye-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
+
+         {/* Champ d'upload de fichier avec un bouton stylisé */}
+<div className="auth-input-field">
+{/* Champ d'upload de fichier avec un bouton stylisé */}
+<div className="auth-input-field">
+  <input 
+    type="file" 
+    id="file-upload" 
+    className="auth-file-input" 
+    onChange={handleFileChange} 
+  />
+  <label htmlFor="file-upload" className="auth-file-label">
+     Prove Your Company 📂 
+  </label>
+  {file && <p className="auth-file-name">{file.name}</p>}
+</div>
+  
+</div>
 
             {error && <p className="auth-error-text">{error}</p>}
 
@@ -226,7 +246,6 @@ const AuthPage = () => {
         )}
       </div>
 
-      {/* RIGHT BOX: Blue container with an image */}
       <div className="auth-blue-box">
         <img
           src={isLogin ? "/calculator.png" : "/signup.png"}
