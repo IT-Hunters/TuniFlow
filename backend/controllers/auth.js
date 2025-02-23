@@ -17,6 +17,7 @@ const BusinessManager = require("../model/BusinessManager");
 const RH = require("../model/RH");
 const Project=require("../model/Project");
 const Employe = require('../model/Employe');
+const nodemailer = require('nodemailer');
 
 
 async function getAll(req,res) {
@@ -529,9 +530,22 @@ async function forgotPassword(req, res) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "15m" });
+    // Générer un token JWT avec une durée de 15 minutes
+    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
+
+
+    // Configurer Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Envoyer l'email
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
@@ -541,49 +555,41 @@ async function forgotPassword(req, res) {
 
     res.json({ message: "Lien de réinitialisation envoyé par e-mail" });
   } catch (err) {
-    res.status(500).json({ message: "Erreur interne du serveur", error: err });
+    console.error("Erreur dans forgotPassword:", err);
+    res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
   }
 }
 
-
 async function resetPassword(req, res) {
-  const { email } = req.body;  // Récupère l'e-mail de la requête
-
   try {
-    // Vérifie si l'utilisateur existe
-    const user = await userModel.findOne({ email });
+    const { token, newPassword } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Token manquant" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.SECRET_KEY);
+    } catch (err) {
+      return res.status(400).json({ message: "Token invalide ou expiré" });
+    }
+
+    // Rechercher l'utilisateur par ID extrait du token
+    const user = await userModel.findById(decoded.userId);
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
-    // Crée un token JWT avec l'ID de l'utilisateur
-    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: '1h' });
+    // Hacher le nouveau mot de passe
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
 
-    // Crée le lien de réinitialisation avec le token
-    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
-
-    // Envoie un e-mail avec le lien de réinitialisation
-    const transporter = nodemailer.createTransport({
-      service: 'gmail', // ou tout autre service d'envoi d'e-mails
-      auth: {
-        user: process.env.EMAIL_USER, // Adresse e-mail de l'expéditeur
-        pass: process.env.EMAIL_PASS, // Mot de passe de l'expéditeur
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL,
-      to: email,
-      subject: 'Réinitialisation de votre mot de passe',
-      text: `Cliquez sur ce lien pour réinitialiser votre mot de passe : ${resetLink}`,
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    res.json({ message: 'Un lien de réinitialisation a été envoyé à votre e-mail' });
+    res.json({ message: "Mot de passe réinitialisé avec succès" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Erreur serveur lors de l'envoi de l'e-mail" });
+    console.error("Erreur dans resetPassword:", err);
+    res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
   }
 }
 
