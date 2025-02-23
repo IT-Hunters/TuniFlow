@@ -726,32 +726,81 @@ const Registerwithproject = async (req, res, projectId) => {
 };
   
  // Ajouter des employés à partir d'un fichier Excel
-const addEmployeesFromExcel = async (req, res) => {
+ const addEmployeesFromExcel = async (req, res) => {
   try {
-      if (!req.file) {
-          return res.status(400).json({ message: 'Aucun fichier fourni' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'Aucun fichier fourni' });
+    }
+
+    // Récupérer le token JWT de l'en-tête Authorization
+    const token = req.headers.authorization.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Token manquant' });
+    }
+
+    // Décoder le token pour récupérer l'ID de l'utilisateur
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decodedToken.userId; // Récupérer l'ID de l'utilisateur
+
+    if (!userId) {
+      return res.status(400).json({ message: "ID de l'utilisateur manquant dans le token" });
+    }
+
+    // Récupérer l'utilisateur dans la base de données
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    // Vérifier si l'utilisateur est de type RH
+    if (user.userType !== "RH") {
+      return res.status(400).json({ message: "L'utilisateur connecté n'est pas de type RH" });
+    }
+
+    // Récupérer l'ID du projet (uniquement pour les RH)
+    const projectId = user.project;
+    if (!projectId) {
+      return res.status(400).json({ message: "Aucun projet associé à l'utilisateur connecté" });
+    }
+
+    // Lire le fichier Excel
+    const workbook = xlsx.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const employeesData = xlsx.utils.sheet_to_json(worksheet);
+
+    // Valider les données des employés
+    const employees = [];
+    for (const emp of employeesData) {
+      if (!emp.password) {
+        console.warn(`Employé ${emp.name || 'sans nom'} ignoré : mot de passe manquant`);
+        continue; // Ignorer les employés sans mot de passe
       }
 
-      const workbook = xlsx.readFile(req.file.path);
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const employeesData = xlsx.utils.sheet_to_json(worksheet);
+      // Hasher le mot de passe
+      const hashedPassword = await bcryptjs.hash(emp.password, 10);
+      employees.push({
+        name: emp.name,
+        email: emp.email,
+        password: hashedPassword,
+        role: emp.role,
+        project: projectId // Ajouter l'ID du projet
+      });
+    }
 
-      const employees = employeesData.map(emp => ({
-          id: emp.id,
-          name: emp.name,
-          email: emp.email,
-          password: emp.password,
-          role: emp.role
-      }));
-
+    // Insérer les employés dans la base de données
+    if (employees.length > 0) {
       await Employe.insertMany(employees);
-      res.status(201).json({ message: 'Employés ajoutés avec succès' });
+      return res.status(201).json({ message: 'Employés ajoutés avec succès' });
+    } else {
+      return res.status(400).json({ message: 'Aucun employé valide à ajouter' });
+    }
   } catch (error) {
-      console.error("Erreur lors de l'ajout des employés :", error);
-      res.status(500).json({ message: 'Erreur interne du serveur', error });
+    console.error("Erreur lors de l'ajout des employés :", error);
+    res.status(500).json({ message: 'Erreur interne du serveur', error });
   }
-}; 
+};
+  
 async function getAllempl(req,res) {
   try{
       const data = await Employe.find()
@@ -762,11 +811,81 @@ async function getAllempl(req,res) {
   }
 }
 
+const addEmployee = async (req, res) => {
+  try {
+    // Récupérer les données de l'employé depuis le corps de la requête
+    const { name, email, password, role } = req.body;
+
+    // Valider les données requises
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ message: 'Tous les champs sont obligatoires' });
+    }
+
+    // Récupérer le token JWT de l'en-tête Authorization
+    const token = req.headers.authorization.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Token manquant' });
+    }
+
+    // Décoder le token pour récupérer l'ID de l'utilisateur
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decodedToken.userId; // Récupérer l'ID de l'utilisateur
+
+    if (!userId) {
+      return res.status(400).json({ message: "ID de l'utilisateur manquant dans le token" });
+    }
+
+    // Récupérer l'utilisateur dans la base de données
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    // Vérifier si l'utilisateur est de type RH
+    if (user.userType !== "RH") {
+      return res.status(400).json({ message: "L'utilisateur connecté n'est pas de type RH" });
+    }
+
+    // Récupérer l'ID du projet (uniquement pour les RH)
+    const projectId = user.project;
+    if (!projectId) {
+      return res.status(400).json({ message: "Aucun projet associé à l'utilisateur connecté" });
+    }
+
+    // Vérifier si l'employé existe déjà (par email)
+    const existingEmployee = await Employe.findOne({ email });
+    if (existingEmployee) {
+      return res.status(400).json({ message: 'Un employé avec cet email existe déjà' });
+    }
+
+    // Hasher le mot de passe
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
+    // Créer un nouvel employé
+    const newEmployee = new Employe({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      project: projectId // Associer l'employé au projet de l'utilisateur connecté
+    });
+
+    // Sauvegarder l'employé dans la base de données
+    await newEmployee.save();
+
+    // Retourner une réponse réussie
+    res.status(201).json({ message: 'Employé ajouté avec succès', employee: newEmployee });
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de l'employé :", error);
+    res.status(500).json({ message: 'Erreur interne du serveur', error });
+  }
+};
+
 
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
-    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners
+    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee
 };
