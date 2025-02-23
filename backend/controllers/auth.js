@@ -813,74 +813,66 @@ async function getAllempl(req,res) {
 
 const addEmployee = async (req, res) => {
   try {
-    // Récupérer les données de l'employé depuis le corps de la requête
     const { name, email, password, role } = req.body;
 
-    // Valider les données requises
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: 'Tous les champs sont obligatoires' });
     }
 
-    // Récupérer le token JWT de l'en-tête Authorization
     const token = req.headers.authorization.split(" ")[1];
     if (!token) {
       return res.status(401).json({ message: 'Token manquant' });
     }
 
-    // Décoder le token pour récupérer l'ID de l'utilisateur
     const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
-    const userId = decodedToken.userId; // Récupérer l'ID de l'utilisateur
+    const userId = decodedToken.userId;
 
     if (!userId) {
       return res.status(400).json({ message: "ID de l'utilisateur manquant dans le token" });
     }
 
-    // Récupérer l'utilisateur dans la base de données
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
 
-    // Vérifier si l'utilisateur est de type RH
     if (user.userType !== "RH") {
       return res.status(400).json({ message: "L'utilisateur connecté n'est pas de type RH" });
     }
 
-    // Récupérer l'ID du projet (uniquement pour les RH)
     const projectId = user.project;
     if (!projectId) {
       return res.status(400).json({ message: "Aucun projet associé à l'utilisateur connecté" });
     }
 
-    // Vérifier si l'employé existe déjà (par email)
     const existingEmployee = await Employe.findOne({ email });
     if (existingEmployee) {
       return res.status(400).json({ message: 'Un employé avec cet email existe déjà' });
     }
 
-    // Hasher le mot de passe
     const hashedPassword = await bcryptjs.hash(password, 10);
 
-    // Créer un nouvel employé
     const newEmployee = new Employe({
       name,
       email,
       password: hashedPassword,
       role,
-      project: projectId // Associer l'employé au projet de l'utilisateur connecté
+      project: projectId
     });
 
-    // Sauvegarder l'employé dans la base de données
     await newEmployee.save();
 
-    // Retourner une réponse réussie
+    // Mettre à jour le projet pour inclure l'ID du nouvel employé
+    await Project.findByIdAndUpdate(projectId, {
+      $push: { employees: newEmployee._id }
+    });
+
     res.status(201).json({ message: 'Employé ajouté avec succès', employee: newEmployee });
   } catch (error) {
     console.error("Erreur lors de l'ajout de l'employé :", error);
     res.status(500).json({ message: 'Erreur interne du serveur', error });
   }
 };
-
 
 module.exports = {
     Register,Login,getAll,
