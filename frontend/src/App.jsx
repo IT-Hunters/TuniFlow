@@ -3,6 +3,7 @@ import Dashbord from "./components/dashboard/Dashbord";
 import AuthPage from "./components/Auth/Authpage";
 import Profile from "./components/Profile/Profile";
 import AssetsLayer from "./layers/ProjectAssets/AssetsLayer";
+import TopValuableAssets from "./components/Charts/TopValuableAsset";
 import EditProfile from "./components/Profile/EditProfile";
 import HomePage from "./components/Homepage/HomePage";
 import ResetPassword from "./components/forgetpassword/resetpassword";
