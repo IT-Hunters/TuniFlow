@@ -1,6 +1,6 @@
 .main-panel {
   transition: width 0.25s ease, margin 0.25s ease;
-  width: calc(100% - 400px);
+  width: 100%;
   min-height: calc(100vh - 97px);
   display: -webkit-flex;
   display: flex;
@@ -30,11 +30,52 @@
 
 .row > * {
   flex-shrink: 0;
-  width: 100%;
+  width: 30%;
   max-width: 100%;
   padding-right: calc(var(--bs-gutter-x) / 2);
   padding-left: calc(var(--bs-gutter-x) / 2);
   margin-top: var(--bs-gutter-y);
+}
+
+.stretch-card {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+  -webkit-justify-content: stretch;
+  justify-content: stretch;
+}
+
+.stretch-card > .assetcard {
+  width: 100%;
+  min-width: 100%;
+}
+.grid-margin {
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 576px) {
+  .grid-margin-sm-0 {
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-margin-md-0 {
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 992px) {
+  .grid-margin-lg-0 {
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 1200px) {
+  .grid-margin-xl-0 {
+    margin-bottom: 0;
+  }
 }
 
 .assetcard {
@@ -48,6 +89,7 @@
   -ms-transition: background 0.25s ease;
   border: none;
   border: none;
+  width: calc(100% - 500px);
 }
 
 .assetcard.card-rounded {
@@ -2477,4 +2519,23 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 .swal2-modal .swal2-buttonswrapper .btn-group-vertical > .btn-group:not(:first-child) > .swal2-styled {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+.stretch-card {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+  -webkit-justify-content: stretch;
+  justify-content: stretch;
+}
+
+.stretch-card > .assetcard {
+  width: 100%;
+  min-width: 100%;
+}
+.col-6 {
+  width: 50%;
+  padding: 15px;
+  box-sizing: border-box;
 }

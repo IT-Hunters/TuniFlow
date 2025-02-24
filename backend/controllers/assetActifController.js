@@ -1,5 +1,10 @@
 const AssetActif = require('../model/AssetActif/AssetActif');
-
+const FinancialAsset = require("../model/AssetActif/FinancialAsset");
+const IntangibleAsset = require("../model/AssetActif/IntangibleAsset");
+const Receivable = require("../model/AssetActif/Receivable");
+const Stock = require("../model/AssetActif/Stock");
+const TangibleAsset = require("../model/AssetActif/TangibleAsset");
+const Treasury = require("../model/AssetActif/Treasury");
 exports.getAllAssets = async (req, res) => {
     try {
         const assets = await AssetActif.find();
@@ -21,9 +26,15 @@ exports.getAssetById = async (req, res) => {
 
 exports.createAsset = async (req, res) => {
     try {
-        const newAsset = new AssetActif(req.body);
-        await newAsset.save();
-        res.status(201).json(newAsset);
+        if (Array.isArray(req.body)) {
+            const newAssets = await Promise.all(req.body.map(async (assetData) => {
+                return createSpecificAsset(assetData);
+            }));
+            res.status(201).json(newAssets);
+        } else {
+            const newAsset = await createSpecificAsset(req.body);
+            res.status(201).json(newAsset);
+        }
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -47,4 +58,33 @@ exports.deleteAsset = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+};
+const createSpecificAsset = async (assetData) => {
+    let assetModel;
+    
+    switch (assetData.type_actif) {
+        case "Financial Asset":
+            assetModel = FinancialAsset;
+            break;
+        case "Intangible Asset":
+            assetModel = IntangibleAsset;
+            break;
+        case "Receivables":
+            assetModel = Receivable;
+            break;
+        case "Stock":
+            assetModel = Stock;
+            break;
+        case "Tangible Asset":
+            assetModel = TangibleAsset;
+            break;
+        case "Treasury":
+            assetModel = Treasury;
+            break;
+        default:
+            assetModel = AssetActif;
+            break;
+    }
+
+    return new AssetActif(assetData).save();
 };

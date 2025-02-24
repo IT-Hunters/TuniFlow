@@ -5,6 +5,7 @@ import Profile from "./components/Profile/Profile";
 import AssetsLayer from "./layers/ProjectAssets/AssetsLayer";
 import EditProfile from "./components/Profile/EditProfile";
 import HomePage from "./components/Homepage/HomePage";
+import TopValuableAssets from "./layers/ProjectAssets/AssetsDashboard";
 function App() {
   return (
     <Router>
@@ -15,6 +16,7 @@ function App() {
         <Route path="/profile" element={<Profile  />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/Assets" element={<AssetsLayer  />} />
+        <Route path="/Assets/TopValuableAssets" element={<TopValuableAssets  />} />
       </Routes>
     </Router>
   );

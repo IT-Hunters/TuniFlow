@@ -21,3 +21,24 @@ export const submitAsset = async (formData) => {
     }
 };
 
+export const getAllAssets = async () => {
+    try {
+        const response = await fetch("http://localhost:3000/assetsactifs", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch assets");
+        }
+
+        const data = await response.json();
+        console.log("Assets fetched successfully:", data);
+        return data;
+    } catch (error) {
+        console.error("Error fetching assets:", error);
+        return [];
+    }
+};

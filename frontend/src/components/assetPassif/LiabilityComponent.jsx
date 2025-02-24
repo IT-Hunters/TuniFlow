@@ -1,4 +1,3 @@
-  import '../assetPassif/LiabilityComponent.css';
 import AddLiabilityForm from'../Formulaire/AddLiabilityForm';
 const AddLiability = () => {
       return (

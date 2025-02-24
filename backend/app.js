@@ -10,6 +10,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var assetsactifsRoutes = require('./routes/assetActifRoutes');
 var assetspassifsRoutes = require('./routes/assetPassifRoutes');
+var assetCalculationRoutes = require('./routes/AssetRoutes');
 var projectRouter = require('./routes/project.router');
 var taxeRoutes = require('./routes/taxeRoutes');
 
@@ -47,7 +48,7 @@ app.use('/users', usersRouter);
 app.use('/project', projectRouter);
 app.use('/assetsactifs', assetsactifsRoutes);
 app.use('/assetspassifs', assetspassifsRoutes);
-
+app.use('/assetCalculation', assetCalculationRoutes);
 
 
 app.use('/taxes', taxeRoutes);
