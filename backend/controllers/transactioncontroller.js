@@ -22,7 +22,6 @@ exports.deposit = async (req, res) => {
       return res.status(400).json({ message: "Fonds insuffisants" });
     }
     
-    // Créer la transaction de retrait
     const transaction = new Transaction({
       wallet_id: walletId,
       amount: amount,
