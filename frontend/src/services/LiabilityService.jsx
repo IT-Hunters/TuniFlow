@@ -14,7 +14,7 @@ export const submitLiability = async (formData) => {
         }
 
         const data = await response.json();
-        console.log("Asset submitted successfully:", data);
+        console.log("Asset submitted successfully:");
         return data;
     } catch (error) {
         console.error("Error submitting asset:", error);
@@ -36,7 +36,7 @@ export const getAllLiabilities = async () => {
         }
 
         const data = await response.json();
-        console.log("Assets fetched successfully:", data);
+        console.log("Assets fetched successfully:");
         return data;
     } catch (error) {
         console.error("Error fetching assets:", error);

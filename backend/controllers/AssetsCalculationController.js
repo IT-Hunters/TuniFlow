@@ -1,56 +1,75 @@
 const mongoose = require('mongoose');
 const AssetActif = require('../model/AssetActif/AssetActif');
-const FinancialAsset = require("../model/AssetActif/FinancialAsset");
-const IntangibleAsset = require("../model/AssetActif/IntangibleAsset");
-const Receivable = require("../model/AssetActif/Receivable");
-const Stock = require("../model/AssetActif/Stock");
-const TangibleAsset = require("../model/AssetActif/TangibleAsset");
-const Treasury = require("../model/AssetActif/Treasury");
-const CurrentLiability = require("../model/AssetPassif/CurrentLiabilities");  
+const Liability = require("../model/AssetPassif/Liability");
 
-async function calculateWorkingCapital(projectId) {
+async function calculateWorkingCapital(req, res) {
     try {
-        const objectId = new mongoose.ObjectId(projectId);
+        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        console.log('ObjectId:', objectId);
 
-        const receivables = await Receivable.aggregate([
-            { $match: { projet_id: objectId } },
-            { $group: { _id: null, total: { $sum: '$total_value' } } }
+        const today = new Date();
+        const fiveDaysAgo = new Date();
+        fiveDaysAgo.setDate(today.getDate() - 5);
+
+        const assetActifs = await AssetActif.aggregate([
+            { 
+                $match: { 
+                    project_id: objectId,
+                    type_actif: { $in: ['Receivables', 'Treasury', 'Stock'] },
+                    date_acquisition: { $gte: fiveDaysAgo, $lte: today } 
+                }
+            },
+            {
+                $group: {
+                    _id: { date: "$date_acquisition" }, 
+                    totalAssets: { $sum: '$total_value' }
+                }
+            },
+            { $sort: { "_id.date": 1 } }
         ]);
 
-        const treasuries = await Treasury.aggregate([
-            { $match: { projet_id: objectId } },
-            { $group: { _id: null, total: { $sum: '$total_value' } } }
+        const currentLiabilities = await Liability.aggregate([
+            { 
+                $match: { 
+                    project_id: objectId,
+                    type_liability: 'CurrentLiabilities',
+                    date_commitment: { $gte: fiveDaysAgo, $lte: today } 
+                }
+            },
+            {
+                $group: {
+                    _id: { date: "$date_commitment" },
+                    totalLiabilities: { $sum: '$total_value' }
+                }
+            },
+            { $sort: { "_id.date": 1 } }
         ]);
 
-        const stocks = await Stock.aggregate([
-            { $match: { projet_id: objectId } },
-            { $group: { _id: null, total: { $sum: { $multiply: ['$quantite', '$unite_value'] } } } }
-        ]);
+        console.log(currentLiabilities);
 
-        const totalCurrentAssets = 
-            (receivables[0]?.total || 0) + 
-            (treasuries[0]?.total || 0) + 
-            (stocks[0]?.total || 0);
+        const workingCapitalByDate = assetActifs.map(asset => {
+            const liability = currentLiabilities.find(liab => 
+                new Date(liab._id.date).toISOString().split("T")[0] === new Date(asset._id.date).toISOString().split("T")[0]
+            );
 
-        const currentLiabilities = await CurrentLiability.aggregate([
-            { $match: { project_id: objectId } },
-            { $group: { _id: null, total: { $sum: '$total_value' } } }
-        ]);
+            const totalLiabilities = liability ? liability.totalLiabilities : 0;
 
-        const totalCurrentLiabilities = currentLiabilities[0]?.total || 0;
+            return {
+                date: asset._id.date.toISOString().split("T")[0], 
+                totalCurrentAssets: asset.totalAssets,
+                totalCurrentLiabilities: totalLiabilities,
+                workingCapital: asset.totalAssets - totalLiabilities
+            };
+        });
 
-        const workingCapital = totalCurrentAssets - totalCurrentLiabilities;
+        res.json({
+            projectId: req.params.id,
+            workingCapitalByDate
+        });
 
-        return {
-            projectId,
-            totalCurrentAssets,
-            totalCurrentLiabilities,
-            workingCapital,
-            status: workingCapital > 0 ? 'Sufficient' : 'Insufficient'
-        };
     } catch (error) {
         console.error('Error calculating working capital:', error.message);
-        throw new Error(`Failed to calculate working capital for project ${projectId}`);
+        res.status(500).json({ error: `Failed to calculate working capital for project ${req.params.id}` });
     }
 }
 

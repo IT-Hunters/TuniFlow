@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const transactioncontroller = require("../controllers/transactioncontroller"); // Vérifie bien ce chemin
 
-// 📌 Obtenir toutes les transactions
-router.get("/getTransactions", transactioncontroller.getTransactions);
 
 // 📌 Dépôt d'argent
 router.post("/deposit/:walletId", transactioncontroller.deposit);

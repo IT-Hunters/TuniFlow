@@ -313,9 +313,17 @@ async function unassignRHManagerFromProject(req, res) {
         return res.status(500).json({ message: "Erreur interne du serveur" });
     }
 }
-
+async function getProjectById(req, res) {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) return res.status(404).json({ message: 'project not found' });
+        res.status(200).json(project);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 
 module.exports = { addProject,assignAccountantToProject,assignRHManagerToProject,assignFinancialManagerToProject,
-    unassignRHManagerFromProject,unassignFinancialManagerFromProject,unassignAccountantFromProject
+    unassignRHManagerFromProject,unassignFinancialManagerFromProject,unassignAccountantFromProject,getProjectById
  };

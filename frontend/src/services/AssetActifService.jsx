@@ -35,7 +35,7 @@ export const getAllAssets = async () => {
         }
 
         const data = await response.json();
-        console.log("Assets fetched successfully:", data);
+        console.log("Assets fetched successfully:");
         return data;
     } catch (error) {
         console.error("Error fetching assets:", error);

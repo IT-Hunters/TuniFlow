@@ -10,7 +10,8 @@ const TransactionSchema = new Schema({
   amount: { type: Number, required: true },
   type: { type: String, enum: TransactionTypeEnum, required: true }, // income = dépôt, expense = retrait
   balanceAfterTransaction: { type: Number, required: true },
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now },
+  description: { type: String }
 }, { 
   collection: "transactions",
   timestamps: true

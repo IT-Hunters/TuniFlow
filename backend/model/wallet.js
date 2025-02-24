@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const WalletSchema = new Schema({
   user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  balance: { type: Number, default: 0 }, // Balance toujours à 0 au début
+  balance: { type: Number, default: 0 }, 
   currency: { type: String, default: "TND" },
   type: { type: String, required: true }
 }, { 

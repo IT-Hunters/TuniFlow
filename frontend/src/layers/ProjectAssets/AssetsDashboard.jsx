@@ -8,7 +8,7 @@ import Navbar from "../../components/navbar/Navbar";
 const AssetsDashboard = () => {
   const [assets, setAssets] = useState([]);
   const [Liabilities, setLiabilities] = useState([]);
-
+  const projectId = '67bb69af26a4e63fc511cb6d';
   useEffect(() => {
     const fetchAssets = async () => {
       try {
@@ -59,14 +59,14 @@ const AssetsDashboard = () => {
                                     </div>
                                     </div>
 
-                                    <div class="col-lg-6 grid-margin stretch-card">
-                                    <div class="assetcard">
+                                    <div class="col-lg-6 stretch-card">
+                                    <div class="assetcard WorkingCapitalDashboard">
                                         <div class="card-body">
-                                        <h4 class="card-title">Most Valuable Liabilities</h4>
-                                        <WorkingCapitalDashboard />
+                                        <WorkingCapitalDashboard projectId={projectId} />
                                         </div>
                                     </div>
                                     </div>
+                                    
                                 </div>
                             </div>
                     </div>

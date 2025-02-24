@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const { addProject,assignAccountantToProject,assignFinancialManagerToProject,assignRHManagerToProject,
-    unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject
+    unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById
 } = require("../controllers/projectController");
 const { authenticateJWT } = require('../config/autorisation');
 
@@ -33,4 +33,5 @@ router.post("/assignRHManagerToProject/:rhId", authenticateJWT, assignRHManagerT
 router.post("/unassignaccountant/:accountantId", authenticateJWT, unassignAccountantFromProject);
 router.post("/unassignfinancialmanager/:financialManagerId", authenticateJWT, unassignFinancialManagerFromProject);
 router.post("/unassignrh/:rhId", authenticateJWT, unassignRHManagerFromProject);
+router.get("/getProject/:id", getProjectById);
 module.exports = router;

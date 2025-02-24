@@ -13,7 +13,7 @@ var assetspassifsRoutes = require('./routes/assetPassifRoutes');
 var assetCalculationRoutes = require('./routes/AssetRoutes');
 var projectRouter = require('./routes/project.router');
 var taxeRoutes = require('./routes/taxeRoutes');
-
+var transactionRoutes = require('./routes/transactionRoutes');
 var walletRoutes = require('./routes/walletRoutes');
 
 var app = express();
@@ -54,6 +54,7 @@ app.use('/assetCalculation', assetCalculationRoutes);
 app.use('/taxes', taxeRoutes);
 
 app.use('/wallets', walletRoutes);
+app.use('/transactions', transactionRoutes);
 
 // Test API
 app.get('/api/test', (req, res) => {

@@ -7,11 +7,13 @@
   -webkit-flex-direction: column;
   flex-direction: column;
 }
-
+.Big-Numbers{
+  font-size: 6em;
+}
 
 .content-wrapper {
   background: #F4F5F7;
-  padding: 1.5rem 2.187rem 1.5rem 3.5rem;
+  padding: 1.5rem 2.187rem 0rem 3.5rem;
   width: 100%;
   -webkit-flex-grow: 1;
   flex-grow: 1;
@@ -30,8 +32,9 @@
 
 .row > * {
   flex-shrink: 0;
-  width: 30%;
+  width: 33%;
   max-width: 100%;
+  height: 100%;
   padding-right: calc(var(--bs-gutter-x) / 2);
   padding-left: calc(var(--bs-gutter-x) / 2);
   margin-top: var(--bs-gutter-y);
@@ -46,10 +49,12 @@
   justify-content: stretch;
 }
 
+
 .stretch-card > .assetcard {
   width: 100%;
   min-width: 100%;
 }
+
 .grid-margin {
   margin-bottom: 1.5rem;
 }
@@ -111,7 +116,7 @@
 }
 
 .assetcard .card-body {
-  padding: 1.5rem 1.5rem;
+  padding: 1rem;
 }
 
 .assetcard .card-body + .card-body {
@@ -2521,21 +2526,9 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
   border-top-right-radius: 0;
 }
 
-.stretch-card {
-  display: -webkit-flex;
-  display: flex;
-  -webkit-align-items: stretch;
-  align-items: stretch;
-  -webkit-justify-content: stretch;
-  justify-content: stretch;
-}
-
-.stretch-card > .assetcard {
-  width: 100%;
-  min-width: 100%;
-}
 .col-6 {
-  width: 50%;
+  width: 100%;
+  height: 20%;
   padding: 15px;
   box-sizing: border-box;
 }
