@@ -177,6 +177,13 @@ const updateProfile = async (req, res) => {
           { new: true, runValidators: true }
         );
         break;
+        case "BUSINESS_OWNER":
+          await BusinessOwner.findOneAndUpdate(
+            { _id: userId },
+            { $set: updates },
+            { new: true, runValidators: true }
+          );
+          break;
 
       case "RH":
         await RH.findOneAndUpdate(
