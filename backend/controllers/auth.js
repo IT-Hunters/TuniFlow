@@ -17,6 +17,7 @@ const BusinessManager = require("../model/BusinessManager");
 const RH = require("../model/RH");
 const Project=require("../model/Project");
 const Employe = require('../model/Employe');
+const nodemailer = require('nodemailer');
 
 
 async function getAll(req,res) {
@@ -176,6 +177,13 @@ const updateProfile = async (req, res) => {
           { new: true, runValidators: true }
         );
         break;
+        case "BUSINESS_OWNER":
+          await BusinessOwner.findOneAndUpdate(
+            { _id: userId },
+            { $set: updates },
+            { new: true, runValidators: true }
+          );
+          break;
 
       case "RH":
         await RH.findOneAndUpdate(
@@ -352,24 +360,24 @@ const AddPicture = async (req, res) => {
 
 
     const acceptAutorisation = async (req, res) => {
-      const { id } = req.params; // ID du BusinessManager
-      const { accept } = req.body; // true ou false
+      const { id } = req.params; // ID du BusinessOwner
     
       try {
-        // Trouver le BusinessManager par son ID
+        // Trouver le BusinessOwner par son ID
         const owner = await BusinessOwner.findById(id);
         if (!owner) {
-          return res.status(404).json({ message: 'BusinessOuwner non trouvé' });
+          return res.status(404).json({ message: "BusinessOwner non trouvé" });
         }
     
-        // Appeler la méthode acceptAutorisation
-        await owner.acceptAutorisation(accept);
+        // Mettre à jour directement l'autorisation à true
+        owner.autorization = true;
+        await owner.save();
     
-        // Répondre avec le BusinessManager mis à jour
-        res.status(200).json({ message: 'Autorisation mise à jour', owner });
+        // Répondre avec l'utilisateur mis à jour
+        res.status(200).json({ message: "Autorisation accordée", owner });
       } catch (error) {
-        console.error('Erreur lors de la mise à jour de l\'autorisation :', error);
-        res.status(500).json({ message: 'Erreur serveur' });
+        console.error("Erreur lors de la mise à jour de l'autorisation :", error);
+        res.status(500).json({ message: "Erreur serveur" });
       }
     };
  
@@ -405,6 +413,20 @@ const AddPicture = async (req, res) => {
       res.status(200).json(businessManagers);
     } catch (error) {
       console.error("Erreur lors de la récupération des Business Managers : ", error);
+      res.status(500).json({ message: 'Erreur serveur' });
+    }
+  };
+  const getAllBusinessOwners = async (req, res) => {
+    try {
+      const businessOwners = await userModel.find({ userType: 'BusinessOwner' });
+  
+      if (!businessOwners || businessOwners.length === 0) {
+        return res.status(404).json({ message: 'Aucun Business owner trouvé' });
+      }
+  
+      res.status(200).json(businessOwners);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des Business Owners : ", error);
       res.status(500).json({ message: 'Erreur serveur' });
     }
   };
@@ -529,9 +551,22 @@ async function forgotPassword(req, res) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "15m" });
+    // Générer un token JWT avec une durée de 15 minutes
+    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
+
+
+    // Configurer Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Envoyer l'email
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
@@ -541,49 +576,41 @@ async function forgotPassword(req, res) {
 
     res.json({ message: "Lien de réinitialisation envoyé par e-mail" });
   } catch (err) {
-    res.status(500).json({ message: "Erreur interne du serveur", error: err });
+    console.error("Erreur dans forgotPassword:", err);
+    res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
   }
 }
 
-
 async function resetPassword(req, res) {
-  const { email } = req.body;  // Récupère l'e-mail de la requête
-
   try {
-    // Vérifie si l'utilisateur existe
-    const user = await userModel.findOne({ email });
+    const { token, newPassword } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Token manquant" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.SECRET_KEY);
+    } catch (err) {
+      return res.status(400).json({ message: "Token invalide ou expiré" });
+    }
+
+    // Rechercher l'utilisateur par ID extrait du token
+    const user = await userModel.findById(decoded.userId);
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
-    // Crée un token JWT avec l'ID de l'utilisateur
-    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: '1h' });
+    // Hacher le nouveau mot de passe
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
 
-    // Crée le lien de réinitialisation avec le token
-    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
-
-    // Envoie un e-mail avec le lien de réinitialisation
-    const transporter = nodemailer.createTransport({
-      service: 'gmail', // ou tout autre service d'envoi d'e-mails
-      auth: {
-        user: process.env.EMAIL_USER, // Adresse e-mail de l'expéditeur
-        pass: process.env.EMAIL_PASS, // Mot de passe de l'expéditeur
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL,
-      to: email,
-      subject: 'Réinitialisation de votre mot de passe',
-      text: `Cliquez sur ce lien pour réinitialiser votre mot de passe : ${resetLink}`,
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    res.json({ message: 'Un lien de réinitialisation a été envoyé à votre e-mail' });
+    res.json({ message: "Mot de passe réinitialisé avec succès" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Erreur serveur lors de l'envoi de l'e-mail" });
+    console.error("Erreur dans resetPassword:", err);
+    res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
   }
 }
 
@@ -706,32 +733,81 @@ const Registerwithproject = async (req, res, projectId) => {
 };
   
  // Ajouter des employés à partir d'un fichier Excel
-const addEmployeesFromExcel = async (req, res) => {
+ const addEmployeesFromExcel = async (req, res) => {
   try {
-      if (!req.file) {
-          return res.status(400).json({ message: 'Aucun fichier fourni' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'Aucun fichier fourni' });
+    }
+
+    // Récupérer le token JWT de l'en-tête Authorization
+    const token = req.headers.authorization.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Token manquant' });
+    }
+
+    // Décoder le token pour récupérer l'ID de l'utilisateur
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decodedToken.userId; // Récupérer l'ID de l'utilisateur
+
+    if (!userId) {
+      return res.status(400).json({ message: "ID de l'utilisateur manquant dans le token" });
+    }
+
+    // Récupérer l'utilisateur dans la base de données
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    // Vérifier si l'utilisateur est de type RH
+    if (user.userType !== "RH") {
+      return res.status(400).json({ message: "L'utilisateur connecté n'est pas de type RH" });
+    }
+
+    // Récupérer l'ID du projet (uniquement pour les RH)
+    const projectId = user.project;
+    if (!projectId) {
+      return res.status(400).json({ message: "Aucun projet associé à l'utilisateur connecté" });
+    }
+
+    // Lire le fichier Excel
+    const workbook = xlsx.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const employeesData = xlsx.utils.sheet_to_json(worksheet);
+
+    // Valider les données des employés
+    const employees = [];
+    for (const emp of employeesData) {
+      if (!emp.password) {
+        console.warn(`Employé ${emp.name || 'sans nom'} ignoré : mot de passe manquant`);
+        continue; // Ignorer les employés sans mot de passe
       }
 
-      const workbook = xlsx.readFile(req.file.path);
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const employeesData = xlsx.utils.sheet_to_json(worksheet);
+      // Hasher le mot de passe
+      const hashedPassword = await bcryptjs.hash(emp.password, 10);
+      employees.push({
+        name: emp.name,
+        email: emp.email,
+        password: hashedPassword,
+        role: emp.role,
+        project: projectId // Ajouter l'ID du projet
+      });
+    }
 
-      const employees = employeesData.map(emp => ({
-          id: emp.id,
-          name: emp.name,
-          email: emp.email,
-          password: emp.password,
-          role: emp.role
-      }));
-
+    // Insérer les employés dans la base de données
+    if (employees.length > 0) {
       await Employe.insertMany(employees);
-      res.status(201).json({ message: 'Employés ajoutés avec succès' });
+      return res.status(201).json({ message: 'Employés ajoutés avec succès' });
+    } else {
+      return res.status(400).json({ message: 'Aucun employé valide à ajouter' });
+    }
   } catch (error) {
-      console.error("Erreur lors de l'ajout des employés :", error);
-      res.status(500).json({ message: 'Erreur interne du serveur', error });
+    console.error("Erreur lors de l'ajout des employés :", error);
+    res.status(500).json({ message: 'Erreur interne du serveur', error });
   }
-}; 
+};
+  
 async function getAllempl(req,res) {
   try{
       const data = await Employe.find()
@@ -742,11 +818,73 @@ async function getAllempl(req,res) {
   }
 }
 
+const addEmployee = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ message: 'Tous les champs sont obligatoires' });
+    }
+
+    const token = req.headers.authorization.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Token manquant' });
+    }
+
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decodedToken.userId;
+
+    if (!userId) {
+      return res.status(400).json({ message: "ID de l'utilisateur manquant dans le token" });
+    }
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    if (user.userType !== "RH") {
+      return res.status(400).json({ message: "L'utilisateur connecté n'est pas de type RH" });
+    }
+
+    const projectId = user.project;
+    if (!projectId) {
+      return res.status(400).json({ message: "Aucun projet associé à l'utilisateur connecté" });
+    }
+
+    const existingEmployee = await Employe.findOne({ email });
+    if (existingEmployee) {
+      return res.status(400).json({ message: 'Un employé avec cet email existe déjà' });
+    }
+
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
+    const newEmployee = new Employe({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      project: projectId
+    });
+
+    await newEmployee.save();
+
+    // Mettre à jour le projet pour inclure l'ID du nouvel employé
+    await Project.findByIdAndUpdate(projectId, {
+      $push: { employees: newEmployee._id }
+    });
+
+    res.status(201).json({ message: 'Employé ajouté avec succès', employee: newEmployee });
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de l'employé :", error);
+    res.status(500).json({ message: 'Erreur interne du serveur', error });
+  }
+};
 
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
-    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel
+    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee
 };

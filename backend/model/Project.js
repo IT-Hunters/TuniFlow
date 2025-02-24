@@ -12,8 +12,8 @@ const ProjectSchema = new Schema({
     obligations_fiscales: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ObligationsFiscales' }],
     taxes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Taxes' }],
     assets_actif: [{ type: mongoose.Schema.Types.ObjectId, ref: 'AssetActif' }],
-    assets_passif: [{ type: mongoose.Schema.Types.ObjectId, ref: 'AssetPassif' }]
-
+    assets_passif: [{ type: mongoose.Schema.Types.ObjectId, ref: 'AssetPassif' }],
+    employees: [{ type: Schema.Types.ObjectId, ref: "Employe" }]
 });
 
 const Project = mongoose.model("Project", ProjectSchema);

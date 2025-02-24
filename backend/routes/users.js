@@ -2,8 +2,8 @@ var express = require('express');
 var router = express.Router();
 const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,
-  getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel
-  } = require('../controllers/auth');
+  getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,
+  getAllBusinessOwners,addEmployee} = require('../controllers/auth');
   const multerImage = require("../config/multer-picture");
   const multerImageAndPdf = require("../config/multer-picture-pdf");
   const multerExcel = require("../config/multer-excel");
@@ -13,6 +13,7 @@ router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
 router.post('/upload-employees', multerExcel.single('file'), addEmployeesFromExcel);
+router.post('/addemployee', addEmployee)
 router.post("/register", multerImageAndPdf.single("evidence"), Register);
 router.post("/login",Login)
 router.get("/getall",authenticateJWT,getAll)
@@ -23,6 +24,7 @@ router.put("/acceptAutorisation/:id", acceptAutorisation);
 router.put("/updateprofile", authenticateJWT, updateProfile);
 router.put("/uploadimage",authenticateJWT,AddPicture)
 router.get("/getAllBusinessManagers",authenticateJWT,getAllBusinessManagers)
+router.get("/getAllBusinessOwners",authenticateJWT,getAllBusinessOwners)
 router.get("/getAllAccountants",authenticateJWT,getAllAccountants)
 router.get("/getAllFinancialManagers",authenticateJWT,getAllFinancialManagers)
 router.get("/getAllRH",authenticateJWT,getAllRH)

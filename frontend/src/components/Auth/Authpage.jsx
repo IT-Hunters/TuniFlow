@@ -19,7 +19,17 @@ const AuthPage = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
-
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:3000/users/forgot-password", {
+        email: formData.email,
+      });
+      setMessage(response.data.message);  // Message de succès
+    } catch (err) {
+      setError(err.response?.data.message || "Erreur lors de l'envoi du lien");
+    }
+  };
   const toggleMode = () => {
     setIsLogin((prev) => !prev);
     setFormData({
@@ -70,7 +80,7 @@ const AuthPage = () => {
 
         const { token, role } = response.data;
         localStorage.setItem("token", token);
-        navigate(role === "admin" ? "/dashboard" : "/profile");
+        navigate(role === "ADMIN" ? "/dashboard" : "/profile");
         alert("Connexion réussie !");
         setError("");
       } else {
@@ -142,6 +152,12 @@ const AuthPage = () => {
             <button className="auth-btn" type="submit">
               Log In
             </button>
+             <p className="auth-switch-text">
+      Mot de passe oublié ?{" "}
+      <span className="auth-toggle-link" onClick={() => navigate("/forgot-password")}>
+        Cliquez ici
+      </span>
+    </p>
             
             <p className="auth-switch-text">
               Don’t have an account?{" "}
