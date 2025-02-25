@@ -551,28 +551,59 @@ async function forgotPassword(req, res) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
-    // Générer un token JWT avec une durée de 15 minutes
+    // Générer un token JWT avec une durée de 24h
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
-
-
     // Configurer Nodemailer
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
     });
 
-    // Envoyer l'email
-    await transporter.sendMail({
+    // Contenu HTML de l'email
+    const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Réinitialisation du mot de passe",
-      text: `Cliquez ici pour réinitialiser votre mot de passe : ${resetLink}`,
-    });
+      subject: "🔒 Réinitialisation de votre mot de passe",
+      html: `
+      <div style="background-color: #f4f4f4; padding: 20px; font-family: Arial, sans-serif;">
+        <div style="max-width: 600px; background: #fff; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center;">
+          
+          <!-- Logo -->
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://www.futuronomics.com/wp-content/uploads/2024/07/best-1024x576.png" 
+                 alt="TuniFlow Logo" style="max-width: 150px; border-radius: 10px;">
+          </div>
+    
+          <h2 style="color: #333;">🔐 Réinitialisation de votre mot de passe</h2>
+          <p style="color: #555;">Bonjour,</p>
+          <p style="color: #555;">Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe :</p>
+          
+          <div style="margin: 20px 0;">
+            <a href="${resetLink}" 
+              style="display: inline-block; padding: 14px 24px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; font-weight: bold; transition: 0.3s;">
+              🔄 Réinitialiser mon mot de passe
+            </a>
+          </div>
+    
+          <p style="color: #777; font-size: 14px;">Ce lien est valide pendant <strong>24 heures</strong>. Si vous n'avez pas demandé cette action, ignorez cet e-mail.</p>
+    
+          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+          <p style="color: #999; font-size: 12px;">⚠️ Ne partagez jamais vos informations de connexion.</p>
+          <p style="color: #999; font-size: 12px;">© ${new Date().getFullYear()} TuniFlow - Tous droits réservés.</p>
+        </div>
+      </div>
+    `,
+    
+    
+    };
+
+    // Envoyer l'email
+    await transporter.sendMail(mailOptions);
 
     res.json({ message: "Lien de réinitialisation envoyé par e-mail" });
   } catch (err) {
@@ -580,7 +611,6 @@ async function forgotPassword(req, res) {
     res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
   }
 }
-
 async function resetPassword(req, res) {
   try {
     const { token, newPassword } = req.body;
