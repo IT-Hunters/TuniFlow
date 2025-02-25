@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import "./resetpassword.css"; // Assurez-vous que le fichier CSS est bien importé
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -28,19 +29,33 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="container">
-      <h2>Réinitialisation du mot de passe</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="password"
-          placeholder="Nouveau mot de passe"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Réinitialiser</button>
-      </form>
-      {message && <p>{message}</p>}
+    <div className="reset-container">
+      <div className="reset-box">
+        
+        <h2 className="reset-title">Réinitialisation du mot de passe</h2>
+        <form onSubmit={handleSubmit} className="reset-form">
+          <div className="input-group">
+            <label>Nouveau mot de passe</label>
+            <input
+              type="password"
+              className="reset-input"
+              placeholder="Entrez votre nouveau mot de passe"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" className="reset-button">Réinitialiser</button>
+        </form>
+        {message && <p className="reset-message">{message}</p>}
+        <p className="reset-link" onClick={() => navigate("/login")}>
+          Retour à la connexion
+        </p>
+        <div className="reset-blue-box">
+  <img src="/reset-image.png" alt="Reset Password" className="reset-image" />
+</div>
+
+      </div>
     </div>
   );
 };
