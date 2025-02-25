@@ -847,7 +847,31 @@ async function getAllempl(req,res) {
       res.send(err);
   }
 }
+async function downloadEvidence(req, res) {
+  try {
+    const fileName = req.params.fileName;
+    const filePath = path.join(__dirname, 'public', 'evidences', fileName); // Exemple de chemin
 
+    // Vérifie si le fichier existe
+    try {
+      await fs.access(filePath);  // Vérifie si le fichier existe (fonction asynchrone)
+      
+      // Si le fichier existe, renvoyer le fichier en téléchargement
+      res.download(filePath, fileName, (err) => {
+        if (err) {
+          console.error('Erreur lors du téléchargement:', err);
+          return res.status(500).send('Erreur lors du téléchargement du fichier');
+        }
+      });
+
+    } catch (error) {
+      console.error('Fichier non trouvé:', error);
+      return res.status(404).send('Fichier non trouvé');
+    }
+  } catch (error) {
+    console.error('Erreur lors de la gestion du téléchargement:', error);
+    return res.status(500).send('Erreur serveur');
+  }};
 const addEmployee = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -911,10 +935,11 @@ const addEmployee = async (req, res) => {
   }
 };
 
+
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
-    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee
+    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence
 };

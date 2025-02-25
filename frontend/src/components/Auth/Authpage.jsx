@@ -98,9 +98,7 @@ const AuthPage = () => {
         }
 
         const response = await axios.post("http://localhost:3000/users/register", formDataToSend, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+         
         });
 
         alert("Inscription réussie !");
