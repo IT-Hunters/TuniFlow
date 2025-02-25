@@ -1,8 +1,7 @@
 const Wallet = require("../model/wallet");
 const Transaction = require("../model/Transaction");
-
 // 📌 Effectuer un dépôt (Deposit)
-exports.deposit = async (req, res) => {
+exports.deposit = async (req, res, io) => {
   try {
     const { walletId } = req.params;
     const { amount } = req.body;
@@ -16,7 +15,7 @@ exports.deposit = async (req, res) => {
       return res.status(404).json({ message: "Wallet introuvable" });
     }
     const transactions = await Transaction.find({ wallet_id: walletId });
-    const balance = transactions.reduce((acc, t) => acc + (t.type === "income" ? t.amount : -t.amount), 0);
+    const balance = transactions.reduce((acc, t) => acc + (t.type === "income" ? t.amount : +t.amount), 0);
 
     if (balance < amount) {
       return res.status(400).json({ message: "Fonds insuffisants" });
@@ -25,11 +24,13 @@ exports.deposit = async (req, res) => {
     const transaction = new Transaction({
       wallet_id: walletId,
       amount: amount,
-      type: "expense",
-      balanceAfterTransaction: balance - amount
+      type: "income",
+      balanceAfterTransaction: balance + amount,
+      date: req.body.date
     });
 
     await Transaction(transaction).save();
+    global.io.emit("transactionUpdate", { walletId, balance: balance + amount, transaction });
     res.status(200).json({ message: "Dépôt effectué avec succès", transaction });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -63,11 +64,12 @@ exports.withdraw = async (req, res) => {
     const transaction = new Transaction({
       wallet_id: walletId,
       amount: amount,
-      type: "expenses",
+      type: "expense",
       balanceAfterTransaction: balance - amount
     });
 
     await Transaction(transaction).save();
+    global.io.emit("transactionUpdate", { walletId, balance: balance - amount, transaction });
     res.status(200).json({ message: "Retrait effectué avec succès", transaction });
   } catch (err) {
     res.status(500).json({ message: err.message });

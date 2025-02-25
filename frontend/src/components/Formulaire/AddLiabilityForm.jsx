@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { submitLiability } from "../../services/LiabilityService";
 
-const AddLiabilityForm = () => {
+const AddLiabilityForm = ({ handleClose }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
@@ -158,20 +158,7 @@ const AddLiabilityForm = () => {
             <button type="submit" className="btn btn-primary me-2" disabled={loading}>
                 {loading ? "Submitting..." : "Submit"}
             </button>
-            <button
-                type="button"
-                className="btn btn-light"
-                onClick={() =>
-                    setFormData({
-                        type_liability: "",
-                        category: "",
-                        name: "",
-                        total: "",
-                        date_commitment: "",
-                        project_id: "65d7c5f1a2b3c45678901234"
-                    })
-                }
-            >
+            <button type="button" className="btn btn-light" onClick={handleClose}>
                 Cancel
             </button>
         </form>

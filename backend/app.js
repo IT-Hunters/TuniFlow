@@ -1,10 +1,11 @@
 var createError = require('http-errors');
 var express = require('express');
+const http = require("http");
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const cors = require('cors');
-
+const { Server } = require("socket.io");
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -61,6 +62,30 @@ app.get('/api/test', (req, res) => {
   res.status(200).json({ message: 'Project tested' });
 });
 
+
+// Socket.io for candlestick chart 
+const server = http.createServer(app);
+
+global.io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+io.on("connection", (socket) => {
+  console.log(`User connected: ${socket.id}`);
+  socket.on("message", (data) => {
+    console.log(`Message from ${socket.id}:`, data);
+    io.emit("message", data); 
+  });
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
+});
+const PORT = 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
 // Gestion des erreurs 404
 app.use((req, res, next) => {
   next(createError(404));

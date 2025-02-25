@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { submitAsset } from "../../services/AssetActifService";     
 
-const AssetForm = () => {
+const AssetForm = ({ handleClose }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
@@ -27,7 +27,7 @@ const AssetForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (loading) return; // Prevent multiple submissions
+        if (loading) return; 
         setLoading(true);
         setError("");
         formData.projet_id="65d7c5f1a2b3c45678901234";
@@ -168,9 +168,7 @@ const AssetForm = () => {
             <button type="submit" className="btn btn-primary me-2" disabled={loading}>
                 {loading ? "Submitting..." : "Submit"}
             </button>
-            <button type="button" className="btn btn-light" onClick={() => setFormData({
-                type_actif: "", type_IntangibleAsset: "", type_corporel: "", type_financement: "", type_Treasury: "", categorie_stock: "", receivable_type: "", name: "", total_value: "", date_acquisition: "", quantite: "", unite_value: "", projet_id: ""
-            })}>
+            <button type="button" className="btn btn-light" onClick={handleClose}>
                 Cancel
             </button>
         </form>
