@@ -83,13 +83,17 @@ const AdminUsers = () => {
     }
   };
 
-  // Ouvrir la modal pour afficher la preuve (PDF ou image)
   const openEvidence = (evidencePath) => {
-    const fileUrl = `http://localhost:3000/${evidencePath.replace("public/", "")}`;
+    if (!evidencePath) return;
+  
+    // Remplace les backslashes par des slashes et enlève "public/"
+    const formattedPath = evidencePath.replace(/\\/g, "/").replace("public/", "");
+    const fileUrl = `http://localhost:3000/${formattedPath}`;
+  
     setSelectedEvidence(fileUrl);
     setIsPDF(fileUrl.endsWith(".pdf"));
   };
-
+  
   // Fermer la modal
   const closeModal = () => {
     setSelectedEvidence(null);
@@ -98,12 +102,17 @@ const AdminUsers = () => {
 
   // Télécharger l'évidence
   const downloadEvidence = (evidencePath) => {
-    const fileUrl = `http://localhost:3000/${evidencePath.replace("public/", "")}`;
-    const link = document.createElement('a');
+    if (!evidencePath) return;
+  
+    const formattedPath = evidencePath.replace(/\\/g, "/").replace("public/", "");
+    const fileUrl = `http://localhost:3000/${formattedPath}`;
+  
+    const link = document.createElement("a");
     link.href = fileUrl;
-    link.download = fileUrl.split('/').pop(); // Nom du fichier
+    link.download = fileUrl.split("/").pop();
     link.click();
   };
+  
 
   return (
     <div className="container">

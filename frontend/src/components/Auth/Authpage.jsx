@@ -81,7 +81,7 @@ const AuthPage = () => {
         const { token, role } = response.data;
         localStorage.setItem("token", token);
         navigate(role === "ADMIN" ? "/dashboard" : "/profile");
-        alert("Connexion réussie !");
+        
         setError("");
       } else {
         // Utilisation de FormData pour l'inscription
@@ -101,7 +101,7 @@ const AuthPage = () => {
          
         });
 
-        alert("Inscription réussie !");
+
         setIsLogin(true);
         setError("");
       }
@@ -151,9 +151,9 @@ const AuthPage = () => {
               Log In
             </button>
              <p className="auth-switch-text">
-      Mot de passe oublié ?{" "}
+      Forget Your  Password ?{" "}
       <span className="auth-toggle-link" onClick={() => navigate("/forgot-password")}>
-        Cliquez ici
+        Click here
       </span>
     </p>
             
