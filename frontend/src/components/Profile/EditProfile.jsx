@@ -80,7 +80,7 @@ const EditProfile = () => {
     if (!file) return;
 
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('picture', file);
 
     try {
       const token = localStorage.getItem('token');
@@ -100,7 +100,7 @@ const EditProfile = () => {
         ...prevState,
         picture: response.data.picture, // Update the picture URL in state
       }));
-      alert('Image uploaded successfully!');
+      
     } catch (err) {
       setError(err.response?.data?.message || 'Error uploading image');
       console.error('Error uploading image:', err);
