@@ -34,8 +34,9 @@ router.post("/reset-password", resetPassword);
 router.post("/verify-code", verifyCode);
 router.get('/download/:fileName', downloadEvidence);
 
-router.post("/registerwithproject/:projectId", async (req, res) => {
+/*router.post("/registerwithproject/:projectId", async (req, res) => {
   const { projectId } = req.params;
   await Registerwithproject(req, res, projectId);
-});
+});*/
+router.post('/registerwithproject',authenticateJWT,Registerwithproject);
 module.exports = router;
