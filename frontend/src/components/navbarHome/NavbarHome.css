@@ -1,0 +1,179 @@
+/* ----- Navbar ----- */
+.navbar {
+    background: linear-gradient(135deg, #1E3A8A, #1E90FF 100%);
+    border-bottom: 1px solid #ddd;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+  }
+  
+  .navbar .welcome-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #fff;
+  }
+  
+  /* ----- Search Bar ----- */
+  .navbar .search-bar {
+    position: relative;
+    margin-right: 1rem;
+  }
+  
+  .navbar .search-bar input {
+    padding: 0.4rem 2rem 0.4rem 0.8rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  /* ----- Profile Section ----- */
+  .navbar .profile-area {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+  }
+  
+  .navbar .profile-menu {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  /* ----- Wallet Icon and Dropdown ----- */
+  .wallet-menu {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .wallet-icon {
+    font-size: 2rem;
+    color: #FFFFFF;
+    transition: color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .wallet-icon:hover {
+    color: #E6F0FA;
+    transform: scale(1.1);
+  }
+  
+  .wallet-dropdown {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: #FFFFFF;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    z-index: 10;
+    min-width: 200px;
+    padding: 1rem;
+  }
+  
+  .wallet-dropdown.active {
+    display: block;
+  }
+  
+  .wallet-info {
+    color: #2D3748;
+  }
+  
+  .wallet-info h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  
+  .wallet-info p {
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+  }
+  
+  .wallet-action {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.75rem;
+    background: #1E90FF;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  .wallet-action:hover {
+    background: #1E3A8A;
+    transform: translateY(-1px);
+  }
+  
+  /* ----- Dropdown Menu (Profil) ----- */
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: white;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    z-index: 10;
+    min-width: 200px;
+  }
+  
+  .dropdown-menu.active {
+    display: block;
+  }
+  
+  .profile-info {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .dropdown-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .user-name {
+    font-weight: bold;
+  }
+  
+  .user-email {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  
+  .menu-item {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+  }
+  
+  .menu-item:hover {
+    background: #f5f5f5;
+  }
+  
+  .logout {
+    color: red;
+    font-weight: bold;
+  }
