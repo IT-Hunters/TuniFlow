@@ -8,6 +8,7 @@ export const fetchWorkingCapital = async (projectId) => {
             "Authorization": `Bearer ${token}`, 
         },
     });
+    console.log(token)
       if (!response.ok) throw new Error("Failed to fetch data");
       
       const data = await response.json();

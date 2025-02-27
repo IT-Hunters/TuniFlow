@@ -6,7 +6,7 @@ import profit from './assets/profit.png'
 import expenses from './assets/expenses.png'
 import chart from './assets/chart.png'
 import chart2 from './assets/chart2.png'
-import Sidebar from "../sidebarHome/SidebarHome";
+import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 const Dashbord = () => {
   // Vous pouvez déplacer ce CSS dans un fichier .css séparé
@@ -20,7 +20,7 @@ const Dashbord = () => {
       {/* Le HTML principal du dashboard */}
       <div className="container">
         {/* Sidebar */}
-        <Sidebar /> 
+        <CoolSidebar /> 
 
 
         {/* Main Content */}

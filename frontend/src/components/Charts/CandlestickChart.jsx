@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Chart from "react-apexcharts";
 import io from 'socket.io-client';
-import { fetchCandlestickData } from "../../services/AssetCalculationService";
+import { fetchWorkingCapital } from "../../services/AssetCalculationService";
 const socket = io('http://localhost:5000');
 
 const CandlestickCashFlowChart = () => {
@@ -9,7 +9,7 @@ const CandlestickCashFlowChart = () => {
 
   const fetchCandlestickData = async () => {
     try {
-      const response = await fetchWorkingCapital();
+      const response = await fetchWorkingCapital("67bb69af26a4e63fc511cb6d");
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);

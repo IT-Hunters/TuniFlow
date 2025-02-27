@@ -45,7 +45,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
+    <nav className="navbar-home">
       <div className="welcome-text">
         {userData ? `Welcome Back, ${userData.fullname}` : "Welcome Back"}
       </div>

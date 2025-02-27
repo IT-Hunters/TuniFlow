@@ -9,6 +9,7 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullname: "",
     lastname: "",
@@ -21,6 +22,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const handleForgotPassword = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post("http://localhost:3000/users/forgot-password", {
         email: formData.email,
@@ -28,6 +30,9 @@ const AuthPage = () => {
       setMessage(response.data.message);  // Message de succès
     } catch (err) {
       setError(err.response?.data.message || "Erreur lors de l'envoi du lien");
+    }finally{
+      await new Promise((resolve) => setTimeout(resolve, 2000)); 
+      setLoading(false);
     }
   };
   const toggleMode = () => {
@@ -65,6 +70,7 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true)
 
     if (!isLogin && formData.password !== formData.confirm) {
       setError("Les mots de passe ne correspondent pas.");
@@ -80,10 +86,13 @@ const AuthPage = () => {
 
         const { token, role } = response.data;
         localStorage.setItem("token", token);
-        navigate(role === "ADMIN" ? "/dashboard" : "/profile");
-        setError("");
-      } else {
-        // Utilisation de FormData pour l'inscription
+        if (role === "ADMIN") {
+          navigate("/dashboard");
+        } else {
+          navigate("/user");
+          setError("");
+        }
+        } else {
         const formDataToSend = new FormData();
         formDataToSend.append("fullname", formData.fullname);
         formDataToSend.append("lastname", formData.lastname);
@@ -100,13 +109,15 @@ const AuthPage = () => {
          
         });
 
-
         setIsLogin(true);
         setError("");
+        setTimeout(() => {
+          setLoading(false)
+        }, 2000)
       }
     } catch (err) {
       if (err.response?.data) {
-        setError(Object.values(err.response.data)[0]); // Afficher la première erreur
+        setError(Object.values(err.response.data)[0]); 
       } else {
         setError("Une erreur s'est produite.");
       }
@@ -115,6 +126,12 @@ const AuthPage = () => {
 
   return (
     <div className={`auth-container ${isLogin ? "auth-login-mode" : ""}`}>
+      {loading && (
+        <div className="auth-loading-overlay">
+          <div className="auth-loading-spinner"></div>
+          <p>Please wait...</p>
+        </div>
+      )}
       <div className="auth-form-box">
         {isLogin ? (
           <form onSubmit={handleSubmit} className="auth-sign-in-form">

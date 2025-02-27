@@ -4,7 +4,7 @@ import { LayoutDashboard, Store, Package, Users, FileText, Settings, HelpCircle,
 
 const Sidebar = () => {
   return (
-    <nav className="sidebar">
+    <nav className="sidebar-home">
       <div className="brand">TUNIFLOW</div>
       <ul>
         <li><a href="#0"><LayoutDashboard size={20} /> Tableau de Bord</a></li>

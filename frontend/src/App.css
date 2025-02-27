@@ -1,6 +1,18 @@
-#root {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  text-align: center;
+.app {
+  display: flex;
+  height: 100vh;
 }
+
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  background-color: #f0f2f5;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 60px;
+  }
+}
+

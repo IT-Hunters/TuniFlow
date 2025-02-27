@@ -1,41 +1,40 @@
 /* ----- Navbar ----- */
-.navbar {
+.navbar-home {
     background: linear-gradient(135deg, #1E3A8A, #1E90FF 100%);
     border-bottom: 1px solid #ddd;
     padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    position: relative;
+    justify-content: space-between;    
   }
   
-  .navbar .welcome-text {
+  .navbar-home .welcome-text {
     font-size: 1rem;
     font-weight: 500;
     color: #fff;
   }
   
   /* ----- Search Bar ----- */
-  .navbar .search-bar {
+  .navbar-home .search-bar {
     position: relative;
     margin-right: 1rem;
   }
   
-  .navbar .search-bar input {
+  .navbar-home .search-bar input {
     padding: 0.4rem 2rem 0.4rem 0.8rem;
     border-radius: 4px;
     border: 1px solid #ccc;
   }
   
   /* ----- Profile Section ----- */
-  .navbar .profile-area {
+  .navbar-home .profile-area {
     display: flex;
     align-items: center;
     gap: 1rem;
     position: relative;
   }
   
-  .navbar .profile-menu {
+  .navbar-home .profile-menu {
     display: flex;
     align-items: center;
     cursor: pointer;
