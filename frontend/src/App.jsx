@@ -8,6 +8,7 @@ import HomePage from "./components/Homepage/HomePage";
 import ResetPassword from "./components/forgetpassword/resetpassword";
 import ForgotPassword from "./components/forgetpassword/forgetpassword";
 import AdminUsers from "./components/Admin/AdminUsers";
+import  User  from "./components/User/User";
 function App() {         
   return (
     <Router>
@@ -21,6 +22,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/Adminusers" element={<AdminUsers />} />
+        <Route path="/user" element={<User  />} />
       </Routes>
     </Router>
   );

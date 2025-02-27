@@ -1,0 +1,107 @@
+.wallet-container {
+    background: linear-gradient(135deg, #1E3A8A, #1E90FF 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    width: 400px;
+    margin: 2rem auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    color: #FFFFFF;
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  
+  .wallet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .wallet-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+  }
+  
+  .wallet-type {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #E6F0FA;
+  }
+  
+  .wallet-balance {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .balance-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #E6F0FA;
+    margin-bottom: 0.5rem;
+  }
+  
+  .balance-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #FFFFFF;
+  }
+  
+  .wallet-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .action-button {
+    flex: 1;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.1);
+    transition: color 0.3s ease, transform 0.2s ease, background 0.3s ease;
+  }
+  
+  .action-button:hover {
+    color: #E6F0FA;
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .deposit {
+    background: #13B5EA;
+  }
+  
+  .deposit:hover {
+    background: #0A9ACC;
+  }
+  
+  .withdraw {
+    background: #EF4444;
+  }
+  
+  .withdraw:hover {
+    background: #DC2626;
+  }
+  
+  .transfer {
+    background: #2D3748;
+  }
+  
+  .transfer:hover {
+    background: #4A5568;
+  }
+  
+  .wallet-details {
+    font-size: 1rem;
+    color: #E6F0FA;
+  }
+  
+  .wallet-details p {
+    margin: 0.5rem 0;
+  }
