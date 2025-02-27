@@ -127,7 +127,7 @@ const AuthPage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                required
+               
               />
             </div>
 
@@ -138,7 +138,7 @@ const AuthPage = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                required
+               
               />
               <span className="auth-eye-icon" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -174,7 +174,7 @@ const AuthPage = () => {
                 name="fullname"
                 value={formData.fullname}
                 onChange={handleChange}
-                required
+               
               />
             </div>
             <div className="auth-input-field">
@@ -184,7 +184,7 @@ const AuthPage = () => {
                 name="lastname"
                 value={formData.lastname}
                 onChange={handleChange}
-                required
+               
               />
             </div>
             <div className="auth-input-field">
@@ -194,7 +194,7 @@ const AuthPage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                required
+              
               />
             </div>
 
@@ -205,7 +205,7 @@ const AuthPage = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                required
+                
               />
               <span className="auth-eye-icon" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -219,7 +219,7 @@ const AuthPage = () => {
                 name="confirm"
                 value={formData.confirm}
                 onChange={handleChange}
-                required
+              
               />
               <span className="auth-eye-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}

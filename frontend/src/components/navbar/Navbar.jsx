@@ -1,69 +1,108 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import userImg from "../assets/user.png";
-import "./Navbar.css";
+"use client"
+
+import { useState, useEffect, useRef } from "react"
+import { useNavigate } from "react-router-dom"
+import axios from "axios"
+import { User, LogOut, Settings, UserPlus } from "lucide-react"
+import "./Navbar.css"
 
 const Navbar = () => {
-  const [userData, setUserData] = useState(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
+  const [userData, setUserData] = useState(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const navigate = useNavigate()
+  const menuRef = useRef(null)
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        const token = localStorage.getItem("token")
+        if (!token) return
 
         const response = await axios.get("http://localhost:3000/users/findMyProfile", {
           headers: { Authorization: `Bearer ${token}` },
-        });
+        })
 
-        setUserData(response.data);
+        setUserData(response.data)
       } catch (error) {
-        console.error("Erreur lors de la récupération du profil :", error);
+        console.error("Erreur lors de la récupération du profil :", error)
       }
-    };
+    }
 
-    fetchUser();
-  }, []);
+    fetchUser()
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUserData(null);
-    navigate("/");
-  };
+    localStorage.removeItem("token")
+    setUserData(null)
+    navigate("/")
+  }
+
+  const getInitials = (name) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+  }
 
   return (
     <nav className="navbar">
-      <div className="welcome-text">
-        {userData ? `Welcome Back, ${userData.fullname}` : "Welcome Back"}
-      </div>
-      <div className="profile-area">
-        <div className="search-bar">
-          <input type="text" placeholder="Search Anything..." />
-        </div>
+      <div className="welcome-text">{userData ? `Welcome Back, ${userData.fullname}` : "Welcome Back"}</div>
+      <div className="profile-area" ref={menuRef}>
         <div className="profile-menu" onClick={() => setMenuOpen(!menuOpen)}>
-          <img src={userData?.picture || userImg} alt="User Profile" className="profile-img" />
-          <div className={`dropdown-menu ${menuOpen ? "active" : ""}`}>
-            <div className="profile-info">
-              <img src={userData?.picture || userImg} alt="User" className="dropdown-img" />
-              <div>
-                <p className="user-name">{userData?.fullname}</p>
-                <p className="user-email">{userData?.email}</p>
+          <div className="profile-initials">
+            {userData ? getInitials(userData.fullname) : "?"}
+            {userData ? getInitials(userData.lastname)  : "?"}</div>
+          {menuOpen && (
+            <div className={`dropdown-menu ${menuOpen ? "active" : ""}`}>
+              <div className="profile-info">
+                <div className="profile-initials profile-initials-lg">
+                  {userData ? getInitials(userData.fullname) : "?"}
+                  {userData ? getInitials(userData.lastname) : "?"}
+                </div>
+                <div>
+                  <p className="user-name">{userData?.fullname}</p>
+                  <p className="user-email">{userData?.email}</p>
+                </div>
               </div>
+              <hr />
+              <button onClick={() => navigate("/profile")} className="menu-item">
+                <User size={18} style={{ marginRight: "10px" }} />
+                Profile and Visibility
+              </button>
+              <button className="menu-item">
+                <UserPlus size={18} style={{ marginRight: "10px" }} />
+                Switch Account
+              </button>
+              <button className="menu-item">
+                <Settings size={18} style={{ marginRight: "10px" }} />
+                Manage Account
+              </button>
+              <hr />
+              <button onClick={handleLogout} className="menu-item logout">
+                <LogOut size={18} style={{ marginRight: "10px" }} />
+                Logout
+              </button>
             </div>
-            <hr />
-            <button onClick={() => navigate("/profile")} className="menu-item">Profil et visibilité</button>
-            <button className="menu-item">Changer de compte</button>
-            <button className="menu-item">Gérer le compte</button>
-            <hr />
-            <button onClick={handleLogout} className="menu-item logout">Déconnexion</button>
-          </div>
+          )}
         </div>
       </div>
     </nav>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
+

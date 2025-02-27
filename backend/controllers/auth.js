@@ -136,7 +136,7 @@ const Login = async (req, res) => {
 
     const match = await bcryptjs.compare(req.body.password, existUser.password);
     if (!match) {
-      return res.status(401).json({ message: 'Mot de passe incorrect' }); // 401 pour une authentification échouée
+      return res.status(401).json({ message: 'invalid password' }); // 401 pour une authentification échouée
     }
 
     const payload = {
