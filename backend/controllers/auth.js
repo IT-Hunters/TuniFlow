@@ -643,8 +643,7 @@ async function resetPassword(req, res) {
     res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
   }
 }
-
-const Registerwithproject = async (req, res, projectId) => {
+const Registerwithproject = async (req, res) => {
   try {
       // 1️⃣ Validation des données
       const { errors, isValid } = validateRegister(req.body);
@@ -658,16 +657,33 @@ const Registerwithproject = async (req, res, projectId) => {
           return res.status(409).json({ email: "Utilisateur déjà existant" });
       }
 
-      // 3️⃣ Vérifier si le projet existe
+      // 3️⃣ Récupérer l'ID de l'utilisateur connecté à partir du token
+      const token = req.headers.authorization.split(" ")[1];
+      const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+      const userId = decodedToken.userId;
+
+      // 4️⃣ Vérifier que l'utilisateur connecté est un BusinessManager
+      const businessManager = await BusinessManager.findById(userId);
+      if (!businessManager || businessManager.role !== "BUSINESS_MANAGER") {
+          return res.status(403).json({ message: "Accès refusé. Seul un Business Manager peut enregistrer des utilisateurs." });
+      }
+
+      // 5️⃣ Récupérer l'ID du projet associé au BusinessManager
+      const projectId = businessManager.project;
+      if (!projectId) {
+          return res.status(404).json({ message: "Aucun projet associé à ce Business Manager" });
+      }
+
+      // 6️⃣ Vérifier si le projet existe
       const project = await Project.findById(projectId);
       if (!project) {
           return res.status(404).json({ projectId: "Projet non trouvé" });
       }
 
-      // 4️⃣ Hachage du mot de passe
+      // 7️⃣ Hachage du mot de passe
       req.body.password = await bcryptjs.hash(req.body.password, 10);
 
-      // 5️⃣ Sélection du modèle en fonction du rôle
+      // 8️⃣ Sélection du modèle en fonction du rôle
       let userType;
       switch (req.body.role) {
           case "BUSINESS_OWNER":
@@ -729,10 +745,10 @@ const Registerwithproject = async (req, res, projectId) => {
               return res.status(400).json({ role: "Rôle invalide" });
       }
 
-      // 6️⃣ Sauvegarde de l'utilisateur
+      // 9️⃣ Sauvegarde de l'utilisateur
       const result = await userType.save();
 
-      // 7️⃣ Ajouter l'utilisateur au projet
+      // 🔟 Ajouter l'utilisateur au projet
       switch (req.body.role) {
           case "BUSINESS_OWNER":
               project.businessOwner = result._id;
@@ -753,7 +769,7 @@ const Registerwithproject = async (req, res, projectId) => {
 
       await project.save();
 
-      // 8️⃣ Réponse
+      // 1️⃣1️⃣ Réponse
       res.status(201).json({ message: "Inscription réussie", user: result });
 
   } catch (error) {
