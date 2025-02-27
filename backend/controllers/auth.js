@@ -643,6 +643,7 @@ async function resetPassword(req, res) {
     res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
   }
 }
+
 const Registerwithproject = async (req, res) => {
   try {
       // 1️⃣ Validation des données
@@ -680,8 +681,8 @@ const Registerwithproject = async (req, res) => {
           return res.status(404).json({ projectId: "Projet non trouvé" });
       }
 
-      // 7️⃣ Hachage du mot de passe
-      req.body.password = await bcryptjs.hash(req.body.password, 10);
+      // 7️⃣ Hachage du mot de passe (toujours nécessaire pour le stockage sécurisé)
+      const hashedPassword = await bcryptjs.hash(req.body.password, 10);
 
       // 8️⃣ Sélection du modèle en fonction du rôle
       let userType;
@@ -689,57 +690,46 @@ const Registerwithproject = async (req, res) => {
           case "BUSINESS_OWNER":
               userType = new BusinessOwner({
                   email: req.body.email,
-                  password: req.body.password,
+                  password: hashedPassword, // Stocker le mot de passe haché
                   fullname: req.body.fullname,
                   lastname: req.body.lastname,
                   role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
+                  project: projectId
               });
               break;
 
           case "ACCOUNTANT":
               userType = new Accountant({
                   email: req.body.email,
-                  password: req.body.password,
+                  password: hashedPassword, // Stocker le mot de passe haché
                   fullname: req.body.fullname,
                   lastname: req.body.lastname,
                   role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
+                  project: projectId
               });
               break;
 
           case "RH":
               userType = new RH({
                   email: req.body.email,
-                  password: req.body.password,
+                  password: hashedPassword, // Stocker le mot de passe haché
                   fullname: req.body.fullname,
                   lastname: req.body.lastname,
                   role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
+                  project: projectId
               });
               break;
 
           case "FINANCIAL_MANAGER":
               userType = new FinancialManager({
                   email: req.body.email,
-                  password: req.body.password,
+                  password: hashedPassword, // Stocker le mot de passe haché
                   fullname: req.body.fullname,
                   lastname: req.body.lastname,
                   role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
+                  project: projectId
               });
-              break;
-
-          case "BUSINESS_MANAGER":
-              userType = new BusinessManager({
-                  email: req.body.email,
-                  password: req.body.password,
-                  fullname: req.body.fullname,
-                  lastname: req.body.lastname,
-                  role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
-              });
-              break;
+              break
 
           default:
               return res.status(400).json({ role: "Rôle invalide" });
@@ -762,14 +752,52 @@ const Registerwithproject = async (req, res) => {
           case "FINANCIAL_MANAGER":
               project.financialManagers.push(result._id);
               break;
-          case "BUSINESS_MANAGER":
-              project.businessManager = result._id;
-              break;
+         
       }
 
+      // 1️⃣1️⃣ Envoyer un e-mail de bienvenue avec le mot de passe en clair
+      const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS,
+          },
+      });
+
+      const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: req.body.email,
+          subject: "👋 Bienvenue sur notre plateforme !",
+          html: `
+              <div style="background-color: #f4f4f4; padding: 20px; font-family: Arial, sans-serif;">
+                  <div style="max-width: 600px; background: #fff; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center;">
+                      
+                      <!-- Logo -->
+                      <div style="text-align: center; margin-bottom: 20px;">
+                          <img src="https://www.futuronomics.com/wp-content/uploads/2024/07/best-1024x576.png" 
+                               alt="TuniFlow Logo" style="max-width: 150px; border-radius: 10px;">
+                      </div>
+                  
+                      <h2 style="color: #333;">🎉 Welcome to our platform !</h2>
+                      <p style="color: #555;">Hello ${req.body.fullname},</p>
+                      <p style="color: #555;">Votre compte a été créé avec succès en tant que <strong>${req.body.role}</strong>.</p>
+                      <p style="color: #555;">Voici vos informations de connexion :</p>
+                      <p style="color: #555;"><strong>Email :</strong> ${req.body.email}</p>
+                      <p style="color: #555;"><strong>Mot de passe :</strong> ${req.body.password}</p>
+                      <p style="color: #555;">Nous vous recommandons de changer votre mot de passe après votre première connexion.</p>
+                  
+                      <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+                      <p style="color: #999; font-size: 12px;">© ${new Date().getFullYear()} TuniFlow - Tous droits réservés.</p>
+                  </div>
+              </div>
+          `,
+      };
+
+      await transporter.sendMail(mailOptions);
+      
       await project.save();
 
-      // 1️⃣1️⃣ Réponse
+      // 1️⃣2️⃣ Réponse
       res.status(201).json({ message: "Inscription réussie", user: result });
 
   } catch (error) {
@@ -777,7 +805,7 @@ const Registerwithproject = async (req, res) => {
       res.status(500).json({ message: "Erreur interne du serveur", error });
   }
 };
-  
+
  // Ajouter des employés à partir d'un fichier Excel
  const addEmployeesFromExcel = async (req, res) => {
   try {
@@ -952,10 +980,97 @@ const addEmployee = async (req, res) => {
 };
 
 
+const RegisterManger = async (req, res) => {
+  try {
+      // 1️⃣ Validation des données
+      const { errors, isValid } = validateRegister(req.body);
+      if (!isValid) {
+          return res.status(400).json(errors);
+      }
+
+      // 2️⃣ Récupérer l'ID de l'utilisateur connecté à partir du token
+      const token = req.headers.authorization.split(" ")[1];
+      const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+      const userId = decodedToken.userId;
+
+      if (!userId) {
+          return res.status(401).json({ message: "Token invalide ou expiré." });
+      }
+
+      // 3️⃣ Vérifier que l'utilisateur connecté est un BusinessOwner
+      const businessowner = await BusinessOwner.findById(userId);
+      if (!businessowner) {
+          return res.status(404).json({ message: "Utilisateur non trouvé." });
+      }
+
+      if (businessowner.role !== "BUSINESS_OWNER") {
+          return res.status(403).json({ message: "Accès refusé. Seul un Business Owner peut enregistrer des utilisateurs." });
+      }
+
+      // 4️⃣ Hachage du mot de passe
+      const hashedPassword = await bcryptjs.hash(req.body.password, 10);
+
+      // 5️⃣ Création du Business Manager
+      const businessManager = new BusinessManager({
+          email: req.body.email,
+          password: hashedPassword,
+          fullname: req.body.fullname,
+          lastname: req.body.lastname,
+          role: req.body.role,
+          // project: projectId // Retirez cette ligne si vous n'avez pas de projet
+      });
+
+      // 6️⃣ Sauvegarde du Business Manager
+      const result = await businessManager.save();
+
+      // 7️⃣ Envoyer un e-mail de bienvenue (optionnel)
+      const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS,
+          },
+      });
+
+      const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: req.body.email,
+          subject: "👋 Bienvenue sur notre plateforme !",
+          html: `
+              <div style="background-color: #f4f4f4; padding: 20px; font-family: Arial, sans-serif;">
+                  <div style="max-width: 600px; background: #fff; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center;">
+                      <h2 style="color: #333;">🎉 Welcome to our platform !</h2>
+                      <p style="color: #555;">Hello ${req.body.fullname},</p>
+                      <p style="color: #555;">Votre compte a été créé avec succès en tant que <strong>${req.body.role}</strong>.</p>
+                      <p style="color: #555;">Voici vos informations de connexion :</p>
+                      <p style="color: #555;"><strong>Email :</strong> ${req.body.email}</p>
+                      <p style="color: #555;"><strong>Mot de passe :</strong> ${req.body.password}</p>
+                      <p style="color: #555;">Nous vous recommandons de changer votre mot de passe après votre première connexion.</p>
+                      <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+                      <p style="color: #999; font-size: 12px;">© ${new Date().getFullYear()} TuniFlow - Tous droits réservés.</p>
+                  </div>
+              </div>
+          `,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      // 8️⃣ Réponse
+      res.status(201).json({ message: "Inscription réussie", user: result });
+
+  } catch (error) {
+      console.error("Erreur lors de l'inscription:", error);
+      res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
+
+
+
+
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
-    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence
+    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger
 };
