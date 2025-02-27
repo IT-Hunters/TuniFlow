@@ -1,3 +1,4 @@
+const token = localStorage.getItem("token");
 
 export const submitLiability = async (formData) => {
     try {
@@ -5,6 +6,7 @@ export const submitLiability = async (formData) => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
             },
             body: JSON.stringify(formData),
         });
@@ -28,6 +30,7 @@ export const getAllLiabilities = async () => {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
             },
         });
 

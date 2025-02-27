@@ -81,7 +81,6 @@ const AuthPage = () => {
         const { token, role } = response.data;
         localStorage.setItem("token", token);
         navigate(role === "ADMIN" ? "/dashboard" : "/profile");
-        
         setError("");
       } else {
         // Utilisation de FormData pour l'inscription

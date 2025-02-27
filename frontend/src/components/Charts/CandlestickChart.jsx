@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Chart from "react-apexcharts";
 import io from 'socket.io-client';
-
+import { fetchCandlestickData } from "../../services/AssetCalculationService";
 const socket = io('http://localhost:5000');
 
 const CandlestickCashFlowChart = () => {
@@ -9,27 +9,12 @@ const CandlestickCashFlowChart = () => {
 
   const fetchCandlestickData = async () => {
     try {
-      const response = await fetch("http://localhost:5000/wallets/cashflow/candlestick2/67bcf581623ede9afabc6edf");
+      const response = await fetchWorkingCapital();
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
-      const data = await response.json();
-      const formattedData = data.map((item, index, arr) => {
-        const prevCashFlow = index > 0 ? arr[index - 1].netCashFlow : item.netCashFlow;
-        return {
-          x: new Date(item.date),
-          y: [
-            prevCashFlow, 
-            Math.max(prevCashFlow, item.netCashFlow), 
-            Math.min(prevCashFlow, item.netCashFlow), 
-            item.netCashFlow, 
-          ],
-        };
-      });
-
-      setChartData(formattedData);
+      setChartData(response);
     } catch (error) {
       console.error("Error fetching candlestick data:", error);
     }

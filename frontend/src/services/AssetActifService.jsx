@@ -1,10 +1,12 @@
 
+const token = localStorage.getItem("token");
 export const submitAsset = async (formData) => {
     try {
         const response = await fetch("http://localhost:3000/assetsactifs", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
             },
             body: JSON.stringify(formData),
         });
@@ -27,6 +29,7 @@ export const getAllAssets = async () => {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
             },
         });
 
