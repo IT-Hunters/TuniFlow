@@ -9,6 +9,7 @@ import ResetPassword from "./components/forgetpassword/resetpassword";
 import ForgotPassword from "./components/forgetpassword/forgetpassword";
 import AdminUsers from "./components/Admin/AdminUsers";
 import  User  from "./components/User/User";
+import  Chat  from "./components/Chat/chat";
 function App() {         
   return (
     <Router>
@@ -23,6 +24,7 @@ function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/Adminusers" element={<AdminUsers />} />
         <Route path="/user" element={<User  />} />
+        <Route path="/chat" element={<Chat  />} />
       </Routes>
     </Router>
   );

@@ -2,22 +2,27 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import userImg from "../assets/user.png";
-import { FaWallet } from "react-icons/fa"; // Icône de portefeuille
+import { FaWallet, FaBell } from "react-icons/fa"; // Ajout de FaBell pour les notifications
 import "./NavbarHome.css";
 
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [walletMenuOpen, setWalletMenuOpen] = useState(false); // État pour le menu du portefeuille
+  const [walletMenuOpen, setWalletMenuOpen] = useState(false);
+  const [notificationMenuOpen, setNotificationMenuOpen] = useState(false); // État pour le menu des notifications
   const navigate = useNavigate();
 
-  // Mock data pour le portefeuille (statique pour cet exemple)
+  // Mock data pour le portefeuille et les notifications
   const mockWallet = {
     balance: 1500.75,
     currency: "TND",
     type: "Compte Principal",
   };
-  const hasWallet = true; // Simule si l'utilisateur a un portefeuille (true pour afficher, false pour créer)
+  const mockNotifications = [
+    { id: 1, message: "Nouveau message de Elyess" },
+    { id: 2, message: "Autorisation en attente" },
+  ];
+  const hasWallet = true;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -25,7 +30,7 @@ const Navbar = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await axios.get("http://localhost:3000/users/findMyProfile", {
+        const response = await axios.get("http://localhost:5000/users/findMyProfile", { // Port corrigé à 5000
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -53,6 +58,26 @@ const Navbar = () => {
         <div className="search-bar">
           <input type="text" placeholder="Search Anything..." />
         </div>
+        {/* Icône de notifications */}
+        <div
+          className="notification-menu"
+          onClick={() => setNotificationMenuOpen(!notificationMenuOpen)}
+        >
+          <FaBell className="notification-icon" />
+          {mockNotifications.length > 0 && (
+            <span className="notification-badge">{mockNotifications.length}</span>
+          )}
+          <div className={`notification-dropdown ${notificationMenuOpen ? "active" : ""}`}>
+            <h3>Notifications</h3>
+            {mockNotifications.length > 0 ? (
+              mockNotifications.map((notif) => (
+                <p key={notif.id}>{notif.message}</p>
+              ))
+            ) : (
+              <p>Aucune notification</p>
+            )}
+          </div>
+        </div>
         {/* Icône de portefeuille */}
         <div className="wallet-menu" onClick={() => setWalletMenuOpen(!walletMenuOpen)}>
           <FaWallet className="wallet-icon" />
@@ -74,7 +99,7 @@ const Navbar = () => {
             )}
           </div>
         </div>
-        {/* Menu profil existant */}
+        {/* Menu profil */}
         <div className="profile-menu" onClick={() => setMenuOpen(!menuOpen)}>
           <img src={userData?.picture || userImg} alt="User Profile" className="profile-img" />
           <div className={`dropdown-menu ${menuOpen ? "active" : ""}`}>

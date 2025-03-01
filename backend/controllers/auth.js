@@ -1067,10 +1067,110 @@ const RegisterManger = async (req, res) => {
 
 
 
+
+const startChat = async (req, res) => {
+  try {
+    const { recipientId, projectId } = req.body; // projectId est maintenant optionnel
+    const senderId = req.user.userId; // From JWT middleware
+
+    // Vérifier que l'expéditeur est un BusinessOwner
+    const sender = await BusinessOwner.findById(senderId);
+    if (!sender || sender.role !== "BUSINESS_OWNER") {
+      return res.status(403).json({ message: "Only Business Owners can start chats with Admin" });
+    }
+
+    // Vérifier que le destinataire est un Admin
+    const recipient = await userModel.findById(recipientId);
+    if (!recipient || recipient.role !== "ADMIN") {
+      return res.status(400).json({ message: "Recipient must be an Admin" });
+    }
+
+    // Vérifier si un chat existe déjà entre ces deux utilisateurs
+    let chat = await Chat.findOne({
+      participants: { $all: [senderId, recipientId] }
+    });
+
+    if (!chat) {
+      chat = new Chat({
+        project: projectId || null, // Si projectId n'est pas fourni, mettre null
+        participants: [senderId, recipientId],
+        messages: []
+      });
+      await chat.save();
+    }
+
+    res.status(200).json({ message: "Chat started", chat });
+  } catch (error) {
+    console.error("Error starting chat:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Send a message
+const sendMessage = async (req, res) => {
+  try {
+    const { chatId, content } = req.body;
+    const senderId = req.user.userId;
+
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    // Verify sender is a participant
+    if (!chat.participants.includes(senderId)) {
+      return res.status(403).json({ message: "You are not a participant in this chat" });
+    }
+
+    const message = {
+      sender: senderId,
+      content,
+      timestamp: new Date()
+    };
+
+    chat.messages.push(message);
+    await chat.save();
+
+    res.status(200).json({ message: "Message sent", chat });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get chat history
+const getChatHistory = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user.userId;
+
+    const chat = await Chat.findById(chatId).populate("participants", "fullname email").populate("messages.sender", "fullname");
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    // Verify user is a participant
+    if (!chat.participants.some(p => p._id.toString() === userId)) {
+      return res.status(403).json({ message: "You are not authorized to view this chat" });
+    }
+
+    res.status(200).json(chat);
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
-    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger
-};
+    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
+    sendMessage,        // New
+    getChatHistory};
+
+
+
