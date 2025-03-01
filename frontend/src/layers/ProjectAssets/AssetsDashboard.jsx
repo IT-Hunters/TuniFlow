@@ -6,8 +6,8 @@ import AssetForm from "../../components/Formulaire/AddAssetActifForm";
 import AddLiabilityForm from "../../components/Formulaire/AddLiabilityForm"; 
 import { getAllAssets } from "../../services/AssetActifService";
 import { getAllLiabilities } from "../../services/LiabilityService";
-import Sidebar from "../../components/sidebar/Sidebar";
-import Navbar from "../../components/navbar/Navbar";
+import Sidebar from "../../components/sidebarHome/newSidebar";
+import Navbar from "../../components/navbarHome/NavbarHome";
 import Popup from "reactjs-popup";
 import  "../../components/assetActif/assetActifComponent.css";
 import "reactjs-popup/dist/index.css";
@@ -18,7 +18,7 @@ const AssetsDashboard = () => {
   const projectId = "67bb69af26a4e63fc511cb6d";
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedForm, setSelectedForm] = useState("asset"); 
-
+  
   useEffect(() => {
     const fetchAssets = async () => {
       try {

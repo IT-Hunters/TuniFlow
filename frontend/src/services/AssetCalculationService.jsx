@@ -1,6 +1,14 @@
+const token = localStorage.getItem("token");
 export const fetchWorkingCapital = async (projectId) => {
     try {
-      const response = await fetch(`http://localhost:3000/assetCalculation/${projectId}`);
+      const response = await fetch(`http://localhost:3000/assetCalculation/${projectId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`, 
+        },
+    });
+    console.log(token)
       if (!response.ok) throw new Error("Failed to fetch data");
       
       const data = await response.json();
@@ -9,6 +17,37 @@ export const fetchWorkingCapital = async (projectId) => {
     } catch (error) {
       console.error("Error fetching working capital data:", error);
       return [];
+    }
+  };
+  export const fetchCandlestickData = async () => {
+    try {
+      const response = await fetch(`"http://localhost:5000/wallets/cashflow/candlestick2/67bcf581623ede9afabc6edf"`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`, 
+        },
+    });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const formattedData = data.map((item, index, arr) => {
+        const prevCashFlow = index > 0 ? arr[index - 1].netCashFlow : item.netCashFlow;
+        return {
+          x: new Date(item.date),
+          y: [
+            prevCashFlow, 
+            Math.max(prevCashFlow, item.netCashFlow), 
+            Math.min(prevCashFlow, item.netCashFlow), 
+            item.netCashFlow, 
+          ],
+        };
+      });
+      return formattedData;
+    } catch (error) {
+      console.error("Error fetching candlestick data:", error);
     }
   };
   

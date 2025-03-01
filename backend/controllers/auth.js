@@ -136,7 +136,7 @@ const Login = async (req, res) => {
 
     const match = await bcryptjs.compare(req.body.password, existUser.password);
     if (!match) {
-      return res.status(401).json({ message: 'Mot de passe incorrect' }); // 401 pour une authentification échouée
+      return res.status(401).json({ message: 'invalid password' }); // 401 pour une authentification échouée
     }
 
     const payload = {
@@ -645,7 +645,7 @@ async function resetPassword(req, res) {
   }
 }
 
-const Registerwithproject = async (req, res, projectId) => {
+const Registerwithproject = async (req, res) => {
   try {
       // 1️⃣ Validation des données
       const { errors, isValid } = validateRegister(req.body);
@@ -659,81 +659,87 @@ const Registerwithproject = async (req, res, projectId) => {
           return res.status(409).json({ email: "Utilisateur déjà existant" });
       }
 
-      // 3️⃣ Vérifier si le projet existe
+      // 3️⃣ Récupérer l'ID de l'utilisateur connecté à partir du token
+      const token = req.headers.authorization.split(" ")[1];
+      const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+      const userId = decodedToken.userId;
+
+      // 4️⃣ Vérifier que l'utilisateur connecté est un BusinessManager
+      const businessManager = await BusinessManager.findById(userId);
+      if (!businessManager || businessManager.role !== "BUSINESS_MANAGER") {
+          return res.status(403).json({ message: "Accès refusé. Seul un Business Manager peut enregistrer des utilisateurs." });
+      }
+
+      // 5️⃣ Récupérer l'ID du projet associé au BusinessManager
+      const projectId = businessManager.project;
+      if (!projectId) {
+          return res.status(404).json({ message: "Aucun projet associé à ce Business Manager" });
+      }
+
+      // 6️⃣ Vérifier si le projet existe
       const project = await Project.findById(projectId);
       if (!project) {
           return res.status(404).json({ projectId: "Projet non trouvé" });
       }
 
-      // 4️⃣ Hachage du mot de passe
-      req.body.password = await bcryptjs.hash(req.body.password, 10);
+      // 7️⃣ Hachage du mot de passe (toujours nécessaire pour le stockage sécurisé)
+      const hashedPassword = await bcryptjs.hash(req.body.password, 10);
 
-      // 5️⃣ Sélection du modèle en fonction du rôle
+      // 8️⃣ Sélection du modèle en fonction du rôle
       let userType;
       switch (req.body.role) {
           case "BUSINESS_OWNER":
               userType = new BusinessOwner({
                   email: req.body.email,
-                  password: req.body.password,
+                  password: hashedPassword, // Stocker le mot de passe haché
                   fullname: req.body.fullname,
                   lastname: req.body.lastname,
                   role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
+                  project: projectId
               });
               break;
 
           case "ACCOUNTANT":
               userType = new Accountant({
                   email: req.body.email,
-                  password: req.body.password,
+                  password: hashedPassword, // Stocker le mot de passe haché
                   fullname: req.body.fullname,
                   lastname: req.body.lastname,
                   role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
+                  project: projectId
               });
               break;
 
           case "RH":
               userType = new RH({
                   email: req.body.email,
-                  password: req.body.password,
+                  password: hashedPassword, // Stocker le mot de passe haché
                   fullname: req.body.fullname,
                   lastname: req.body.lastname,
                   role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
+                  project: projectId
               });
               break;
 
           case "FINANCIAL_MANAGER":
               userType = new FinancialManager({
                   email: req.body.email,
-                  password: req.body.password,
+                  password: hashedPassword, // Stocker le mot de passe haché
                   fullname: req.body.fullname,
                   lastname: req.body.lastname,
                   role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
+                  project: projectId
               });
-              break;
-
-          case "BUSINESS_MANAGER":
-              userType = new BusinessManager({
-                  email: req.body.email,
-                  password: req.body.password,
-                  fullname: req.body.fullname,
-                  lastname: req.body.lastname,
-                  role: req.body.role,
-                  project: projectId // Ajout de l'ID du projet
-              });
-              break;
+              break
 
           default:
               return res.status(400).json({ role: "Rôle invalide" });
       }
 
-      // 6️⃣ Sauvegarde de l'utilisateur
+      // 9️⃣ Sauvegarde de l'utilisateur
       const result = await userType.save();
 
-      // 7️⃣ Ajouter l'utilisateur au projet
+      // 🔟 Ajouter l'utilisateur au projet
       switch (req.body.role) {
           case "BUSINESS_OWNER":
               project.businessOwner = result._id;
@@ -747,14 +753,52 @@ const Registerwithproject = async (req, res, projectId) => {
           case "FINANCIAL_MANAGER":
               project.financialManagers.push(result._id);
               break;
-          case "BUSINESS_MANAGER":
-              project.businessManager = result._id;
-              break;
+         
       }
 
+      // 1️⃣1️⃣ Envoyer un e-mail de bienvenue avec le mot de passe en clair
+      const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS,
+          },
+      });
+
+      const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: req.body.email,
+          subject: "👋 Bienvenue sur notre plateforme !",
+          html: `
+              <div style="background-color: #f4f4f4; padding: 20px; font-family: Arial, sans-serif;">
+                  <div style="max-width: 600px; background: #fff; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center;">
+                      
+                      <!-- Logo -->
+                      <div style="text-align: center; margin-bottom: 20px;">
+                          <img src="https://www.futuronomics.com/wp-content/uploads/2024/07/best-1024x576.png" 
+                               alt="TuniFlow Logo" style="max-width: 150px; border-radius: 10px;">
+                      </div>
+                  
+                      <h2 style="color: #333;">🎉 Welcome to our platform !</h2>
+                      <p style="color: #555;">Hello ${req.body.fullname},</p>
+                      <p style="color: #555;">Votre compte a été créé avec succès en tant que <strong>${req.body.role}</strong>.</p>
+                      <p style="color: #555;">Voici vos informations de connexion :</p>
+                      <p style="color: #555;"><strong>Email :</strong> ${req.body.email}</p>
+                      <p style="color: #555;"><strong>Mot de passe :</strong> ${req.body.password}</p>
+                      <p style="color: #555;">Nous vous recommandons de changer votre mot de passe après votre première connexion.</p>
+                  
+                      <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+                      <p style="color: #999; font-size: 12px;">© ${new Date().getFullYear()} TuniFlow - Tous droits réservés.</p>
+                  </div>
+              </div>
+          `,
+      };
+
+      await transporter.sendMail(mailOptions);
+      
       await project.save();
 
-      // 8️⃣ Réponse
+      // 1️⃣2️⃣ Réponse
       res.status(201).json({ message: "Inscription réussie", user: result });
 
   } catch (error) {
@@ -762,7 +806,7 @@ const Registerwithproject = async (req, res, projectId) => {
       res.status(500).json({ message: "Erreur interne du serveur", error });
   }
 };
-  
+
  // Ajouter des employés à partir d'un fichier Excel
  const addEmployeesFromExcel = async (req, res) => {
   try {
@@ -937,10 +981,197 @@ const addEmployee = async (req, res) => {
 };
 
 
+const RegisterManger = async (req, res) => {
+  try {
+      // 1️⃣ Validation des données
+      const { errors, isValid } = validateRegister(req.body);
+      if (!isValid) {
+          return res.status(400).json(errors);
+      }
+
+      // 2️⃣ Récupérer l'ID de l'utilisateur connecté à partir du token
+      const token = req.headers.authorization.split(" ")[1];
+      const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+      const userId = decodedToken.userId;
+
+      if (!userId) {
+          return res.status(401).json({ message: "Token invalide ou expiré." });
+      }
+
+      // 3️⃣ Vérifier que l'utilisateur connecté est un BusinessOwner
+      const businessowner = await BusinessOwner.findById(userId);
+      if (!businessowner) {
+          return res.status(404).json({ message: "Utilisateur non trouvé." });
+      }
+
+      if (businessowner.role !== "BUSINESS_OWNER") {
+          return res.status(403).json({ message: "Accès refusé. Seul un Business Owner peut enregistrer des utilisateurs." });
+      }
+
+      // 4️⃣ Hachage du mot de passe
+      const hashedPassword = await bcryptjs.hash(req.body.password, 10);
+
+      // 5️⃣ Création du Business Manager
+      const businessManager = new BusinessManager({
+          email: req.body.email,
+          password: hashedPassword,
+          fullname: req.body.fullname,
+          lastname: req.body.lastname,
+          role: req.body.role,
+          // project: projectId // Retirez cette ligne si vous n'avez pas de projet
+      });
+
+      // 6️⃣ Sauvegarde du Business Manager
+      const result = await businessManager.save();
+
+      // 7️⃣ Envoyer un e-mail de bienvenue (optionnel)
+      const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS,
+          },
+      });
+
+      const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: req.body.email,
+          subject: "👋 Bienvenue sur notre plateforme !",
+          html: `
+              <div style="background-color: #f4f4f4; padding: 20px; font-family: Arial, sans-serif;">
+                  <div style="max-width: 600px; background: #fff; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center;">
+                      <h2 style="color: #333;">🎉 Welcome to our platform !</h2>
+                      <p style="color: #555;">Hello ${req.body.fullname},</p>
+                      <p style="color: #555;">Votre compte a été créé avec succès en tant que <strong>${req.body.role}</strong>.</p>
+                      <p style="color: #555;">Voici vos informations de connexion :</p>
+                      <p style="color: #555;"><strong>Email :</strong> ${req.body.email}</p>
+                      <p style="color: #555;"><strong>Mot de passe :</strong> ${req.body.password}</p>
+                      <p style="color: #555;">Nous vous recommandons de changer votre mot de passe après votre première connexion.</p>
+                      <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+                      <p style="color: #999; font-size: 12px;">© ${new Date().getFullYear()} TuniFlow - Tous droits réservés.</p>
+                  </div>
+              </div>
+          `,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      // 8️⃣ Réponse
+      res.status(201).json({ message: "Inscription réussie", user: result });
+
+  } catch (error) {
+      console.error("Erreur lors de l'inscription:", error);
+      res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
+
+
+
+
+
+const startChat = async (req, res) => {
+  try {
+    const { recipientId, projectId } = req.body; // projectId est maintenant optionnel
+    const senderId = req.user.userId; // From JWT middleware
+
+    // Vérifier que l'expéditeur est un BusinessOwner
+    const sender = await BusinessOwner.findById(senderId);
+    if (!sender || sender.role !== "BUSINESS_OWNER") {
+      return res.status(403).json({ message: "Only Business Owners can start chats with Admin" });
+    }
+
+    // Vérifier que le destinataire est un Admin
+    const recipient = await userModel.findById(recipientId);
+    if (!recipient || recipient.role !== "ADMIN") {
+      return res.status(400).json({ message: "Recipient must be an Admin" });
+    }
+
+    // Vérifier si un chat existe déjà entre ces deux utilisateurs
+    let chat = await Chat.findOne({
+      participants: { $all: [senderId, recipientId] }
+    });
+
+    if (!chat) {
+      chat = new Chat({
+        project: projectId || null, // Si projectId n'est pas fourni, mettre null
+        participants: [senderId, recipientId],
+        messages: []
+      });
+      await chat.save();
+    }
+
+    res.status(200).json({ message: "Chat started", chat });
+  } catch (error) {
+    console.error("Error starting chat:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Send a message
+const sendMessage = async (req, res) => {
+  try {
+    const { chatId, content } = req.body;
+    const senderId = req.user.userId;
+
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    // Verify sender is a participant
+    if (!chat.participants.includes(senderId)) {
+      return res.status(403).json({ message: "You are not a participant in this chat" });
+    }
+
+    const message = {
+      sender: senderId,
+      content,
+      timestamp: new Date()
+    };
+
+    chat.messages.push(message);
+    await chat.save();
+
+    res.status(200).json({ message: "Message sent", chat });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get chat history
+const getChatHistory = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user.userId;
+
+    const chat = await Chat.findById(chatId).populate("participants", "fullname email").populate("messages.sender", "fullname");
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    // Verify user is a participant
+    if (!chat.participants.some(p => p._id.toString() === userId)) {
+      return res.status(403).json({ message: "You are not authorized to view this chat" });
+    }
+
+    res.status(200).json(chat);
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
-    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence
-};
+    resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
+    sendMessage,        // New
+    getChatHistory};
+
+
+
