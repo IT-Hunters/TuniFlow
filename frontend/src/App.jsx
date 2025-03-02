@@ -10,6 +10,7 @@ import ForgotPassword from "./components/forgetpassword/forgetpassword";
 import AdminUsers from "./components/Admin/AdminUsers";
 import  User  from "./components/User/User";
 import  Chat  from "./components/Chat/chat";
+import ChatAdmin  from "./components/ChatAdmin/chatAdmin";
 function App() {         
   return (
     <Router>
@@ -25,6 +26,7 @@ function App() {
         <Route path="/Adminusers" element={<AdminUsers />} />
         <Route path="/user" element={<User  />} />
         <Route path="/chat" element={<Chat  />} />
+        <Route path="/chatadmin" element={<ChatAdmin  />} />
       </Routes>
     </Router>
   );

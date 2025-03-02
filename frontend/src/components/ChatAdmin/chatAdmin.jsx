@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import CoolSidebar from "../sidebarHome/newSidebar";
-import Navbar from "../navbarHome/NavbarHome";
+import CoolSidebar from "../sidebar/Sidebar";
+import Navbar from "../navbar/Navbar";
 import { FaPaperPlane, FaSmile, FaPaperclip, FaEllipsisH } from "react-icons/fa";
 import io from "socket.io-client";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import "./chat.css";
+import "./chatAdmin.css";
 
 const Chat = () => {
   const [socket, setSocket] = useState(null);

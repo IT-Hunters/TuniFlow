@@ -166,3 +166,15 @@ exports.calculateCashFlowHistory = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+exports.getWalletByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const wallet = await Wallet.findOne({ user_id: userId });
+    if (!wallet) {
+      return res.status(404).json({ message: "Aucun wallet trouvé" });
+    }
+    res.status(200).json(wallet);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

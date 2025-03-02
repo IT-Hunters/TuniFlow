@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { FaHome, FaTachometerAlt, FaUsers, FaBell, FaCog, FaQuestionCircle, FaBars, FaChevronLeft, FaSignOutAlt, FaComments } from "react-icons/fa";
 import "./SidebarHome.css";
 import { findMyProfile } from "../../services/UserService";
+import { useNavigate } from "react-router-dom"; // Ajout de useNavigate
 
 const navItems = [
   { title: "Home", icon: FaHome, href: "/user" },
@@ -19,12 +20,28 @@ const CoolSidebar = () => {
   const [userData, setUserData] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("Dashboard");
+  const navigate = useNavigate(); // Hook pour navigation
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.clear();
     document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.location.href = "/login";
+    navigate("/login"); // Utilisation de navigate au lieu de window.location
+  };
+
+  const handleNavigation = (item) => {
+    setActiveItem(item.title);
+    const token = localStorage.getItem("token");
+
+    if (item.title === "Chat") {
+      if (token) {
+        navigate("/chat"); // Redirige vers /chat si token présent
+      } else {
+        navigate("/login"); // Redirige vers /login si pas de token
+      }
+    } else {
+      navigate(item.href); // Redirige vers les autres routes
+    }
   };
 
   useEffect(() => {
@@ -63,8 +80,8 @@ const CoolSidebar = () => {
                   href={item.href}
                   className={activeItem === item.title ? "active" : ""}
                   onClick={(e) => {
-                    e.preventDefault();
-                    setActiveItem(item.title);
+                    e.preventDefault(); // Empêche le comportement par défaut du lien
+                    handleNavigation(item); // Utilise la fonction personnalisée
                   }}
                 >
                   <item.icon />

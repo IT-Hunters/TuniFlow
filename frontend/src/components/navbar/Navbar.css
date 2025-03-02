@@ -143,3 +143,65 @@ hr {
   margin: 8px 0;
 }
 
+.notification-menu {
+  position: relative;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+.notification-icon {
+  color: #fff;
+  transition: color 0.3s ease;
+}
+
+.notification-icon:hover {
+  color: #e6f0fa;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4757;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: white;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  padding: 10px;
+  min-width: 200px;
+  z-index: 1000;
+  display: none;
+}
+
+.notification-dropdown.active {
+  display: block;
+}
+
+.notification-dropdown h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.notification-dropdown p {
+  font-size: 12px;
+  margin: 5px 0;
+  color: #666;
+}
+
+/* Styles existants pour le reste */
+.profile-area {
+  display: flex;
+  align-items: center;
+}
+

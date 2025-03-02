@@ -16,7 +16,7 @@ var projectRouter = require('./routes/project.router');
 var taxeRoutes = require('./routes/taxeRoutes');
 var transactionRoutes = require('./routes/transactionRoutes');
 var walletRoutes = require('./routes/walletRoutes');
-var chatRouter = require('./routes/chatRoutes');
+var chatRouter = require('./routes/chatRoutes'); // Route pour le chat
 
 var app = express();
 var mongoose = require("mongoose");
@@ -27,7 +27,7 @@ mongoose.connect(connection.url)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ Error connecting to MongoDB:", err));
 
-// Active CORS pour le frontend React et Jade
+// Active CORS pour le frontend React (http://localhost:5173)
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -85,32 +85,15 @@ io.on("connection", (socket) => {
   socket.on("sendMessage", async ({ chatId, content, senderId }) => {
     try {
       const chat = await Chat.findById(chatId);
-      if (!chat) {
-        socket.emit("error", { message: "Chat non trouvé" });
-        return;
-      }
+      if (!chat || !chat.participants.includes(senderId)) return;
 
-      if (!chat.participants.includes(senderId)) {
-        socket.emit("error", { message: "Vous n'êtes pas autorisé dans ce chat" });
-        return;
-      }
-
-      const message = {
-        sender: senderId,
-        content,
-        timestamp: new Date()
-      };
-
+      const message = { sender: senderId, content, timestamp: new Date() };
       chat.messages.push(message);
       await chat.save();
 
       io.to(chatId).emit("newMessage", message);
-      console.log(`Message sent in chat ${chatId}: ${content} by ${senderId}`);
 
-      const otherParticipant = chat.participants.find(
-        (participant) => participant.toString() !== senderId
-      );
-
+      const otherParticipant = chat.participants.find(p => p.toString() !== senderId);
       if (otherParticipant) {
         const sender = await userModel.findById(senderId, "fullname");
         const senderName = sender ? sender.fullname : senderId;
@@ -124,36 +107,21 @@ io.on("connection", (socket) => {
       }
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
-      socket.emit("error", { message: "Erreur serveur" });
     }
   });
 
-  // Nouvel événement pour indiquer qu'un utilisateur est en train d'écrire
   socket.on("typing", async ({ chatId, senderId }) => {
-    try {
-      const chat = await Chat.findById(chatId);
-      if (!chat || !chat.participants.includes(senderId)) return;
+    const chat = await Chat.findById(chatId);
+    if (!chat || !chat.participants.includes(senderId)) return;
 
-      const otherParticipant = chat.participants.find(
-        (participant) => participant.toString() !== senderId
-      );
-
-      if (otherParticipant) {
-        const sender = await userModel.findById(senderId, "fullname");
-        const senderName = sender ? sender.fullname : senderId;
-        io.to(chatId).emit("userTyping", {
-          chatId,
-          senderId,
-          senderName,
-          recipientId: otherParticipant
-        });
-      }
-    } catch (error) {
-      console.error("Erreur lors de la gestion de typing:", error);
+    const otherParticipant = chat.participants.find(p => p.toString() !== senderId);
+    if (otherParticipant) {
+      const sender = await userModel.findById(senderId, "fullname");
+      const senderName = sender ? sender.fullname : senderId;
+      io.to(chatId).emit("userTyping", { chatId, senderId, senderName, recipientId: otherParticipant });
     }
   });
 
-  // Événement pour arrêter l'indicateur d'écriture
   socket.on("stopTyping", ({ chatId, senderId }) => {
     io.to(chatId).emit("userStoppedTyping", { chatId, senderId });
   });
@@ -177,7 +145,6 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
   res.status(err.status || 500);
   res.render('error');
 });

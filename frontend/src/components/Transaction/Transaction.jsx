@@ -1,75 +1,48 @@
-import React from 'react';
-import './transaction.css';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import "./Wallet.css"; // Réutilisation du même CSS
 
 const Transaction = () => {
-  const mockTransactions = [
-    {
-      id: 'TXN001',
-      amount: 0.025,
-      currency: 'BTC',
-      type: 'income',
-      status: 'completed',
-      date: '2025-02-24 14:30:00',
-      description: 'Dépôt depuis Coinbase',
-    },
-    {
-      id: 'TXN002',
-      amount: 0.01,
-      currency: 'BTC',
-      type: 'expense',
-      status: 'pending',
-      date: '2025-02-25 09:15:00',
-      description: 'Retrait vers adresse externe',
-    },
-    {
-      id: 'TXN003',
-      amount: 0.05,
-      currency: 'BTC',
-      type: 'income',
-      status: 'completed',
-      date: '2025-02-23 18:45:00',
-      description: 'Transfert reçu',
-    },
-  ];
+  const { walletId } = useParams();
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`http://localhost:5000/transactions/${walletId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setTransactions(response.data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des transactions :", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, [walletId]);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="transaction-container">
-      <header className="transaction-header">
-        <h1>Historique des Transactions</h1>
-      </header>
-      <div className="transaction-filters">
-        <select className="filter-select">
-          <option value="">Tous les types</option>
-          <option value="income">Revenus</option>
-          <option value="expense">Dépenses</option>
-        </select>
-        <select className="filter-select">
-          <option value="">Tous les statuts</option>
-          <option value="pending">En attente</option>
-          <option value="completed">Terminé</option>
-          <option value="canceled">Annulé</option>
-        </select>
-        <input type="date" className="filter-date" />
-        <input type="date" className="filter-date" />
-      </div>
-      <div className="transaction-list">
-        {mockTransactions.map((txn) => (
-          <div key={txn.id} className="transaction-item">
-            <div className="txn-info">
-              <p className="txn-amount">
-                {txn.type === 'income' ? '+' : '-'} {txn.amount} {txn.currency}
-              </p>
-              <p className="txn-type">{txn.type === 'income' ? 'Revenus' : 'Dépenses'}</p>
-              <p className="txn-status">{txn.status}</p>
-              <p className="txn-date">{txn.date}</p>
-              {txn.description && <p className="txn-desc">{txn.description}</p>}
-            </div>
-            {txn.status === 'pending' && (
-              <button className="txn-action">Annuler</button>
-            )}
-          </div>
-        ))}
-      </div>
+    <div className="wallet-container">
+      <h2>Transactions</h2>
+      {transactions.length > 0 ? (
+        <ul className="transaction-list">
+          {transactions.map((tx) => (
+            <li key={tx._id} className={`transaction-item ${tx.type}`}>
+              <span>{tx.type === "income" ? "Dépôt" : "Retrait"}</span>
+              <span>{tx.amount} {tx.currency || "TND"}</span>
+              <span>{new Date(tx.date).toLocaleString()}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>Aucune transaction trouvée</p>
+      )}
     </div>
   );
 };

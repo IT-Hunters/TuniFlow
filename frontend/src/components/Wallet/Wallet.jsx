@@ -1,34 +1,78 @@
-import React from 'react';
-import './wallet.css';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
+import "./Wallet.css";
 
 const Wallet = () => {
-  const mockWallet = {
-    userId: 'USR12345',
-    balance: 1.2456, // In BTC
-    currency: 'BTC',
-    type: 'Spot Wallet',
+  const { walletId } = useParams();
+  const navigate = useNavigate();
+  const [wallet, setWallet] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [newWalletData, setNewWalletData] = useState({ type: "" });
+
+  useEffect(() => {
+    if (walletId) {
+      const fetchWallet = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await axios.get(`http://localhost:5000/wallet/${walletId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setWallet(response.data);
+        } catch (error) {
+          console.error("Erreur lors de la récupération du wallet :", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchWallet();
+    } else {
+      setLoading(false); // Mode création
+    }
+  }, [walletId]);
+
+  const handleCreateWallet = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const userId = JSON.parse(atob(token.split(".")[1])).userId; // Décoder le token pour obtenir userId
+      const response = await axios.post(
+        "http://localhost:5000/wallet",
+        { user_id: userId, type: newWalletData.type },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setWallet(response.data.wallet);
+      navigate(`/wallet/${response.data.wallet._id}`);
+    } catch (error) {
+      console.error("Erreur lors de la création du wallet :", error);
+    }
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="wallet-container">
-      <header className="wallet-header">
-        <h1>Portefeuille</h1>
-        <span className="wallet-type">{mockWallet.type}</span>
-      </header>
-      <div className="wallet-balance">
-        <p className="balance-label">Solde Total</p>
-        <h2 className="balance-amount">{mockWallet.balance} {mockWallet.currency}</h2>
-        <p className="balance-usd">≈ $45,678.90 USD</p>
-      </div>
-      <div className="wallet-actions">
-        <button className="action-button deposit">Déposer</button>
-        <button className="action-button withdraw">Retirer</button>
-        <button className="action-button transfer">Transférer</button>
-      </div>
-      <div className="wallet-details">
-        <p><strong>ID Utilisateur:</strong> {mockWallet.userId}</p>
-        <p><strong>Type:</strong> {mockWallet.type}</p>
-      </div>
+      {wallet ? (
+        <div className="wallet-card">
+          <h2>{wallet.type}</h2>
+          <p className="balance">{wallet.balance} {wallet.currency}</p>
+          <button onClick={() => navigate(`/transactions/${wallet._id}`)}>
+            Voir les transactions
+          </button>
+          <button onClick={() => navigate(`/wallet/${wallet._id}/deposit`)}>Dépôt</button>
+          <button onClick={() => navigate(`/wallet/${wallet._id}/withdraw`)}>Retrait</button>
+        </div>
+      ) : (
+        <div className="wallet-create">
+          <h2>Créer un nouveau portefeuille</h2>
+          <input
+            type="text"
+            placeholder="Type de portefeuille (ex: Principal)"
+            value={newWalletData.type}
+            onChange={(e) => setNewWalletData({ ...newWalletData, type: e.target.value })}
+          />
+          <button onClick={handleCreateWallet}>Créer</button>
+        </div>
+      )}
     </div>
   );
 };
