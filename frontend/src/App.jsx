@@ -11,6 +11,8 @@ import AdminUsers from "./components/Admin/AdminUsers";
 import  User  from "./components/User/User";
 import  Chat  from "./components/Chat/chat";
 import ChatAdmin  from "./components/ChatAdmin/chatAdmin";
+import Wallet from "./components/Wallet/Wallet";
+import Transaction from "./components/Transaction/Transaction";
 function App() {         
   return (
     <Router>
@@ -27,6 +29,10 @@ function App() {
         <Route path="/user" element={<User  />} />
         <Route path="/chat" element={<Chat  />} />
         <Route path="/chatadmin" element={<ChatAdmin  />} />
+
+        <Route path="/wallet/:walletId" element={<Wallet />} />
+        <Route path="/wallet/create" element={<Wallet />} />
+        <Route path="/transactions/:walletId" element={<Transaction />} />
       </Routes>
     </Router>
   );

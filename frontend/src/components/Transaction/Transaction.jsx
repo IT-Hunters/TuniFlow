@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import "./Wallet.css"; // Réutilisation du même CSS
+ // Réutilisation du même CSS
 
 const Transaction = () => {
   const { walletId } = useParams();

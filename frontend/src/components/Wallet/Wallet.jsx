@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import "./Wallet.css";
+import "./wallet.css";
 
 const Wallet = () => {
   const { walletId } = useParams();
@@ -34,7 +34,7 @@ const Wallet = () => {
   const handleCreateWallet = async () => {
     try {
       const token = localStorage.getItem("token");
-      const userId = JSON.parse(atob(token.split(".")[1])).userId; // Décoder le token pour obtenir userId
+      const userId = JSON.parse(atob(token.split(".")[1])).userId;
       const response = await axios.post(
         "http://localhost:5000/wallet",
         { user_id: userId, type: newWalletData.type },
