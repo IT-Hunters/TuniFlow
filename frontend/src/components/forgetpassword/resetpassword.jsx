@@ -32,24 +32,24 @@ const ResetPassword = () => {
     <div className="reset-container">
       <div className="reset-box">
         
-        <h2 className="reset-title">Réinitialisation du mot de passe</h2>
+        <h2 className="reset-title">Reset password </h2>
         <form onSubmit={handleSubmit} className="reset-form">
           <div className="input-group">
-            <label>Nouveau mot de passe</label>
+            <label>New Password</label>
             <input
               type="password"
               className="reset-input"
-              placeholder="Entrez votre nouveau mot de passe"
+              placeholder="Enter your new password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
           </div>
-          <button type="submit" className="reset-button">Réinitialiser</button>
+          <button type="submit" className="reset-button">Reset</button>
         </form>
         {message && <p className="reset-message">{message}</p>}
         <p className="reset-link" onClick={() => navigate("/login")}>
-          Retour à la connexion
+         Back to Login
         </p>
         <div className="reset-blue-box">
   <img src="/reset-image.png" alt="Reset Password" className="reset-image" />

@@ -24,7 +24,7 @@ const ForgotPassword = () => {
       setMessage(response.data.message);  
       setError(""); 
     } catch (err) {
-      setError(err.response?.data.message || "Erreur lors de l'envoi du lien");
+      setError(err.response?.data.message || "eror during sending link");
       setMessage("");  
     }
   };
@@ -33,12 +33,12 @@ const ForgotPassword = () => {
     <div className="forgot-password-container forgot-password-login-mode">
       <div className="forgot-password-form-box">
         <form onSubmit={handleSubmit} className="forgot-password-sign-in-form">
-          <h2>Réinitialisation du Mot de Passe</h2>
+          <h2>Reset     Password </h2>
           
           <div className="forgot-password-input-field">
             <input
               type="email"
-              placeholder="Entrez votre e-mail"
+              placeholder="Enter Emai;"
               value={email}
               onChange={handleChange}
               required
@@ -49,11 +49,11 @@ const ForgotPassword = () => {
           {error && <p className="forgot-password-error-text">{error}</p>}
 
           <button type="submit" className="forgot-password-btn">
-            Envoyer un lien
+            send <link rel="stylesheet" href="" />
           </button>
 
           <p className="forgot-password-switch-text">
-            Retour au <span className="forgot-password-toggle-link" onClick={() => navigate("/")}>login</span>
+            back to <span className="forgot-password-toggle-link" onClick={() => navigate("/")}>login</span>
           </p>
         </form>
       </div>
