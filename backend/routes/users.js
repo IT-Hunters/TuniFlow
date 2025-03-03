@@ -3,7 +3,7 @@ var router = express.Router();
 const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,
   getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,
-  getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger} = require('../controllers/auth');
+  getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,getAllRoles} = require('../controllers/auth');
   const multerImage = require("../config/multer-picture");
   const multerImageAndPdf = require("../config/multer-picture-pdf");
   const multerExcel = require("../config/multer-excel");
@@ -33,7 +33,7 @@ router.post("/forgot-password",forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/verify-code", verifyCode);
 router.get('/download/:fileName', downloadEvidence);
-
+router.get("/roles", getAllRoles);
 /*router.post("/registerwithproject/:projectId", async (req, res) => {
   const { projectId } = req.params;
   await Registerwithproject(req, res, projectId);

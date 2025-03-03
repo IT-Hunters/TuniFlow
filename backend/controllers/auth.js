@@ -2,6 +2,7 @@ const bcryptjs = require("bcryptjs");
 const userModel = require("../model/user");
 const validateRegister = require("../validation/registerValidation");
 const validateLogin= require("../validation/login.validator");
+const validateUpdateProfil=require("../validation/updateprofil");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const multerPicture= require("../config/multer-picture")
@@ -155,72 +156,73 @@ const Login = async (req, res) => {
 };
 /****************Update Profile********************* */ 
 
-
 const updateProfile = async (req, res) => {
   const userId = req.user.userId; // Récupéré à partir du middleware authenticateJWT
   const updates = req.body; // Les champs à mettre à jour
 
   try {
-    // Trouver l'utilisateur dans la base de données
-    const user = await userModel.findById(userId);
+      // Trouver l'utilisateur dans la base de données
+      const user = await userModel.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
-    }
+      if (!user) {
+          return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
 
-    // Vérifier le type d'utilisateur et mettre à jour les champs spécifiques
-    switch (user.role) {
-      case "BUSINESS_MANAGER":
-        await BusinessManager.findOneAndUpdate(
-          { _id: userId },
-          { $set: updates },
-          { new: true, runValidators: true }
-        );
-        break;
-        case "BUSINESS_OWNER":
-          await BusinessOwner.findOneAndUpdate(
-            { _id: userId },
-            { $set: updates },
-            { new: true, runValidators: true }
-          );
-          break;
+      // Valider les données en fonction du rôle
+      const { errors, isValid } = validateUpdateProfil(updates, user.role);
 
-      case "RH":
-        await RH.findOneAndUpdate(
-          { _id: userId },
-          { $set: updates },
-          { new: true, runValidators: true }
-        );
-        break;
+      if (!isValid) {
+          return res.status(400).json(errors); // 400 pour une requête invalide
+      }
 
-      case "FINANCIAL_MANAGER":
-        await FinancialManager.findOneAndUpdate(
-          { _id: userId },
-          { $set: updates },
-          { new: true, runValidators: true }
-        );
-        break;
+      // Vérifier le type d'utilisateur et mettre à jour les champs spécifiques
+      switch (user.role) {
+          case "BUSINESS_MANAGER":
+              await BusinessManager.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          case "BUSINESS_OWNER":
+              await BusinessOwner.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          case "RH":
+              await RH.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          case "FINANCIAL_MANAGER":
+              await FinancialManager.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          case "ACCOUNTANT":
+              await Accountant.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          default:
+              return res.status(400).json({ message: "Rôle d'utilisateur non valide" });
+      }
 
-      case "ACCOUNTANT":
-        await Accountant.findOneAndUpdate(
-          { _id: userId },
-          { $set: updates },
-          { new: true, runValidators: true }
-        );
-        break;
-
-      default:
-        return res.status(400).json({ message: "Rôle d'utilisateur non valide" });
-    }
-
-    // Renvoyer une réponse de succès
-    return res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
+      // Renvoyer une réponse de succès
+      return res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
   } catch (error) {
-    console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
-    return res.status(500).json({ message: "Erreur interne du serveur" });
+      console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
+      return res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
-
 
 
 /* *************************************************/
@@ -1161,7 +1163,18 @@ const getChatHistory = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+const getAllRoles = async (req, res) => {
+  try {
+    // Récupérer tous les rôles disponibles sauf BUSINESS_OWNER et BUSINESS_MANAGER
+    const roles = userModel.getAllRoles();
 
+    // Renvoyer la réponse
+    res.status(200).json({ roles });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des rôles :", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
 
 
 module.exports = {
@@ -1170,7 +1183,7 @@ module.exports = {
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
     resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
-    sendMessage,        // New
+    sendMessage,getAllRoles,       // New
     getChatHistory};
 
 
