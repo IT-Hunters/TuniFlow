@@ -9,7 +9,9 @@ const { Server } = require("socket.io");
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var assetsactifsRoutes = require('./routes/assetActifRoutes');
+var invoiceRoutes = require('./routes/invoiceRoutes'); // Importing invoice routes
+var assetsactifsRoutes = require('./routes/assetActifRoutes'); 
+
 var assetspassifsRoutes = require('./routes/assetPassifRoutes');
 var assetCalculationRoutes = require('./routes/AssetRoutes');
 var projectRouter = require('./routes/project.router');
@@ -48,7 +50,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/project', projectRouter);
+app.use('/invoices', invoiceRoutes); // Adding invoice routes
 app.use('/assetsactifs', assetsactifsRoutes);
+
 app.use('/assetspassifs', assetspassifsRoutes);
 app.use('/assetCalculation', assetCalculationRoutes);
 app.use('/taxes', taxeRoutes);
