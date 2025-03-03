@@ -258,7 +258,42 @@ const updateProfile = async (req, res) => {
       res.status(500).json({ message: 'Erreur serveur.' });
     }
   }
+/******************************  */ 
+const findMyPicture = async (req, res) => {
+  try {
+    // Vérifie si l'ID utilisateur est présent dans req.user
+    if (!req.user || !req.user.userId) {
+      return res.status(400).json({ message: 'ID utilisateur manquant.' });
+    }
 
+    // Vérifie si l'ID utilisateur est un ObjectId valide
+    if (!mongoose.isValidObjectId(req.user.userId)) {
+      return res.status(400).json({ message: 'ID utilisateur invalide.' });
+    }
+
+    // Convertit l'ID utilisateur en ObjectId
+    const userId = new mongoose.Types.ObjectId(req.user.userId);
+    console.log('User ID:', userId);
+
+    // Recherche l'utilisateur par son _id et sélectionne uniquement le champ 'picture'
+    const user = await userModel.findById(userId).select("picture");
+
+    // Si l'utilisateur n'est pas trouvé
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+    }
+
+    // Si l'utilisateur est trouvé
+    console.log('Image de profil trouvée:', user.picture);
+    res.status(200).json({ picture: user.picture });
+  } catch (err) {
+    console.error('Erreur dans findMyPicture:', err);
+    res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+
+/*  *****************************/
   async function deleteprofilbyid(req, res) {
     try {
         const data = await profileModel.findById({_id: req.params.id});
@@ -1183,7 +1218,7 @@ module.exports = {
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
     resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
-    sendMessage,getAllRoles,       // New
+    sendMessage,getAllRoles,findMyPicture,      // New
     getChatHistory};
 
 
