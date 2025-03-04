@@ -18,7 +18,7 @@ const Sidebar = () => {
     <nav className="sidebar">
       <div className="brand">TUNIFLOW</div>
       <ul>
-        <li><a href="#0">Dashboard</a></li>
+        <li><a href="/dashboard">Dashboard</a></li>
         <li><Link to="/adminusers">Business Owners</Link></li>
         <li><a href="#0">Store</a></li>
         <li><a href="#0">Orders</a></li>

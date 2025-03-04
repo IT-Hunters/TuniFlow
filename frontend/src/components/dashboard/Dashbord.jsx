@@ -8,6 +8,7 @@ import chart from './assets/chart.png'
 import chart2 from './assets/chart2.png'
 import Sidebar from "../sidebar/Sidebar";
 import Navbar from "../navbar/Navbar";
+import UsersTable from './UsersTable/UsersTable'
 const Dashbord = () => {
   // Vous pouvez déplacer ce CSS dans un fichier .css séparé
   
@@ -83,56 +84,7 @@ const Dashbord = () => {
                 </div>
               </div>
             </div>
-            {/* Recent Invoices */}
-            <div className="recent-invoices">
-              <h4>Recent Invoices</h4>
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Customer Name</th>
-                    <th>Items</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>#045699</td>
-                    <td>Eren Yeager</td>
-                    <td>1 x Black Backpack</td>
-                    <td>07/12/2022</td>
-                    <td><span className="status paid">Paid</span></td>
-                    <td>$100</td>
-                  </tr>
-                  <tr>
-                    <td>#045700</td>
-                    <td>Levi Ackerman</td>
-                    <td>2 x T-Shirts</td>
-                    <td>08/12/2022</td>
-                    <td><span className="status pending">Pending</span></td>
-                    <td>$45</td>
-                  </tr>
-                  <tr>
-                    <td>#045701</td>
-                    <td>Mikasa Ackerman</td>
-                    <td>1 x Jacket</td>
-                    <td>09/12/2022</td>
-                    <td><span className="status refunded">Refunded</span></td>
-                    <td>$75</td>
-                  </tr>
-                  <tr>
-                    <td>#045702</td>
-                    <td>Historia Reiss</td>
-                    <td>2 x Bags</td>
-                    <td>10/12/2022</td>
-                    <td><span className="status paid">Paid</span></td>
-                    <td>$120</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <UsersTable/>
           </div>
         </div>
       </div>
