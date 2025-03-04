@@ -34,4 +34,5 @@ router.post("/unassignaccountant/:accountantId", authenticateJWT, unassignAccoun
 router.post("/unassignfinancialmanager/:financialManagerId", authenticateJWT, unassignFinancialManagerFromProject);
 router.post("/unassignrh/:rhId", authenticateJWT, unassignRHManagerFromProject);
 router.get("/getProject/:id", getProjectById);
+
 module.exports = router;

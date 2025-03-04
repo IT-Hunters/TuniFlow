@@ -1,245 +1,437 @@
+/* ----- Global Resets ----- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fb;
+  color: #333;
+}
+a {
+  text-decoration: none;
+  color: white;
+}
 
-    /* ----- Global Resets ----- */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f5f7fb;
-        color: #333;
-      }
-      a {
-        text-decoration: none;
-        color: white;
-      }
-  
-      /* ----- Layout Containers ----- */
-      .container {
-        display: flex;
-        min-height: 100vh;
-        width: 100%;
-      }
-  
-      /* ----- Sidebar ----- */
-      .sidebar {
-        width: 240px;
-        background-color: #081c37;
-        border-right: 1px solid #ddd;
-        display: flex;
-        flex-direction: column;
-        padding: 1rem;
-      }
-      .sidebar .brand {
-        font-size: 1.4rem;
-        font-weight: bold;
-        margin-bottom: 2rem;
-        color: #fff;
-      }
-      .sidebar ul {
-        list-style: none;
-      }
-      .sidebar li {
-        margin-bottom: 1.2rem;
-        font-weight: 500;
-      }
-      .sidebar li a {
-        display: block;
-        padding: 0.5rem 0.8rem;
-        border-radius: 4px;
-        transition: background-color 0.3s;
-      }
-      .sidebar li a:hover {
-        background-color: #eef3fb;
-        color: #3F8CFF;
-      }
-  
-      /* ----- Main Area ----- */
-      .main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        background-color: #f5f7fb;
-      }
-  
-      /* ----- Navbar ----- */
-      .navbar {
-        background-color: #081c37;
-        border-bottom: 1px solid #ddd;
-        padding: 0.75rem 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .navbar .welcome-text {
-        font-size: 1rem;
-        font-weight: 500;
-        color: #fff;
-      }
-      .navbar .search-bar {
-        position: relative;
-        margin-right: 1rem;
-      }
-      .navbar .search-bar input {
-        padding: 0.4rem 2rem 0.4rem 0.8rem;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-      }
-      .navbar .search-bar i {
-        position: absolute;
-        right: 0.5rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
-      }
-      .navbar .profile-area {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .navbar .profile-area .username {
-        font-weight: 500;
-        color: #fff;
-      }
-      .navbar .profile-area img {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
-      .icon {
-        width: 120px;
-        height:80px;
-        
-      }
-      .iconrevenue {
-          width: 70px;
-          height:70px;
-          
-        }
-  
-      .iconexpenses {
-          width: 90px;
-          height:80px;
-        }
-      .chart{
-          width: 100%;
-          height: 100%;
-      }
-  
-      /* ----- Content Area ----- */
-      .content {
-        padding: 1.5rem;
-      }
-  
-      /* Top Cards (Stats) */
-      .stats-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-      }
-      .card-dashboard {
-        background-color: #fff;
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        text-align: center;
-      }
-      .card h3 {
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem;
-      }
-      .card p {
-        font-size: 1.1rem;
-        font-weight: bold;
-      }
-      .card small {
-        display: block;
-        color: #666;
-        margin-top: 0.5rem;
-      }
-  
-      /* Charts Section */
-      .charts {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-      }
-      .chart-box {
-        background-color: #fff;
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      }
-      .chart-box h4 {
-        margin-bottom: 1rem;
-      }
-      .chart-placeholder {
-        width: 100%;
-        height: 200px;
-        background: repeating-linear-gradient(
-          45deg,
-          #ececec,
-          #ececec 10px,
-          #f9f9f9 10px,
-          #f9f9f9 20px
-        );
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #999;
-        font-size: 1rem;
-        border-radius: 4px;
-      }
-  
-      /* Recent Invoices Table */
-      .recent-invoices {
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        padding: 1rem;
-      }
-      .recent-invoices h4 {
-        margin-bottom: 1rem;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      table thead {
-        background-color: #f0f0f0;
-      }
-      table thead th {
-        padding: 0.75rem;
-        text-align: left;
-        font-weight: 600;
-      }
-      table tbody td {
-        padding: 0.75rem;
-        border-bottom: 1px solid #eee;
-        vertical-align: middle;
-      }
-      table tbody tr:last-child td {
-        border-bottom: none;
-      }
-      .status {
-        padding: 0.3rem 0.6rem;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: #fff;
-      }
-      .status.paid {
-        background-color: #28a745; /* green */
-      }
-      .status.pending {
-        background-color: #ffc107; /* yellow */
-        color: #333;
-      }
-      .status.refunded {
-        background-color: #dc3545; /* red */
-      }
-    
+/* ----- Layout Containers ----- */
+.container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ----- Sidebar ----- */
+.sidebar {
+  width: 240px;
+  background-color: #081c37;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+.sidebar .brand {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  color: #fff;
+}
+.sidebar ul {
+  list-style: none;
+}
+.sidebar li {
+  margin-bottom: 1.2rem;
+  font-weight: 500;
+}
+.sidebar li a {
+  display: block;
+  padding: 0.5rem 0.8rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+.sidebar li a:hover {
+  background-color: #eef3fb;
+  color: #3F8CFF;
+}
+
+/* ----- Main Area ----- */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f7fb;
+}
+
+/* ----- Navbar ----- */
+.navbar {
+  background-color: #081c37;
+  border-bottom: 1px solid #ddd;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.navbar .welcome-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+}
+.navbar .search-bar {
+  position: relative;
+  margin-right: 1rem;
+}
+.navbar .search-bar input {
+  padding: 0.4rem 2rem 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.navbar .search-bar i {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+.navbar .profile-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.navbar .profile-area .username {
+  font-weight: 500;
+  color: #fff;
+}
+.navbar .profile-area img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.icon {
+  width: 120px;
+  height: 80px;
+}
+.iconrevenue {
+  width: 70px;
+  height: 70px;
+}
+.iconexpenses {
+  width: 90px;
+  height: 80px;
+}
+.chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* ----- Content Area ----- */
+.content {
+  padding: 1.5rem;
+}
+
+/* Top Cards (Stats) */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.card-dashboard {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+.card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+.card p {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+.card small {
+  display: block;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+/* Charts Section */
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: start;
+}
+.chart-box {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.chart-box h4 {
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #333333;
+  margin-bottom: 10px;
+}
+.chart-placeholder {
+  width: 100%;
+  height: 200px;
+  background: repeating-linear-gradient(
+    45deg,
+    #ececec,
+    #ececec 10px,
+    #f9f9f9 10px,
+    #f9f9f9 20px
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 1rem;
+  border-radius: 4px;
+}
+
+/* Calendar Container */
+.chart-box .calendar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* React Calendar Component */
+.react-calendar {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
+  max-width: none;
+}
+
+/* Calendar View Container */
+.react-calendar__viewContainer {
+  height: 100%;
+}
+
+/* Month View */
+.react-calendar__month-view {
+  height: 100%;
+}
+
+/* Navigation (Month/Year and Arrows) */
+.react-calendar__navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1em;
+}
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: none;
+  border: none;
+  color: #999999;
+  font-size: 16px;
+  cursor: pointer;
+}
+.react-calendar__navigation button:disabled {
+  background-color: transparent;
+  color: #ccc;
+}
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: transparent;
+  color: #666;
+}
+.react-calendar__navigation__label {
+  font-weight: normal;
+  color: #333;
+  font-size: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.react-calendar__navigation__label:hover,
+.react-calendar__navigation__label:focus {
+  background: none;
+}
+
+/* Days of the Week */
+.react-calendar__month-view__weekdays {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 5px;
+}
+.react-calendar__month-view__weekdays__weekday {
+  font-size: 0.8rem;
+  color: #333;
+  text-transform: uppercase;
+  text-align: center;
+  flex: 1;
+}
+.react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+/* Date Grid */
+.react-calendar__month-view__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  height: 100%;
+  grid-auto-rows: 1fr;
+}
+
+/* Calendar Tiles */
+.react-calendar__tile {
+  background: #fff;
+  border: none;
+  color: #333;
+  padding: 15px;
+  font-size: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+}
+
+/* Today's Date */
+.react-calendar__tile--now {
+  background: #f0f0f0;
+}
+
+/* Selected Date */
+.react-calendar__tile--active,
+.react-calendar__tile--hasActive {
+  background: #e6e6ff !important; /* Light purple */
+  color: #333;
+}
+
+/* Dates from Neighboring Months */
+.react-calendar__tile--neighboringMonth {
+  color: #999999;
+}
+
+/* Hover Effect on Dates */
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background: #e6e6ff; /* Light purple on hover */
+}
+
+/* Event Dots */
+.event-dots {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  position: absolute;
+  bottom: 5px;
+  width: 100%;
+}
+.event-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Input Field */
+.chart-box .event-input {
+  width: 100%;
+  padding: 10px;
+  background: #e8ecef;
+  border: none;
+  border-radius: 10px;
+  color: #333333;
+  font-size: 14px;
+  margin-top: 10px;
+}
+.chart-box .event-input::placeholder {
+  color: #999999;
+}
+
+/* Button */
+.chart-box .calendar-button {
+  display: block;
+  width: auto;
+  margin-left: auto;
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid #d3d3d3;
+  border-radius: 10px;
+  color: #666666;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.chart-box .calendar-button:hover {
+  background: #f5f5f5;
+}
+
+/* Event List */
+.chart-box .event-list {
+  margin-top: 10px;
+  color: #333333;
+}
+.chart-box .event-list p {
+  margin: 5px 0;
+}
+
+/* Recent Invoices Table */
+.recent-invoices {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+}
+.recent-invoices h4 {
+  margin-bottom: 1rem;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+table thead {
+  background-color: #f0f0f0;
+}
+table thead th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+}
+table tbody td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+table tbody tr:last-child td {
+  border-bottom: none;
+}
+.status {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+}
+.status.paid {
+  background-color: #28a745; /* green */
+}
+.status.pending {
+  background-color: #ffc107; /* yellow */
+  color: #333;
+}
+.status.refunded {
+  background-color: #dc3545; /* red */
+}

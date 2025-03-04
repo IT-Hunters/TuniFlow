@@ -10,7 +10,8 @@ const UserSchema = new Schema({
     type: String, 
     enum: ["ADMIN", "BUSINESS_OWNER", "ACCOUNTANT", "FINANCIAL_MANAGER", "BUSINESS_MANAGER", "RH"],
     required: true 
-  }
+  },
+  wallet_id: { type: Schema.Types.ObjectId, ref: "Wallet" },
 }, { 
   discriminatorKey: "userType", // Clé pour la différenciation
   collection: "users",

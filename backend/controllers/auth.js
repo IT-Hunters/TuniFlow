@@ -59,6 +59,7 @@ const Register = async (req, res) => {
                     lastname: req.body.lastname,
                     role: req.body.role,
                     evidence: req.file ? req.file.path : null
+
                   
                 });
                 break;
@@ -102,6 +103,7 @@ const Register = async (req, res) => {
                     password: req.body.password,
                     fullname: req.body.fullname,
                     lastname: req.body.lastname,
+                    wallet_id:req.body.wallet_id,
                     role: req.body.role
                    
                 });
