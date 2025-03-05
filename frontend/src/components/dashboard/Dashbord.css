@@ -226,20 +226,39 @@
       border-bottom: none;
     }
     .status {
+      margin-top: 8px;
       padding: 0.3rem 0.6rem;
       border-radius: 4px;
       font-size: 0.85rem;
       font-weight: 500;
       color: #fff;
+      display: inline-block;
+      text-align: center;
     }
-    .status.paid {
-      background-color: #28a745; /* green */
+    
+    .status.admin {
+      background-color: #007bff; 
     }
-    .status.pending {
-      background-color: #ffc107; /* yellow */
+    
+    .status.business-owner {
+      background-color: #28a745; 
+    }
+    
+    .status.accountant {
+      background-color: #ffc107; 
       color: #333;
     }
-    .status.refunded {
-      background-color: #dc3545; /* red */
+    
+    .status.financial-manager {
+      background-color: #6610f2; 
     }
+    
+    .status.business-manager {
+      background-color: #fd7e14; 
+    }
+    
+    .status.rh {
+      background-color: #17a2b8; 
+    }
+    
   

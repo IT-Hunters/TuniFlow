@@ -2,6 +2,7 @@ const bcryptjs = require("bcryptjs");
 const userModel = require("../model/user");
 const validateRegister = require("../validation/registerValidation");
 const validateLogin= require("../validation/login.validator");
+const validateUpdateProfil=require("../validation/updateprofil");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const multerPicture= require("../config/multer-picture")
@@ -18,7 +19,7 @@ const RH = require("../model/RH");
 const Project=require("../model/Project");
 const Employe = require('../model/Employe');
 const nodemailer = require('nodemailer');
-
+const { createLog } = require("./UserLogsController"); 
 
 async function getAll(req,res) {
     try{
@@ -125,7 +126,7 @@ const Login = async (req, res) => {
   const { errors, isValid } = validateLogin(req.body);
 
   if (!isValid) {
-    return res.status(400).json(errors); // 400 pour une requête invalide
+    return res.status(400).json(errors); 
   }
 
   try {
@@ -136,7 +137,7 @@ const Login = async (req, res) => {
 
     const match = await bcryptjs.compare(req.body.password, existUser.password);
     if (!match) {
-      return res.status(401).json({ message: 'invalid password' }); // 401 pour une authentification échouée
+      return res.status(401).json({ message: 'invalid password' });
     }
 
     const payload = {
@@ -147,80 +148,127 @@ const Login = async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "1d" });
+    //create logs
+    await createLog(existUser._id);
+    // Ensure global.connectedUsers is always a Set
+    if (!global.connectedUsers || !(global.connectedUsers instanceof Set)) {
+      global.connectedUsers = new Set();
+    }
+
+    global.connectedUsers.add(existUser);
+
+    global.io.emit("userOnline", Array.from(global.connectedUsers)); 
+
     return res.status(200).json({ token: token, role: existUser.role });
   } catch (error) {
     console.error('Erreur lors de la connexion:', error);
     return res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 };
-/****************Update Profile********************* */ 
 
+
+const logout = (req, res) => {
+  try {
+     
+    // Extract token from the Authorization header
+    const token = req.headers.authorization?.split(' ')[1]; // Token comes as "Bearer <token>"
+    //console.log('req' + req.headers.authorization);
+    console.log(token);
+    if (!token) {
+      return res.status(400).json({ message: 'Token not provided' });
+    }
+
+    // Decode the token to get the userId
+    const decoded = jwt.verify(token, process.env.SECRET_KEY); // You can replace SECRET_KEY with your own environment variable key
+    const userId = decoded.userId; // Assuming the token contains `userId` payload
+
+    // Clear the token from cookies (or wherever it's stored)
+    res.clearCookie('token');
+
+    // Remove user from the connectedUsers set
+    global.connectedUsers = global.connectedUsers || new Set();
+    global.connectedUsers = Array.from(global.connectedUsers).filter(user => user._id !== userId);
+
+    // Emit event to notify clients that the user has logged out
+    global.io.emit("userOffline", userId); 
+
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Error during logout:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+/****************Update Profile********************* */ 
 
 const updateProfile = async (req, res) => {
   const userId = req.user.userId; // Récupéré à partir du middleware authenticateJWT
   const updates = req.body; // Les champs à mettre à jour
 
   try {
-    // Trouver l'utilisateur dans la base de données
-    const user = await userModel.findById(userId);
+      // Trouver l'utilisateur dans la base de données
+      const user = await userModel.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
-    }
+      if (!user) {
+          return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
 
-    // Vérifier le type d'utilisateur et mettre à jour les champs spécifiques
-    switch (user.role) {
-      case "BUSINESS_MANAGER":
-        await BusinessManager.findOneAndUpdate(
-          { _id: userId },
-          { $set: updates },
-          { new: true, runValidators: true }
-        );
-        break;
-        case "BUSINESS_OWNER":
-          await BusinessOwner.findOneAndUpdate(
-            { _id: userId },
-            { $set: updates },
-            { new: true, runValidators: true }
-          );
-          break;
+      // Valider les données en fonction du rôle
+      const { errors, isValid } = validateUpdateProfil(updates, user.role);
 
-      case "RH":
-        await RH.findOneAndUpdate(
-          { _id: userId },
-          { $set: updates },
-          { new: true, runValidators: true }
-        );
-        break;
+      if (!isValid) {
+          return res.status(400).json(errors); // 400 pour une requête invalide
+      }
 
-      case "FINANCIAL_MANAGER":
-        await FinancialManager.findOneAndUpdate(
-          { _id: userId },
-          { $set: updates },
-          { new: true, runValidators: true }
-        );
-        break;
+      // Vérifier le type d'utilisateur et mettre à jour les champs spécifiques
+      switch (user.role) {
+          case "BUSINESS_MANAGER":
+              await BusinessManager.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          case "BUSINESS_OWNER":
+              await BusinessOwner.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          case "RH":
+              await RH.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          case "FINANCIAL_MANAGER":
+              await FinancialManager.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          case "ACCOUNTANT":
+              await Accountant.findOneAndUpdate(
+                  { _id: userId },
+                  { $set: updates },
+                  { new: true, runValidators: true }
+              );
+              break;
+          default:
+              return res.status(400).json({ message: "Rôle d'utilisateur non valide" });
+      }
 
-      case "ACCOUNTANT":
-        await Accountant.findOneAndUpdate(
-          { _id: userId },
-          { $set: updates },
-          { new: true, runValidators: true }
-        );
-        break;
-
-      default:
-        return res.status(400).json({ message: "Rôle d'utilisateur non valide" });
-    }
-
-    // Renvoyer une réponse de succès
-    return res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
+      // Renvoyer une réponse de succès
+      return res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
   } catch (error) {
-    console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
-    return res.status(500).json({ message: "Erreur interne du serveur" });
+      console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
+      return res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
-
 
 
 /* *************************************************/
@@ -256,7 +304,42 @@ const updateProfile = async (req, res) => {
       res.status(500).json({ message: 'Erreur serveur.' });
     }
   }
+/******************************  */ 
+const findMyPicture = async (req, res) => {
+  try {
+    // Vérifie si l'ID utilisateur est présent dans req.user
+    if (!req.user || !req.user.userId) {
+      return res.status(400).json({ message: 'ID utilisateur manquant.' });
+    }
 
+    // Vérifie si l'ID utilisateur est un ObjectId valide
+    if (!mongoose.isValidObjectId(req.user.userId)) {
+      return res.status(400).json({ message: 'ID utilisateur invalide.' });
+    }
+
+    // Convertit l'ID utilisateur en ObjectId
+    const userId = new mongoose.Types.ObjectId(req.user.userId);
+    console.log('User ID:', userId);
+
+    // Recherche l'utilisateur par son _id et sélectionne uniquement le champ 'picture'
+    const user = await userModel.findById(userId).select("picture");
+
+    // Si l'utilisateur n'est pas trouvé
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+    }
+
+    // Si l'utilisateur est trouvé
+    console.log('Image de profil trouvée:', user.picture);
+    res.status(200).json({ picture: user.picture });
+  } catch (err) {
+    console.error('Erreur dans findMyPicture:', err);
+    res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+
+/*  *****************************/
   async function deleteprofilbyid(req, res) {
     try {
         const data = await profileModel.findById({_id: req.params.id});
@@ -1161,8 +1244,18 @@ const getChatHistory = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+const getAllRoles = async (req, res) => {
+  try {
+    // Récupérer tous les rôles disponibles sauf BUSINESS_OWNER et BUSINESS_MANAGER
+    const roles = userModel.getAllRoles();
 
-
+    // Renvoyer la réponse
+    res.status(200).json({ roles });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des rôles :", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
 
 module.exports = {
     Register,Login,getAll,
@@ -1170,7 +1263,7 @@ module.exports = {
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
     resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
-    sendMessage,        // New
+    sendMessage,getAllRoles,findMyPicture,logout,      // New
     getChatHistory};
 
 

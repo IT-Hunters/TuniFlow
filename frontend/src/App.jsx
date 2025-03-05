@@ -11,6 +11,11 @@ import AdminUsers from "./components/Admin/AdminUsers";
 import  User  from "./components/User/User";
 import  Chat  from "./components/Chat/chat";
 import ChatAdmin  from "./components/ChatAdmin/chatAdmin";
+import Wallet from "./components/Wallet/Wallet";
+import Transaction from "./components/Transaction/Transaction";
+import CreateInvoice from './components/Invoice/CreateInvoice'; 
+import SendInvoice from './components/Invoice/SendInvoice'; 
+import LoginChart from './components/GetDailyLogins/getDailyLogins';
 function App() {         
   return (
     <Router>
@@ -24,9 +29,15 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/Adminusers" element={<AdminUsers />} />
-        <Route path="/user" element={<User  />} />
-        <Route path="/chat" element={<Chat  />} />
+        <Route path="/user" element={<User/>} />
+        <Route path="/chat" element={<Chat/>} />
         <Route path="/chatadmin" element={<ChatAdmin  />} />
+        <Route path="/invoice" element={<CreateInvoice />} />
+        <Route path="/send-invoice" element={<SendInvoice />} /> 
+        <Route path="/wallet/:walletId" element={<Wallet />} /> 
+        <Route path="/wallet/create" element={<Wallet />} />
+        <Route path="/transactions/:walletId" element={<Transaction />} />
+        <Route path="/LoginChart" element={<LoginChart />} />
       </Routes>
     </Router>
   );

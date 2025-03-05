@@ -1,19 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaHome, FaTachometerAlt, FaUsers, FaBell, FaCog, FaQuestionCircle, FaBars, FaChevronLeft, FaSignOutAlt, FaComments } from "react-icons/fa";
+import { FaHome, FaTachometerAlt, FaUsers, FaBell, FaCog, FaQuestionCircle, FaBars, FaChevronLeft, FaSignOutAlt, FaComments,FaFileInvoice } from "react-icons/fa";
 import "./SidebarHome.css";
-import { findMyProfile } from "../../services/UserService";
+import { findMyProfile,logout } from "../../services/UserService";
 import { useNavigate } from "react-router-dom"; // Ajout de useNavigate
-
 const navItems = [
   { title: "Home", icon: FaHome, href: "/user" },
   { title: "Assets", icon: FaTachometerAlt, href: "/Assets" },
   { title: "Compatability", icon: FaUsers, href: "#", badge: 5 },
   { title: "Finance", icon: FaBell, href: "#", badge: 3 },
   { title: "Objective", icon: FaCog, href: "#" },
-  { title: "Chat", icon: FaComments, href: "/chat" }, // Ajout du Chat
+  { title: "Chat", icon: FaComments, href: "/chat" },
   { title: "Help", icon: FaQuestionCircle, href: "#" },
+  { title: "Invoice", icon: FaFileInvoice, href: "/invoice" } 
 ];
 
 const CoolSidebar = () => {
@@ -23,10 +23,12 @@ const CoolSidebar = () => {
   const navigate = useNavigate(); // Hook pour navigation
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    sessionStorage.clear();
-    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    navigate("/login"); // Utilisation de navigate au lieu de window.location
+    const response = logout();
+    if (response) {
+      document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      navigate("/"); 
+    }
+    else console.error("Couldn't logout :", error);
   };
 
   const handleNavigation = (item) => {
@@ -37,7 +39,7 @@ const CoolSidebar = () => {
       if (token) {
         navigate("/chat"); // Redirige vers /chat si token présent
       } else {
-        navigate("/login"); // Redirige vers /login si pas de token
+        navigate("/"); // Redirige vers /login si pas de token
       }
     } else {
       navigate(item.href); // Redirige vers les autres routes
@@ -55,7 +57,7 @@ const CoolSidebar = () => {
     };
     fetchUser();
   }, []);
-
+  console.log(localStorage.getItem("token"));
   return (
     <div className={`sidebar-home ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-home-content">

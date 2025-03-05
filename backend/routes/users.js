@@ -3,7 +3,7 @@ var router = express.Router();
 const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,
   getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,
-  getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger} = require('../controllers/auth');
+  getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,getAllRoles,findMyPicture,logout} = require('../controllers/auth');
   const multerImage = require("../config/multer-picture");
   const multerImageAndPdf = require("../config/multer-picture-pdf");
   const multerExcel = require("../config/multer-excel");
@@ -12,10 +12,12 @@ const { authenticateJWT } = require('../config/autorisation');
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
+router.get("/findmypicture",authenticateJWT, findMyPicture);
 router.post('/upload-employees', multerExcel.single('file'), addEmployeesFromExcel);
 router.post('/addemployee', addEmployee)
 router.post("/register", multerImageAndPdf.single("evidence"), Register);
 router.post("/login",Login)
+router.post("/logout",authenticateJWT,logout)
 router.get("/getall",authenticateJWT,getAll)
 router.get("/findMyProfile",authenticateJWT,findMyProfile)
 router.delete("/deletebyid",deleteprofilbyid)
@@ -33,7 +35,7 @@ router.post("/forgot-password",forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/verify-code", verifyCode);
 router.get('/download/:fileName', downloadEvidence);
-
+router.get("/roles", getAllRoles);
 /*router.post("/registerwithproject/:projectId", async (req, res) => {
   const { projectId } = req.params;
   await Registerwithproject(req, res, projectId);

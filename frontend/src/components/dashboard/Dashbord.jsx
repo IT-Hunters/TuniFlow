@@ -9,6 +9,8 @@ import chart2 from './assets/chart2.png'
 import Sidebar from "../sidebar/Sidebar";
 import Navbar from "../navbar/Navbar";
 import UsersTable from './UsersTable/UsersTable'
+import ConnectedUsers from '../ConnectedUsers/ConnectedUsers';
+import LoginChart from '../GetDailyLogins/getDailyLogins';
 const Dashbord = () => {
   // Vous pouvez déplacer ce CSS dans un fichier .css séparé
   
@@ -72,19 +74,17 @@ const Dashbord = () => {
 
             {/* Charts */}
             <div className="charts">
-              <div className="chart-box">
-                <h4>Invoice Statistics</h4>
-                <div ><img src={chart}  className="chart" />
-                </div>
-              </div>
-              
+              <LoginChart/>
               <div className="chart-box">
                 <h4>sales Statistics</h4>
                 <div ><img src={chart2}  className="chart" />
                 </div>
               </div>
+              <UsersTable/>
+              <ConnectedUsers/>
+              
             </div>
-            <UsersTable/>
+            
           </div>
         </div>
       </div>
