@@ -35,8 +35,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/Adminusers" element={<AdminUsers />} />
-        <Route path="/user" element={<User  />} />
-        <Route path="/chat" element={<Chat  />} />
+        <Route path="/user" element={<User/>} />
+        <Route path="/chat" element={<Chat/>} />
         <Route path="/chatadmin" element={<ChatAdmin  />} />
         <Route path="/invoice" element={<CreateInvoice />} />
         <Route path="/send-invoice" element={<SendInvoice />} /> 

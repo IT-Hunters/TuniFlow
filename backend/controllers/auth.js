@@ -19,7 +19,7 @@ const RH = require("../model/RH");
 const Project=require("../model/Project");
 const Employe = require('../model/Employe');
 const nodemailer = require('nodemailer');
-
+const { createLog } = require("./UserLogsController"); 
 
 async function getAll(req,res) {
     try{
@@ -59,6 +59,7 @@ const Register = async (req, res) => {
                     lastname: req.body.lastname,
                     role: req.body.role,
                     evidence: req.file ? req.file.path : null
+
                   
                 });
                 break;
@@ -102,6 +103,7 @@ const Register = async (req, res) => {
                     password: req.body.password,
                     fullname: req.body.fullname,
                     lastname: req.body.lastname,
+                    wallet_id:req.body.wallet_id,
                     role: req.body.role
                    
                 });
@@ -126,7 +128,7 @@ const Login = async (req, res) => {
   const { errors, isValid } = validateLogin(req.body);
 
   if (!isValid) {
-    return res.status(400).json(errors); // 400 pour une requête invalide
+    return res.status(400).json(errors); 
   }
 
   try {
@@ -137,7 +139,7 @@ const Login = async (req, res) => {
 
     const match = await bcryptjs.compare(req.body.password, existUser.password);
     if (!match) {
-      return res.status(401).json({ message: 'invalid password' }); // 401 pour une authentification échouée
+      return res.status(401).json({ message: 'invalid password' });
     }
 
     const payload = {
@@ -148,12 +150,58 @@ const Login = async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "1d" });
+    //create logs
+    await createLog(existUser._id);
+    // Ensure global.connectedUsers is always a Set
+    if (!global.connectedUsers || !(global.connectedUsers instanceof Set)) {
+      global.connectedUsers = new Set();
+    }
+
+    global.connectedUsers.add(existUser);
+
+    global.io.emit("userOnline", Array.from(global.connectedUsers)); 
+
     return res.status(200).json({ token: token, role: existUser.role });
   } catch (error) {
     console.error('Erreur lors de la connexion:', error);
     return res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 };
+
+
+const logout = (req, res) => {
+  try {
+     
+    // Extract token from the Authorization header
+    const token = req.headers.authorization?.split(' ')[1]; // Token comes as "Bearer <token>"
+    //console.log('req' + req.headers.authorization);
+    console.log(token);
+    if (!token) {
+      return res.status(400).json({ message: 'Token not provided' });
+    }
+
+    // Decode the token to get the userId
+    const decoded = jwt.verify(token, process.env.SECRET_KEY); // You can replace SECRET_KEY with your own environment variable key
+    const userId = decoded.userId; // Assuming the token contains `userId` payload
+
+    // Clear the token from cookies (or wherever it's stored)
+    res.clearCookie('token');
+
+    // Remove user from the connectedUsers set
+    global.connectedUsers = global.connectedUsers || new Set();
+    global.connectedUsers = Array.from(global.connectedUsers).filter(user => user._id !== userId);
+
+    // Emit event to notify clients that the user has logged out
+    global.io.emit("userOffline", userId); 
+
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Error during logout:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
 /****************Update Profile********************* */ 
 
 const updateProfile = async (req, res) => {
@@ -1211,14 +1259,13 @@ const getAllRoles = async (req, res) => {
   }
 };
 
-
 module.exports = {
     Register,Login,getAll,
     findMyProfile,deleteprofilbyid,deletemyprofile,
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
     resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
-    sendMessage,getAllRoles,findMyPicture,      // New
+    sendMessage,getAllRoles,findMyPicture,logout,      // New
     getChatHistory};
 
 

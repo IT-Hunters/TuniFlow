@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import { FaHome, FaTachometerAlt, FaUsers, FaBell, FaCog, FaQuestionCircle, FaBars, FaChevronLeft, FaSignOutAlt, FaComments,FaFileInvoice } from "react-icons/fa";
 import "./SidebarHome.css";
-import { findMyProfile } from "../../services/UserService";
+import { findMyProfile,logout } from "../../services/UserService";
 import { useNavigate } from "react-router-dom"; // Ajout de useNavigate
-
 const navItems = [
   { title: "Home", icon: FaHome, href: "/user" },
   { title: "Assets", icon: FaTachometerAlt, href: "/Assets" },
@@ -24,10 +23,12 @@ const CoolSidebar = () => {
   const navigate = useNavigate(); // Hook pour navigation
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    sessionStorage.clear();
-    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    navigate("/"); // Utilisation de navigate au lieu de window.location
+    const response = logout();
+    if (response) {
+      document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      navigate("/"); 
+    }
+    else console.error("Couldn't logout :", error);
   };
 
   const handleNavigation = (item) => {
@@ -56,7 +57,7 @@ const CoolSidebar = () => {
     };
     fetchUser();
   }, []);
-
+  console.log(localStorage.getItem("token"));
   return (
     <div className={`sidebar-home ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-home-content">

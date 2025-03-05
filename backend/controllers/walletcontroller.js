@@ -124,9 +124,24 @@ const updateWallet = async (req, res) => {
         await Project.findByIdAndUpdate(projectId, { wallet: walletId });
       }
     }
+    
 
     await wallet.save();
     res.status(200).json({ message: "Wallet mis à jour avec succès", wallet });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+// Get the top 5 projects based on wallet balance
+const getTopProjects = async (req, res) => {
+  try {
+    const topProjects = await Project.find()
+      .populate("wallet", "balance") // Fetch wallet balance
+      .populate("businessManager", "name") // Fetch Business Manager's name
+      .sort({ "wallet.balance": -1 }) // Sort by balance in descending order
+      .limit(5); // Limit to top 5 projects
+
+    res.json(topProjects);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -243,4 +258,5 @@ module.exports = {
   updateWallet,
   getCandlestickData,
   calculateCashFlowHistory,
+  getTopProjects,
 };

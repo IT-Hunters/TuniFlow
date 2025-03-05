@@ -1,0 +1,457 @@
+/* Main Card Styles */
+.users-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    height: 100%; 
+    width: 100%;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: stretch;
+    align-items: flex-start;
+    -webkit-justify-content: stretch;
+    justify-content: stretch;
+  }
+  .min-users-card{
+    min-height: 484.4px;
+    min-width: 822.81px;
+  }
+
+  .card-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .card-content {
+    padding: 20px;
+  }
+  
+  /* Header Styles */
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: #111827;
+  }
+  
+  /* Search Styles */
+  .search-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .search-input-wrapper {
+    position: relative;
+    width: 250px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 14px;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 8px 32px 8px 30px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .search-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  }
+  
+  .clear-search {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Filter Styles */
+  .filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  
+  .filter-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+  }
+  
+  .role-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .filter-checkbox input {
+    margin: 0;
+  }
+  
+  .filter-checkbox label {
+    font-size: 14px;
+    cursor: pointer;
+    color: #374151;
+  }
+  
+  /* Button Styles */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .btn-outline {
+    background-color: transparent;
+    border: 1px solid #d1d5db;
+    color: #374151;
+  }
+  
+  .btn-outline:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .btn-text {
+    background-color: transparent;
+    border: none;
+    color: #6b7280;
+    padding: 4px 8px;
+  }
+  
+  .btn-text:hover {
+    background-color: #f3f4f6;
+    border-radius: 4px;
+  }
+  
+  .icon {
+    margin-right: 6px;
+    font-size: 14px;
+  }
+  
+  .add-user-btn {
+    white-space: nowrap;
+  }
+  
+  .clear-filters {
+    margin-left: auto;
+  }
+  
+  /* Table Styles */
+  .table-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  .min-users-table{
+    min-height: 410px;
+    min-width: 442.81px;
+  }
+  
+  .users-table th {
+    background-color: #f9fafb;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .users-table td {
+    padding: 12px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #111827;
+  }
+  
+  .users-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .table-row:hover {
+    background-color: #f9fafb;
+  }
+  
+  .column-number {
+    width: 60px;
+    text-align: center;
+  }
+  
+  .column-sortable {
+    cursor: pointer;
+  }
+  
+  .column-sortable:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .column-name {
+    font-weight: 500;
+  }
+  
+  .empty-message {
+    text-align: center;
+    padding: 32px 16px;
+    color: #6b7280;
+  }
+  
+  /* Role Badge Styles */
+  .role-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .role-badge.admin {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+  
+  .role-badge.business-owner {
+    background-color: #e9d5ff;
+    color: #7e22ce;
+  }
+  
+  .role-badge.accountant {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+  }
+  
+  .role-badge.financial-manager {
+    background-color: #d1fae5;
+    color: #047857;
+  }
+  
+  .role-badge.business-manager {
+    background-color: #fef3c7;
+    color: #b45309;
+  }
+  
+  .role-badge.rh {
+    background-color: #fce7f3;
+    color: #be185d;
+  }
+  
+  .role-badge.default {
+    background-color: #e5e7eb;
+    color: #374151;
+  }
+  
+  /* Pagination Styles */
+  .table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .results-count {
+    font-size: 14px;
+    color: #6b7280;
+  }
+  
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .pagination-numbers {
+    display: flex;
+    align-items: center;
+  }
+  
+  .pagination-prev,
+  .pagination-next,
+  .pagination-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .pagination-prev:hover,
+  .pagination-next:hover,
+  .pagination-number:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .pagination-number.active {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+  }
+  
+  .pagination-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    color: #6b7280;
+  }
+  
+  .pagination-prev.disabled,
+  .pagination-next.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  
+  /* Loading Skeleton Styles */
+  .skeleton-title,
+  .skeleton-search,
+  .skeleton-row {
+    background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+  }
+  
+  .skeleton-title {
+    height: 28px;
+    width: 200px;
+    margin-bottom: 16px;
+  }
+  
+  .skeleton-search {
+    height: 36px;
+    width: 250px;
+  }
+  
+  .skeleton-table {
+    margin-top: 16px;
+  }
+  
+  .skeleton-row {
+    height: 48px;
+    margin-bottom: 8px;
+  }
+  
+  @keyframes skeleton-loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  /* Error State Styles */
+  .users-card.error {
+    border: 1px solid #fecaca;
+  }
+  
+  .error-title {
+    color: #dc2626;
+    margin-top: 0;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .header-top {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .search-container {
+      width: 100%;
+    }
+  
+    .search-input-wrapper {
+      width: 100%;
+    }
+  
+    .filter-section {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .role-filters {
+      margin-top: 8px;
+    }
+  
+    .clear-filters {
+      margin-left: 0;
+      margin-top: 8px;
+    }
+  
+    .table-container {
+      overflow-x: auto;
+    }
+  
+    .table-footer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .pagination {
+      margin-top: 12px;
+    }
+  }
+  
+  

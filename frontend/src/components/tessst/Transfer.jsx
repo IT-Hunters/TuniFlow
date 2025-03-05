@@ -1,6 +1,5 @@
 import React from "react";
-import CoolSidebar from "../sidebarHome/newSidebar"; // Assurez-vous que le chemin est correct
-import Navbar from "../navbarHome/NavbarHome";
+
 import "./Tessst.css";
 
 const Transfer = ({ goBack }) => {
