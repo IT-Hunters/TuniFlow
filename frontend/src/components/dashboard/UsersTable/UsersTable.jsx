@@ -188,7 +188,7 @@ const UsersTable = () => {
     <div className="users-card min-users-card">
       <div className="card-header">
         <div className="header-top">
-          <h2 className="title">Gestion des Utilisateurs</h2>
+          <h2 className="title">User Management</h2>
           <div className="search-container">
             <div className="search-input-wrapper">
               <span className="search-icon">🔍</span>

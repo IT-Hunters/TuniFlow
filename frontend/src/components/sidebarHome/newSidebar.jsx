@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"; // Ajout de useNavigate
 const navItems = [
   { title: "Home", icon: FaHome, href: "/user" },
   { title: "Assets", icon: FaTachometerAlt, href: "/Assets" },
-  { title: "Compatability", icon: FaUsers, href: "#", badge: 5 },
+  { title: "Transacctions", icon: FaUsers, href: "/Transaction", badge: 5 },
   { title: "Finance", icon: FaBell, href: "#", badge: 3 },
   { title: "Objective", icon: FaCog, href: "#" },
   { title: "Chat", icon: FaComments, href: "/chat" },

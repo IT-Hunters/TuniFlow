@@ -41,7 +41,7 @@ function App() {
         <Route path="/invoice" element={<CreateInvoice />} />
         <Route path="/send-invoice" element={<SendInvoice />} /> 
         <Route path="/wallet" element={<Wallet />} /> 
-        <Route path="/Tessst" element={<Tessst />} /> 
+        <Route path="/Transaction" element={<Tessst />} /> 
         <Route path="/Depossit" element={<Depossit />} /> 
         <Route path="/Transfer" element={<Transfer />} />
         <Route path="/Withdraw" element={<Withdraw />} />

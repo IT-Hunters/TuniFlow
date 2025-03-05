@@ -22,7 +22,6 @@ const TransactionList = ({ walletId }) => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      try {
         setLoading(true);
         // Calculate the start and end of the current week
         const now = new Date();
@@ -41,12 +40,7 @@ const TransactionList = ({ walletId }) => {
           }
         );
         setTransactions(response.data);
-      } catch (error) {
-        console.error("Error fetching transactions:", error);
-        setError("Failed to fetch transactions. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
+      
     };
 
     if (walletId) fetchTransactions();
@@ -131,7 +125,7 @@ const Dashbord = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      try {
+      
         const token = localStorage.getItem('token');
         if (!token) {
           setError('No token found. Please log in.');
@@ -142,12 +136,7 @@ const Dashbord = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(response.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        setError("Failed to fetch users. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
+      
     };
     fetchUsers();
   }, []);
