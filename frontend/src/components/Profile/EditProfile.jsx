@@ -1,4 +1,4 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../navbar/Navbar';
@@ -59,18 +59,39 @@ const EditProfile = () => {
         setError('No token found. Please log in.');
         return;
       }
-
+  
+      // Basic validation for required fields
+      if (!formData.fullname || !formData.lastname || !formData.email) {
+        setError('Please fill in all required fields (Full Name, Last Name, Email).');
+        return;
+      }
+  
+      // Add logging here, before the axios.put call
+      console.log('Submitting profile update with the following data:', {
+        formData: formData,
+        token: token,
+      });
+  
       // Update profile
       await axios.put('http://localhost:3000/users/updateprofile', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       alert('Profile updated successfully!');
       navigate('/profile'); // Redirect to profile page after update
     } catch (err) {
-      setError(err.response?.data?.message || 'Error updating profile');
+      if (err.response) {
+        // Server responded with a status other than 2xx
+        setError(err.response.data.message || 'Error updating profile');
+      } else if (err.request) {
+        // No response received from server
+        setError('No response from server. Please try again later.');
+      } else {
+        // Error setting up the request
+        setError('An unexpected error occurred.');
+      }
       console.error('Error updating profile:', err);
     }
   };
@@ -79,8 +100,8 @@ const EditProfile = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('picture', file);
+    const imageFormData = new FormData();
+    imageFormData.append('picture', file);
 
     try {
       const token = localStorage.getItem('token');
@@ -89,7 +110,7 @@ const EditProfile = () => {
         return;
       }
 
-      const response = await axios.put('http://localhost:3000/users/uploadimage', formData, {
+      const response = await axios.put('http://localhost:3000/users/uploadimage', imageFormData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -100,7 +121,6 @@ const EditProfile = () => {
         ...prevState,
         picture: response.data.picture, // Update the picture URL in state
       }));
-      
     } catch (err) {
       setError(err.response?.data?.message || 'Error uploading image');
       console.error('Error uploading image:', err);
@@ -161,7 +181,7 @@ const EditProfile = () => {
                 Registration Number:
               </label>
               <input
-                type="text"
+                type="number" // Changed to number to match backend schema
                 id="registrationNumber"
                 name="registrationNumber"
                 value={formData.registrationNumber || ''}
@@ -375,19 +395,20 @@ const EditProfile = () => {
                     />
                   </div>
                   <div className="edit-profile-card-back">
-                   <input
-                    type="file"
-                    id="image-upload"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={handleImageUpload}/>
-                  <label htmlFor="image-upload" className="edit-image-btn">
-                  Edit
-                  <svg className="edit-image-svg" viewBox="0 0 512 512">
-                  <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
-                  </svg>
-                  </label>
-                </div>
+                    <input
+                      type="file"
+                      id="image-upload"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={handleImageUpload}
+                    />
+                    <label htmlFor="image-upload" className="edit-image-btn">
+                      Edit
+                      <svg className="edit-image-svg" viewBox="0 0 512 512">
+                        <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                      </svg>
+                    </label>
+                  </div>
                 </div>
               </div>
 

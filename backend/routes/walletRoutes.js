@@ -10,4 +10,6 @@ router.put('/:walletId', walletcontroller.updateWallet);
 router.get('/cashflow/candlestick', walletcontroller.getCandlestickData);
 router.get('/cashflow/candlestick2/:walletId', walletcontroller.calculateCashFlowHistory);
 router.get("/wallet/:walletId", walletcontroller.getWallets);
+router.get("/top-projects", walletcontroller.getTopProjects);
+
 module.exports = router;
