@@ -11,10 +11,17 @@ import AdminUsers from "./components/Admin/AdminUsers";
 import  User  from "./components/User/User";
 import  Chat  from "./components/Chat/chat";
 import ChatAdmin  from "./components/ChatAdmin/chatAdmin";
-import Wallet from "./components/Wallet/Wallet";
-import Transaction from "./components/Transaction/Transaction";
+
 import CreateInvoice from './components/Invoice/CreateInvoice'; 
 import SendInvoice from './components/Invoice/SendInvoice'; 
+import Wallet from "./components/Wallet/Wallet";
+import Tessst from "./components/tessst/Tessst";
+import Depossit from "./components/tessst/Depossit";
+import Transfer from "./components/tessst/Transfer";
+import Withdraw from "./components/tessst/Withdraw";
+
+
+
 function App() {         
   return (
     <Router>
@@ -33,9 +40,12 @@ function App() {
         <Route path="/chatadmin" element={<ChatAdmin  />} />
         <Route path="/invoice" element={<CreateInvoice />} />
         <Route path="/send-invoice" element={<SendInvoice />} /> 
-        <Route path="/wallet/:walletId" element={<Wallet />} /> 
-        <Route path="/wallet/create" element={<Wallet />} />
-        <Route path="/transactions/:walletId" element={<Transaction />} />
+        <Route path="/wallet" element={<Wallet />} /> 
+        <Route path="/Tessst" element={<Tessst />} /> 
+        <Route path="/Depossit" element={<Depossit />} /> 
+        <Route path="/Transfer" element={<Transfer />} />
+        <Route path="/Withdraw" element={<Withdraw />} />
+
       </Routes>
     </Router>
   );

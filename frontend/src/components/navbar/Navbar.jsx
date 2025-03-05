@@ -3,33 +3,29 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { User, LogOut, Settings, UserPlus, Bell } from "lucide-react"; // Ajout de Bell pour les notifications
+import io from "socket.io-client"; // Ajout de Socket.IO
+import { User, LogOut, Settings, UserPlus, Bell } from "lucide-react";
 import "./Navbar.css";
 
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [notificationOpen, setNotificationOpen] = useState(false); // État pour le menu des notifications
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]); // State pour notifications dynamiques
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const notificationRef = useRef(null);
 
-  // Mock data pour les notifications (à remplacer par des données dynamiques plus tard)
-  const mockNotifications = [
-    { id: 1, message: "Nouveau message de Elyess" },
-    { id: 2, message: "Demande d’autorisation en attente" },
-  ];
-
+  // Initialisation avec Socket.IO pour notifications dynamiques
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await axios.get("http://localhost:5000/users/findMyProfile", { // Port corrigé à 5000
+        const response = await axios.get("http://localhost:5000/users/findMyProfile", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         setUserData(response.data);
       } catch (error) {
         console.error("Erreur lors de la récupération du profil :", error);
@@ -37,7 +33,34 @@ const Navbar = () => {
     };
 
     fetchUser();
-  }, []);
+
+    // Connexion Socket.IO
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const socket = io("http://localhost:5000", {
+      auth: { token },
+    });
+
+    socket.on("connect", () => {
+      console.log("Socket.IO connected for Admin Navbar:", socket.id);
+    });
+
+    socket.on("newNotification", (notification) => {
+      console.log("New notification received in Admin Navbar:", notification);
+      if (notification.recipientId === userData?._id) {
+        setNotifications((prev) => [...prev, notification]);
+      }
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket.IO connection error in Admin Navbar:", err.message);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [userData?._id]); // Dépendance sur userData._id pour s'assurer que l'ID est disponible
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -58,6 +81,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUserData(null);
+    setNotifications([]); // Réinitialiser les notifications à la déconnexion
     navigate("/");
   };
 
@@ -80,15 +104,15 @@ const Navbar = () => {
           onClick={() => setNotificationOpen(!notificationOpen)}
         >
           <Bell size={24} className="notification-icon" />
-          {mockNotifications.length > 0 && (
-            <span className="notification-badge">{mockNotifications.length}</span>
+          {notifications.length > 0 && (
+            <span className="notification-badge">{notifications.length}</span>
           )}
           {notificationOpen && (
             <div className={`dropdown-menu notification-dropdown ${notificationOpen ? "active" : ""}`}>
               <h3>Notifications</h3>
-              {mockNotifications.length > 0 ? (
-                mockNotifications.map((notif) => (
-                  <p key={notif.id}>{notif.message}</p>
+              {notifications.length > 0 ? (
+                notifications.map((notif, index) => (
+                  <p key={index}>{notif.message}</p>
                 ))
               ) : (
                 <p>Aucune notification</p>

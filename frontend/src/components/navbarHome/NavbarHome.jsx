@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import io from "socket.io-client";
 import userImg from "../assets/user.png";
 import { FaWallet, FaBell } from "react-icons/fa";
 import "./NavbarHome.css";
@@ -11,14 +12,10 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [walletMenuOpen, setWalletMenuOpen] = useState(false);
   const [notificationMenuOpen, setNotificationMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
 
-  // Mock data pour les notifications (pour l'exemple)
-  const mockNotifications = [
-    { id: 1, message: "Nouveau message de Elyess" },
-    { id: 2, message: "Autorisation en attente" },
-  ];
-
+  // Initialisation avec Socket.IO pour notifications dynamiques
   useEffect(() => {
     const fetchUserAndWallet = async () => {
       try {
@@ -38,17 +35,45 @@ const Navbar = () => {
         setWalletData(walletResponse.data);
       } catch (error) {
         console.error("Erreur lors de la récupération :", error);
-        if (error.response?.status === 404) setWalletData(null); // Aucun wallet trouvé
+        if (error.response?.status === 404) setWalletData(null);
       }
     };
 
     fetchUserAndWallet();
-  }, []);
+
+    // Connexion Socket.IO pour notifications
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const socket = io("http://localhost:5000", {
+      auth: { token },
+    });
+
+    socket.on("connect", () => {
+      console.log("Socket.IO connected for notifications:", socket.id);
+    });
+
+    socket.on("newNotification", (notification) => {
+      console.log("New notification received in Navbar:", notification);
+      if (notification.recipientId === userData?._id) {
+        setNotifications((prev) => [...prev, notification]);
+      }
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket.IO connection error in Navbar:", err.message);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [userData?._id]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUserData(null);
     setWalletData(null);
+    setNotifications([]);
     navigate("/");
   };
 
@@ -67,13 +92,15 @@ const Navbar = () => {
           onClick={() => setNotificationMenuOpen(!notificationMenuOpen)}
         >
           <FaBell className="notification-icon" />
-          {mockNotifications.length > 0 && (
-            <span className="notification-badge">{mockNotifications.length}</span>
+          {notifications.length > 0 && (
+            <span className="notification-badge">{notifications.length}</span>
           )}
           <div className={`notification-dropdown ${notificationMenuOpen ? "active" : ""}`}>
             <h3>Notifications</h3>
-            {mockNotifications.length > 0 ? (
-              mockNotifications.map((notif) => <p key={notif.id}>{notif.message}</p>)
+            {notifications.length > 0 ? (
+              notifications.map((notif, index) => (
+                <p key={index}>{notif.message}</p>
+              ))
             ) : (
               <p>Aucune notification</p>
             )}
