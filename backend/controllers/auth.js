@@ -899,66 +899,62 @@ const Registerwithproject = async (req, res) => {
       return res.status(400).json({ message: 'Aucun fichier fourni' });
     }
 
-    // Récupérer le token JWT de l'en-tête Authorization
-    const token = req.headers.authorization.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ message: 'Token manquant' });
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: 'En-tête Authorization manquant' });
     }
 
-    // Décoder le token pour récupérer l'ID de l'utilisateur
+    const token = authHeader.split(" ")[1];
     const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
-    const userId = decodedToken.userId; // Récupérer l'ID de l'utilisateur
+    const userId = decodedToken.userId;
 
-    if (!userId) {
-      return res.status(400).json({ message: "ID de l'utilisateur manquant dans le token" });
-    }
-
-    // Récupérer l'utilisateur dans la base de données
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
 
-    // Vérifier si l'utilisateur est de type RH
     if (user.userType !== "RH") {
       return res.status(400).json({ message: "L'utilisateur connecté n'est pas de type RH" });
     }
 
-    // Récupérer l'ID du projet (uniquement pour les RH)
     const projectId = user.project;
     if (!projectId) {
       return res.status(400).json({ message: "Aucun projet associé à l'utilisateur connecté" });
     }
 
-    // Lire le fichier Excel
     const workbook = xlsx.readFile(req.file.path);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const employeesData = xlsx.utils.sheet_to_json(worksheet);
 
-    // Valider les données des employés
     const employees = [];
     for (const emp of employeesData) {
       if (!emp.password) {
         console.warn(`Employé ${emp.name || 'sans nom'} ignoré : mot de passe manquant`);
-        continue; // Ignorer les employés sans mot de passe
+        continue;
       }
 
-      // Hasher le mot de passe
       const hashedPassword = await bcryptjs.hash(emp.password, 10);
       employees.push({
         name: emp.name,
         email: emp.email,
         password: hashedPassword,
         role: emp.role,
-        project: projectId // Ajouter l'ID du projet
+        project: projectId
       });
     }
 
-    // Insérer les employés dans la base de données
     if (employees.length > 0) {
-      await Employe.insertMany(employees);
-      return res.status(201).json({ message: 'Employés ajoutés avec succès' });
+      const insertedEmployees = await Employe.insertMany(employees);
+
+      const employeeIds = insertedEmployees.map(emp => emp._id);
+
+      await Project.findByIdAndUpdate(
+        projectId,
+        { $push: { employees: { $each: employeeIds } } }
+      );
+
+      return res.status(201).json({ message: 'Employés ajoutés avec succès', employees: insertedEmployees });
     } else {
       return res.status(400).json({ message: 'Aucun employé valide à ajouter' });
     }
@@ -967,6 +963,7 @@ const Registerwithproject = async (req, res) => {
     res.status(500).json({ message: 'Erreur interne du serveur', error });
   }
 };
+
   
 async function getAllempl(req,res) {
   try{
