@@ -954,7 +954,7 @@ const Registerwithproject = async (req, res) => {
         { $push: { employees: { $each: employeeIds } } }
       );
 
-      return res.status(201).json({ message: 'Employés ajoutés avec succès', employees: insertedEmployees });
+      return res.status(201).json({ message: 'Employés aded with succes', employees: insertedEmployees });
     } else {
       return res.status(400).json({ message: 'Aucun employé valide à ajouter' });
     }
@@ -974,6 +974,47 @@ async function getAllempl(req,res) {
       res.send(err);
   }
 }
+async function getbyid(req,res) {
+  try{
+      const data = await userModel.findById(req.params.id)
+      res.send(data);
+  }
+  catch(err){
+      res.send(err);
+  }
+}
+async function deleteById(req, res) {
+  try {
+      const data = await userModel.findByIdAndDelete(req.params.id);
+      if (!data) {
+          return res.status(404).send({ message: "user not exist" });
+      }
+      res.send({ message: "User deleted with succès", data });
+  } catch (err) {
+      res.status(500).send(err);
+  }
+}
+async function updateById(req, res) {
+  try {
+      const { fullname, lastname, email } = req.body;  // Récupère les données depuis le corps de la requête
+
+      const updatedUser = await userModel.findByIdAndUpdate(
+          req.params.id,           // L'ID de l'utilisateur à mettre à jour
+          { fullname, lastname,email },   // Les nouvelles données envoyées dans le corps de la requête
+          { new: true }             // Retourner le document mis à jour plutôt que l'original
+      );
+
+      if (!updatedUser) {
+          return res.status(404).send({ message: "Utilisateur non trouvé" });
+      }
+
+      res.send({ message: "Utilisateur mis à jour avec succès", data: updatedUser });
+  } catch (err) {
+      res.status(500).send(err);
+  }
+}
+
+
 async function downloadEvidence(req, res) {
   try {
     const fileName = req.params.fileName;
@@ -1262,7 +1303,7 @@ module.exports = {
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
     resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
-    sendMessage,getAllRoles,findMyPicture,logout,      // New
+    sendMessage,getAllRoles,findMyPicture,logout,getbyid,deleteById,updateById,     // New
     getChatHistory};
 
 

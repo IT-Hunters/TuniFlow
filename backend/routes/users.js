@@ -2,8 +2,8 @@ var express = require('express');
 var router = express.Router();
 const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,
-  getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,
-  getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,getAllRoles,findMyPicture,logout} = require('../controllers/auth');
+  getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,deleteById,
+  getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,getAllRoles,findMyPicture,logout,getbyid,updateById} = require('../controllers/auth');
   const multerImage = require("../config/multer-picture");
   const multerImageAndPdf = require("../config/multer-picture-pdf");
   const multerExcel = require("../config/multer-excel");
@@ -23,6 +23,9 @@ router.get("/findMyProfile",authenticateJWT,findMyProfile)
 router.delete("/deletebyid",deleteprofilbyid)
 router.delete("/deletemyprofil",authenticateJWT,deletemyprofile)
 router.put("/acceptAutorisation/:id", acceptAutorisation);
+router.get("/getbyid/:id", getbyid);
+router.delete("/deletbyid/:id", deleteById);
+router.put("/updatebyid/:id", updateById);
 router.put("/updateprofile", authenticateJWT, updateProfile);
 router.put("/uploadimage",authenticateJWT,AddPicture)
 router.get("/getAllBusinessManagers",authenticateJWT,getAllBusinessManagers)
