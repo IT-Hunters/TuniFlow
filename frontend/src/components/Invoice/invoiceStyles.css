@@ -161,8 +161,9 @@
 }
 
 /* Style de la barre de navigation */
-.create-invoice-page .create-invoice-main .Navbar {
-    background-color: #333;
+/* Style de la barre de navigation */
+.create-invoice-main .Navbar {
+    background-color: #007bff;
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -170,10 +171,12 @@
     align-items: center;
     position: fixed;
     top: 0;
-    left: 250px; /* Pour que la navbar se place après la sidebar */
-    width: calc(100% - 250px);
-    z-index: 10;
+    left: 250px; /* Aligning with the sidebar */
+    width: calc(100% - 250px); /* Ensure it fills the remaining space */
+    height: 60px; /* Set a fixed height */
+    z-index: 1000; /* Ensure it stays on top */
 }
+
 
 /* Style pour le conteneur de la création de la facture */
 .invoice-container {
@@ -228,4 +231,11 @@
     color: red;
     font-size: 16px;
     margin-bottom: 20px;
+}
+.create-invoice-main {
+    margin-left: 250px;
+    width: calc(100% - 250px); /* Adjust width dynamically */
+}
+.invoice-container {
+    margin-top: 80px; /* Adjust to navbar height */
 }

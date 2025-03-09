@@ -202,6 +202,45 @@ const EditProfile = () => {
                 className="edit-profile-form-input"
               />
             </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="salary" className="edit-profile-form-label">
+                Salary:
+              </label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="autorization" className="edit-profile-form-label">
+                Authorization:
+              </label>
+              <input
+                type="checkbox"
+                id="autorization"
+                name="autorization"
+                checked={formData.autorization || false}
+                onChange={(e) => setFormData({ ...formData, autorization: e.target.checked })}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="evidence" className="edit-profile-form-label">
+                Evidence:
+              </label>
+              <input
+                type="text"
+                id="evidence"
+                name="evidence"
+                value={formData.evidence || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
           </>
         );
       case 'ACCOUNTANT':
@@ -246,6 +285,32 @@ const EditProfile = () => {
                 className="edit-profile-form-input"
               />
             </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="salary" className="edit-profile-form-label">
+                Salary:
+              </label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="firstlogin" className="edit-profile-form-label">
+                First Login:
+              </label>
+              <input
+                type="checkbox"
+                id="firstlogin"
+                name="firstlogin"
+                checked={formData.firstlogin || false}
+                onChange={(e) => setFormData({ ...formData, firstlogin: e.target.checked })}
+                className="edit-profile-form-input"
+              />
+            </div>
           </>
         );
       case 'FINANCIAL_MANAGER':
@@ -265,6 +330,19 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
+              <label htmlFor="salary" className="edit-profile-form-label">
+                Salary:
+              </label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
               <label htmlFor="hireDate" className="edit-profile-form-label">
                 Hire Date:
               </label>
@@ -274,6 +352,19 @@ const EditProfile = () => {
                 name="hireDate"
                 value={formData.hireDate || ''}
                 onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="firstlogin" className="edit-profile-form-label">
+                First Login:
+              </label>
+              <input
+                type="checkbox"
+                id="firstlogin"
+                name="firstlogin"
+                checked={formData.firstlogin || false}
+                onChange={(e) => setFormData({ ...formData, firstlogin: e.target.checked })}
                 className="edit-profile-form-input"
               />
             </div>
@@ -321,6 +412,32 @@ const EditProfile = () => {
                 className="edit-profile-form-input"
               />
             </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="salary" className="edit-profile-form-label">
+                Salary:
+              </label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="firstlogin" className="edit-profile-form-label">
+                First Login:
+              </label>
+              <input
+                type="checkbox"
+                id="firstlogin"
+                name="firstlogin"
+                checked={formData.firstlogin || false}
+                onChange={(e) => setFormData({ ...formData, firstlogin: e.target.checked })}
+                className="edit-profile-form-input"
+              />
+            </div>
           </>
         );
       case 'RH':
@@ -362,6 +479,32 @@ const EditProfile = () => {
                 name="specialization"
                 value={formData.specialization || ''}
                 onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="salary" className="edit-profile-form-label">
+                Salary:
+              </label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="firstlogin" className="edit-profile-form-label">
+                First Login:
+              </label>
+              <input
+                type="checkbox"
+                id="firstlogin"
+                name="firstlogin"
+                checked={formData.firstlogin || false}
+                onChange={(e) => setFormData({ ...formData, firstlogin: e.target.checked })}
                 className="edit-profile-form-input"
               />
             </div>
