@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation
-  ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,
+  ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,findMyProjectsOwner,
   getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,deleteById,
   getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,getAllRoles,findMyPicture,logout,getbyid,updateById} = require('../controllers/auth');
   const multerImage = require("../config/multer-picture");
@@ -33,7 +33,9 @@ router.get("/getAllBusinessOwners",authenticateJWT,getAllBusinessOwners)
 router.get("/getAllAccountants",authenticateJWT,getAllAccountants)
 router.get("/getAllFinancialManagers",authenticateJWT,getAllFinancialManagers)
 router.get("/getAllRH",authenticateJWT,getAllRH)
-router.get('/findMyProject', authenticateJWT, findMyProject);router.post("/send-code", sendVerificationCode);
+router.get('/findMyProject', authenticateJWT, findMyProject);
+router.get('/findMyProjectsOwner', authenticateJWT, findMyProjectsOwner);
+router.post("/send-code", sendVerificationCode);
 router.post("/forgot-password",forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/verify-code", verifyCode);

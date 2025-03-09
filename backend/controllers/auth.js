@@ -580,6 +580,28 @@ const AddPicture = async (req, res) => {
       res.status(500).json({ message: 'Erreur serveur' });
     }
   }
+  const findMyProjectsOwner = async (req, res) => {
+    try {
+      const userId = req.user.userId; // L'ID de l'utilisateur est extrait du token après authentification
+  
+      // Trouver l'utilisateur dans la base de données pour obtenir le projet associé
+      const user = await userModel.findById(userId).populate('projects'); // On suppose que 'project' est une référence à un autre modèle
+  
+      if (!user) {
+        return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      }
+  
+      if (!user.projects) {
+        return res.status(404).json({ message: 'Aucun projet trouvé pour cet utilisateur' });
+      }
+  
+      // Si un projet est trouvé, on le retourne dans la réponse
+      res.status(200).json(user.projects);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du projet : ", error);
+      res.status(500).json({ message: 'Erreur serveur' });
+    }
+  };
   // Envoi du code de vérification par e-mail
 async function sendVerificationCode(req, res) {
   try {
@@ -1303,7 +1325,7 @@ module.exports = {
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
     resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
-    sendMessage,getAllRoles,findMyPicture,logout,getbyid,deleteById,updateById,     // New
+    sendMessage,getAllRoles,findMyPicture,logout,getbyid,deleteById,updateById,findMyProjectsOwner,     // New
     getChatHistory};
 
 
