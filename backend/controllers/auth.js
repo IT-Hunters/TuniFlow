@@ -167,7 +167,30 @@ const Login = async (req, res) => {
     return res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 };
+const updateFirstLogin = async (userId) => {
+  try {
+    // Trouver l'utilisateur par son ID
+    const user = await userModel.findById(userId);
 
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    // Vérifier si firstlogin est true
+    if (user.firstlogin === true) {
+      user.firstlogin = false; // Mettre à jour firstlogin à false
+      await user.save(); // Sauvegarder les modifications
+      console.log(`firstlogin mis à jour à false pour l'utilisateur : ${userId}`);
+      return { success: true, message: "firstlogin mis à jour à false" };
+    } else {
+      console.log(`firstlogin est déjà false pour l'utilisateur : ${userId}`);
+      return { success: false, message: "firstlogin est déjà false" };
+    }
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de firstlogin :", error.message);
+    throw error;
+  }
+};
 
 const logout = (req, res) => {
   try {
@@ -1325,7 +1348,7 @@ module.exports = {
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
     resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
-    sendMessage,getAllRoles,findMyPicture,logout,getbyid,deleteById,updateById,findMyProjectsOwner,     // New
+    sendMessage,getAllRoles,findMyPicture,logout,getbyid,deleteById,updateById,findMyProjectsOwner,updateFirstLogin,    // New
     getChatHistory};
 
 
