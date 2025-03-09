@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const ProjectSchema = new Schema({
   status: { type: String, required: true },
-  due_date: { type: Date, required: true, unique: true },
+  due_date: { type: Date, required: true, unique: false },
   businessManager: { type: Schema.Types.ObjectId, ref: "BusinessManager", unique: true },
   accountants: [{ type: Schema.Types.ObjectId, ref: "Accountant" }],
   financialManagers: [{ type: Schema.Types.ObjectId, ref: "FinancialManager" }],
