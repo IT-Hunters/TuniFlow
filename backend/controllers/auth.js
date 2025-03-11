@@ -228,70 +228,71 @@ const logout = (req, res) => {
 /****************Update Profile********************* */ 
 
 const updateProfile = async (req, res) => {
-  const userId = req.user.userId; // Récupéré à partir du middleware authenticateJWT
-  const updates = req.body; // Les champs à mettre à jour
+  const userId = req.user.userId;
+  const updates = req.body;
+
+  console.log('Utilisateur ID :', userId);
+  console.log('Données reçues :', updates);
 
   try {
-      // Trouver l'utilisateur dans la base de données
-      const user = await userModel.findById(userId);
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
 
-      if (!user) {
-          return res.status(404).json({ message: "Utilisateur non trouvé" });
-      }
+    console.log('Rôle de l’utilisateur :', user.role);
 
-      // Valider les données en fonction du rôle
-      const { errors, isValid } = validateUpdateProfil(updates, user.role);
+    const { errors, isValid } = validateUpdateProfil(updates, user.role);
+    console.log('Résultat de la validation :', { errors, isValid });
 
-      if (!isValid) {
-          return res.status(400).json(errors); // 400 pour une requête invalide
-      }
+    if (!isValid) {
+      return res.status(400).json(errors);
+    }
 
-      // Vérifier le type d'utilisateur et mettre à jour les champs spécifiques
-      switch (user.role) {
-          case "BUSINESS_MANAGER":
-              await BusinessManager.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          case "BUSINESS_OWNER":
-              await BusinessOwner.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          case "RH":
-              await RH.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          case "FINANCIAL_MANAGER":
-              await FinancialManager.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          case "ACCOUNTANT":
-              await Accountant.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          default:
-              return res.status(400).json({ message: "Rôle d'utilisateur non valide" });
-      }
+    switch (user.role) {
+      case "BUSINESS_MANAGER":
+        await BusinessManager.findOneAndUpdate(
+          { _id: userId },
+          { $set: updates },
+          { new: true, runValidators: true }
+        );
+        break;
+      case "BUSINESS_OWNER":
+        await BusinessOwner.findOneAndUpdate(
+          { _id: userId },
+          { $set: { ...updates, isFirstUpdate: false } },
+          { new: true, runValidators: true }
+        );
+        break;
+      case "RH":
+        await RH.findOneAndUpdate(
+          { _id: userId },
+          { $set: updates },
+          { new: true, runValidators: true }
+        );
+        break;
+      case "FINANCIAL_MANAGER":
+        await FinancialManager.findOneAndUpdate(
+          { _id: userId },
+          { $set: updates },
+          { new: true, runValidators: true }
+        );
+        break;
+      case "ACCOUNTANT":
+        await Accountant.findOneAndUpdate(
+          { _id: userId },
+          { $set: updates },
+          { new: true, runValidators: true }
+        );
+        break;
+      default:
+        return res.status(400).json({ message: "Rôle d'utilisateur non valide" });
+    }
 
-      // Renvoyer une réponse de succès
-      return res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
+    return res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
   } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
-      return res.status(500).json({ message: "Erreur interne du serveur" });
+    console.error("Erreur détaillée :", error.stack); // Afficher la stacktrace complète
+    return res.status(500).json({ message: "Erreur interne du serveur", error: error.message });
   }
 };
 

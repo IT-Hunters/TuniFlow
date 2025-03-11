@@ -6,6 +6,7 @@ const UserSchema = new Schema({
   lastname: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  isFirstUpdate: { type: Boolean, default: true },
   role: { 
     type: String, 
     enum: ["ADMIN", "BUSINESS_OWNER", "ACCOUNTANT", "FINANCIAL_MANAGER", "BUSINESS_MANAGER", "RH"],
