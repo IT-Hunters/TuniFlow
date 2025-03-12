@@ -4,36 +4,89 @@ const Wallet = require('../model/wallet');
 const Project = require('../model/Project');
 const nodemailer = require("nodemailer");
 const PDFDocument = require("pdfkit");
-const fs = require("fs");
+const fs = require("fs"); // Import unique et standard de fs
 const path = require("path");
+const { v4: uuidv4 } = require('uuid');
 
+// Vérifiez que fs.createWriteStream est disponible
+console.log('fs.createWriteStream disponible:', typeof fs.createWriteStream === 'function');
+
+// Générer le PDF de la facture
+const generateInvoicePDF = async (invoice) => {
+  const pdfPath = path.join(__dirname, '../invoices', `invoice_${invoice._id}.pdf`);
+  console.log('Tentative de génération du PDF à:', pdfPath);
+
+  // Créer le dossier invoices s’il n’existe pas
+  const dir = path.join(__dirname, '../invoices');
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log('Dossier invoices créé:', dir);
+  }
+
+  const doc = new PDFDocument();
+  const stream = fs.createWriteStream(pdfPath);
+
+  return new Promise((resolve, reject) => {
+    stream.on('finish', () => {
+      console.log('PDF généré avec succès à:', pdfPath);
+      resolve(pdfPath);
+    });
+    stream.on('error', (err) => {
+      console.error('Erreur lors de l’écriture du PDF:', err);
+      reject(err);
+    });
+
+    doc.pipe(stream);
+    doc.fontSize(20).text("Facture", { align: "center" });
+    doc.text(`ID: ${invoice._id}`);
+    doc.text(`Créateur: ${invoice.creator_id.fullname}`);
+    doc.text(`Destinataire: ${invoice.recipient_id.fullname}`);
+    doc.text(`Montant: ${invoice.amount} TND`);
+    doc.text(`Date d'échéance: ${invoice.due_date.toLocaleDateString()}`);
+    doc.end();
+  });
+};
+
+// Créer une facture
 exports.createInvoice = async (req, res) => {
   try {
     const { amount, due_date, category } = req.body;
     const creator_id = req.user.userId;
 
+    console.log('Données reçues:', { amount, due_date, category });
+    console.log('Creator ID:', creator_id);
+
     const project = await Project.findOne({ businessManager: creator_id }).populate('businessOwner');
+    console.log('Projet trouvé:', project);
     if (!project) {
       return res.status(404).json({ message: "Aucun projet trouvé pour ce Business Manager" });
     }
+    if (!project.businessOwner) {
+      return res.status(400).json({ message: "Aucun Business Owner assigné à ce projet" });
+    }
 
     const recipient_id = project.businessOwner._id;
+    console.log('Recipient ID:', recipient_id);
 
     const newInvoice = new Bill({
+      id: uuidv4(),
       creator_id,
       recipient_id,
-      amount,
+      amount: Number(amount),
       due_date,
       category,
       status: "PENDING",
       project_id: project._id
     });
+    console.log('Nouvelle facture avant sauvegarde:', newInvoice);
+
     await newInvoice.save();
+    console.log('Facture sauvegardée avec succès');
 
     res.status(201).json({ message: "Facture créée avec succès", invoice: newInvoice });
   } catch (error) {
-    console.error("Erreur création facture:", error);
-    res.status(500).json({ message: "Erreur lors de la création de la facture", error });
+    console.error("Erreur création facture:", error.message);
+    res.status(500).json({ message: "Erreur lors de la création de la facture", error: error.message });
   }
 };
 
@@ -45,12 +98,18 @@ exports.sendInvoice = async (req, res) => {
       .populate("creator_id", "fullname email")
       .populate("recipient_id", "fullname email")
       .populate("project_id", "status");
-    if (!invoice) return res.status(404).json({ message: "Facture non trouvée" });
+    if (!invoice) return res.status(404).json({ message: "Invoice not found" });
     if (invoice.creator_id._id.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Vous n'êtes pas autorisé à envoyer cette facture" });
+      return res.status(403).json({ message: "You are not authorized to send this invoice" });
     }
 
     const pdfPath = await generateInvoicePDF(invoice);
+
+    if (!fs.existsSync(pdfPath)) {
+      console.error('PDF file not found:', pdfPath);
+      return res.status(500).json({ message: "Error: PDF file was not generated correctly" });
+    }
+    console.log('PDF file found:', pdfPath);
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -60,34 +119,34 @@ exports.sendInvoice = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: invoice.recipient_id.email,
-      subject: `Facture de ${invoice.creator_id.fullname} (Projet: ${invoice.project_id.status})`,
+      subject: `Invoice from ${invoice.creator_id.fullname} (Project: ${invoice.project_id.status})`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
-          <h2 style="color: #333; text-align: center;">Nouvelle Facture</h2>
-          <p style="color: #555;">Bonjour <strong>${invoice.recipient_id.fullname}</strong>,</p>
-          <p style="color: #555;">Vous avez reçu une nouvelle facture de <strong>${invoice.creator_id.fullname}</strong>. Voici les détails :</p>
+          <h2 style="color: #333; text-align: center;">New Invoice</h2>
+          <p style="color: #555;">Hello <strong>${invoice.recipient_id.fullname}</strong>,</p>
+          <p style="color: #555;">You have received a new invoice from <strong>${invoice.creator_id.fullname}</strong>. Here are the details:</p>
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Montant</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Amount</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.amount} TND</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Date d'échéance</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Due Date</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.due_date.toLocaleDateString()}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Projet</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Project</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.project_id.status}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Catégorie</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Category</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.category || 'N/A'}</td>
             </tr>
           </table>
-          <p style="color: #555;">Veuillez trouver le PDF de la facture en pièce jointe.</p>
-          <p style="color: #555;">Cordialement,<br>TuniFlow Team</p>
+          <p style="color: #555;">Please find the invoice PDF attached.</p>
+          <p style="color: #555;">Best regards,<br>TuniFlow Team</p>
           <div style="text-align: center; margin-top: 20px;">
-            <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Voir mon tableau de bord</a>
+            <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">View My Dashboard</a>
           </div>
         </div>
       `,
@@ -95,14 +154,14 @@ exports.sendInvoice = async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
+    console.log('Email successfully sent to:', invoice.recipient_id.email);
 
-    res.status(200).json({ message: "Facture envoyée avec succès au Business Owner !" });
+    res.status(200).json({ message: "Invoice successfully sent to the Business Owner!" });
   } catch (error) {
-    console.error("Erreur envoi facture:", error);
-    res.status(500).json({ message: "Erreur lors de l'envoi de la facture" });
+    console.error("Error sending invoice:", error.message);
+    res.status(500).json({ message: "Error while sending the invoice", error: error.message });
   }
 };
-
 exports.acceptInvoice = async (req, res) => {
   try {
     const { invoiceId } = req.params;
@@ -111,21 +170,21 @@ exports.acceptInvoice = async (req, res) => {
     const invoice = await Bill.findById(invoiceId)
       .populate("creator_id", "fullname email")
       .populate("recipient_id", "fullname email");
-    if (!invoice) return res.status(404).json({ message: "Facture non trouvée" });
+    if (!invoice) return res.status(404).json({ message: "Invoice not found" });
     if (invoice.recipient_id._id.toString() !== userId) {
-      return res.status(403).json({ message: "Vous n'êtes pas autorisé à accepter cette facture" });
+      return res.status(403).json({ message: "You are not authorized to accept this invoice" });
     }
     if (invoice.status !== "PENDING") {
-      return res.status(400).json({ message: "Cette facture ne peut plus être acceptée" });
+      return res.status(400).json({ message: "This invoice can no longer be accepted" });
     }
 
     invoice.status = "PAID";
     await invoice.save();
 
     const wallet = await Wallet.findOne({ user_id: userId });
-    if (!wallet) return res.status(404).json({ message: "Portefeuille non trouvé" });
+    if (!wallet) return res.status(404).json({ message: "Wallet not found" });
     if (wallet.balance < invoice.amount) {
-      return res.status(400).json({ message: "Solde insuffisant" });
+      return res.status(400).json({ message: "Insufficient balance" });
     }
     wallet.balance -= invoice.amount;
     await wallet.save();
@@ -138,30 +197,30 @@ exports.acceptInvoice = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: invoice.creator_id.email,
-      subject: "Facture Acceptée",
+      subject: "Invoice Accepted",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
-          <h2 style="color: #28a745; text-align: center;">Facture Acceptée</h2>
-          <p style="color: #555;">Bonjour <strong>${invoice.creator_id.fullname}</strong>,</p>
-          <p style="color: #555;">Votre facture de <strong>${invoice.amount} TND</strong> a été acceptée par <strong>${invoice.recipient_id.fullname}</strong>.</p>
+          <h2 style="color: #28a745; text-align: center;">Invoice Accepted</h2>
+          <p style="color: #555;">Hello <strong>${invoice.creator_id.fullname}</strong>,</p>
+          <p style="color: #555;">Your invoice of <strong>${invoice.amount} TND</strong> has been accepted by <strong>${invoice.recipient_id.fullname}</strong>.</p>
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Montant</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Amount</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.amount} TND</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Date d'échéance</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Due Date</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.due_date.toLocaleDateString()}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Statut</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Status</td>
               <td style="padding: 10px; border: 1px solid #ddd; color: #28a745;">PAID</td>
             </tr>
           </table>
-          <p style="color: #555;">Merci pour votre collaboration.</p>
-          <p style="color: #555;">Cordialement,<br>TuniFlow Team</p>
+          <p style="color: #555;">Thank you for your collaboration.</p>
+          <p style="color: #555;">Best regards,<br>TuniFlow Team</p>
           <div style="text-align: center; margin-top: 20px;">
-            <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #28a745; color: #fff; text-decoration: none; border-radius: 5px;">Voir mon tableau de bord</a>
+            <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #28a745; color: #fff; text-decoration: none; border-radius: 5px;">View My Dashboard</a>
           </div>
         </div>
       `
@@ -169,13 +228,12 @@ exports.acceptInvoice = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({ message: "Facture acceptée et solde mis à jour" });
+    res.status(200).json({ message: "Invoice accepted and balance updated" });
   } catch (error) {
-    console.error("Erreur acceptation facture:", error);
-    res.status(500).json({ message: "Erreur lors de l'acceptation de la facture" });
+    console.error("Error accepting invoice:", error);
+    res.status(500).json({ message: "Error while accepting the invoice" });
   }
 };
-
 exports.getMyInvoices = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -183,8 +241,8 @@ exports.getMyInvoices = async (req, res) => {
       .populate("creator_id", "fullname email");
     res.status(200).json(invoices);
   } catch (error) {
-    console.error("Erreur récupération factures:", error);
-    res.status(500).json({ message: "Erreur lors de la récupération des factures" });
+    console.error("Erreur récupération factures:", error.message);
+    res.status(500).json({ message: "Erreur lors de la récupération des factures", error: error.message });
   }
 };
 
@@ -193,26 +251,8 @@ exports.getBusinessOwners = async (req, res) => {
     const businessOwners = await User.find({ role: "BUSINESS_OWNER" }, "fullname lastname email");
     res.status(200).json(businessOwners);
   } catch (error) {
-    console.error("Erreur récupération Business Owners:", error);
-    res.status(500).json({ message: "Erreur lors de la récupération des Business Owners" });
+    console.error("Erreur récupération Business Owners:", error.message);
+    res.status(500).json({ message: "Erreur lors de la récupération des Business Owners", error: error.message });
   }
 };
 
-const generateInvoicePDF = async (invoice) => {
-  return new Promise((resolve, reject) => {
-    const pdfPath = path.join(__dirname, `../invoices/invoice_${invoice._id}.pdf`);
-    const doc = new PDFDocument();
-
-    doc.pipe(fs.createWriteStream(pdfPath));
-    doc.fontSize(20).text("Facture", { align: "center" });
-    doc.fontSize(14).text(`ID: ${invoice._id}`);
-    doc.text(`Créateur: ${invoice.creator_id.fullname}`);
-    doc.text(`Destinataire: ${invoice.recipient_id.fullname}`);
-    doc.text(`Montant: ${invoice.amount} TND`);
-    doc.text(`Date d'échéance: ${invoice.due_date.toLocaleDateString()}`);
-    doc.end();
-
-    doc.on("finish", () => resolve(pdfPath));
-    doc.on("error", reject);
-  });
-};
