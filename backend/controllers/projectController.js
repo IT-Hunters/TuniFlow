@@ -84,12 +84,12 @@ async function assignAccountantToProject(req, res) {
 
         // Vérification si l'utilisateur a des projets associés
         const user = await userModel.findById(userId);
-        if (!user || !user.projects || user.projects.length === 0) {
+        if (!user || !user.project || user.project.length === 0) {
             return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
         }
 
         // Récupération du premier projet associé à cet utilisateur
-        const projectId = user.projects[0];
+        const projectId = user.project;
         const project = await Project.findById(projectId);
 
         if (!project) {
@@ -126,11 +126,11 @@ async function assignFinancialManagerToProject(req, res) {
         const userId = req.user.userId;
 
         const user = await userModel.findById(userId);
-        if (!user || !user.projects || user.projects.length === 0) {
+        if (!user || !user.project || user.project.length === 0) {
             return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
         }
 
-        const projectId = user.projects[0];
+        const projectId = user.project;
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).json({ message: "Projet non trouvé" });
@@ -164,11 +164,11 @@ async function assignRHManagerToProject(req, res) {
         const userId = req.user.userId;
 
         const user = await userModel.findById(userId);
-        if (!user || !user.projects || user.projects.length === 0) {
+        if (!user || !user.project || user.project.length === 0) {
             return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
         }
 
-        const projectId = user.projects[0];
+        const projectId = user.project;
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).json({ message: "Projet non trouvé" });
@@ -203,11 +203,11 @@ async function unassignAccountantFromProject(req, res) {
         const userId = req.user.userId;
 
         const user = await userModel.findById(userId);
-        if (!user || !user.projects || user.projects.length === 0) {
+        if (!user || !user.project || user.project.length === 0) {
             return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
         }
 
-        const projectId = user.projects[0];
+        const projectId = user.project;
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).json({ message: "Projet non trouvé" });
@@ -242,11 +242,11 @@ async function unassignFinancialManagerFromProject(req, res) {
         const userId = req.user.userId;
 
         const user = await userModel.findById(userId);
-        if (!user || !user.projects || user.projects.length === 0) {
+        if (!user || !user.project || user.project.length === 0) {
             return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
         }
 
-        const projectId = user.projects[0];
+        const projectId = user.project;
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).json({ message: "Projet non trouvé" });
@@ -281,11 +281,11 @@ async function unassignRHManagerFromProject(req, res) {
         const userId = req.user.userId;
 
         const user = await userModel.findById(userId);
-        if (!user || !user.projects || user.projects.length === 0) {
+        if (!user || !user.project || user.project.length === 0) {
             return res.status(404).json({ message: "Aucun projet trouvé pour cet utilisateur" });
         }
 
-        const projectId = user.projects[0];
+        const projectId = user.project;
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).json({ message: "Projet non trouvé" });
