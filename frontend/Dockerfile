@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.4
 
 # Stage 1: Development
 FROM node:lts AS development
