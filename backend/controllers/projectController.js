@@ -322,8 +322,20 @@ async function getProjectById(req, res) {
         res.status(500).json({ message: error.message });
     }
 };
-
+async function getMyProject  (req, res)  {
+    try {
+      const project = await Project.findOne({ businessManager: req.user.userId })
+        .populate('businessOwner', 'fullname lastname');
+      if (!project) {
+        return res.status(404).json({ message: "Projet non trouvé pour ce Business Manager" });
+      }
+      res.status(200).json(project);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du projet:", error);
+      res.status(500).json({ message: "Erreur serveur", error });
+    }
+  };
 
 module.exports = { addProject,assignAccountantToProject,assignRHManagerToProject,assignFinancialManagerToProject,
-    unassignRHManagerFromProject,unassignFinancialManagerFromProject,unassignAccountantFromProject,getProjectById
+    unassignRHManagerFromProject,unassignFinancialManagerFromProject,unassignAccountantFromProject,getProjectById,getMyProject
  };

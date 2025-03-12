@@ -435,3 +435,56 @@ table tbody tr:last-child td {
 .status.refunded {
   background-color: #dc3545; /* red */
 }
+.recent-invoices table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.recent-invoices th, .recent-invoices td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.recent-invoices th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.recent-invoices .status {
+  padding: 5px 10px;
+  border-radius: 12px;
+  color: white;
+  font-size: 12px;
+}
+
+.recent-invoices .status.paid {
+  background-color: #4caf50;
+}
+
+.recent-invoices .status.pending {
+  background-color: #ff9800;
+}
+
+.recent-invoices .status.cancelled {
+  background-color: #f44336;
+}
+
+.accept-button {
+  padding: 5px 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.accept-button:hover {
+  background-color: #218838;
+}
+
+.accept-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

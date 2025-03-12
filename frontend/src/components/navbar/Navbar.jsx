@@ -1,17 +1,17 @@
-"use client";
+
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import io from "socket.io-client"; // Ajout de Socket.IO
+import io from "socket.io-client";
 import { User, LogOut, Settings, UserPlus, Bell } from "lucide-react";
 import "./Navbar.css";
 
-const Navbar = () => {
+const Navbar = ({ notifications: externalNotifications }) => {
   const [userData, setUserData] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]); // State pour notifications dynamiques
+  const [notifications, setNotifications] = useState(externalNotifications || []);
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const notificationRef = useRef(null);
@@ -34,7 +34,6 @@ const Navbar = () => {
 
     fetchUser();
 
-    // Connexion Socket.IO
     const token = localStorage.getItem("token");
     if (!token) return;
 
@@ -53,6 +52,14 @@ const Navbar = () => {
       }
     });
 
+    socket.on("newMessage", (message) => {
+      console.log("New message received in Navbar:", message);
+      setNotifications((prev) => [
+        ...prev,
+        { message: `Nouveau message de ${message.sender}`, recipientId: userData?._id, timestamp: new Date() },
+      ]);
+    });
+
     socket.on("connect_error", (err) => {
       console.error("Socket.IO connection error in Admin Navbar:", err.message);
     });
@@ -60,8 +67,16 @@ const Navbar = () => {
     return () => {
       socket.disconnect();
     };
-  }, [userData?._id]); // Dépendance sur userData._id pour s'assurer que l'ID est disponible
+  }, [userData?._id]);
 
+  // Synchronisation avec les notifications externes
+  useEffect(() => {
+    if (externalNotifications) {
+      setNotifications(externalNotifications);
+    }
+  }, [externalNotifications]);
+
+  // Gestion des clics extérieurs pour fermer les menus
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -81,7 +96,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUserData(null);
-    setNotifications([]); // Réinitialiser les notifications à la déconnexion
+    setNotifications([]);
     navigate("/");
   };
 
@@ -112,7 +127,9 @@ const Navbar = () => {
               <h3>Notifications</h3>
               {notifications.length > 0 ? (
                 notifications.map((notif, index) => (
-                  <p key={index}>{notif.message}</p>
+                  <p key={index}>
+                    {notif.message} - {new Date(notif.timestamp).toLocaleTimeString()}
+                  </p>
                 ))
               ) : (
                 <p>Aucune notification</p>

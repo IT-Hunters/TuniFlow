@@ -1,34 +1,70 @@
-import React from "react";
-import CoolSidebar from "../sidebarHome/newSidebar"; // Assurez-vous que le chemin est correct
-import Navbar from "../navbarHome/NavbarHome"; // Assurez-vous que le chemin est correct
-import "./Tessst.css"; // Assurez-vous que le fichier CSS est correct
+import React, { useState } from "react";
+import axios from "axios";
+import "./Tessst.css";
 
-const Deposit = ({ goBack }) => {
+const Deposit = ({ goBack, walletId }) => {
+  const [amount, setAmount] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleDeposit = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMessage("Vous devez être connecté pour effectuer un dépôt.");
+        return;
+      }
+
+      if (!walletId) {
+        setMessage("ID du portefeuille manquant.");
+        return;
+      }
+
+      if (!amount || amount <= 0) {
+        setMessage("Le montant doit être supérieur à 0.");
+        return;
+      }
+
+      const response = await axios.post(
+        `http://localhost:5000/transactions/deposit/${walletId}`,
+        { amount: parseFloat(amount) },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setMessage(`Dépôt réussi ! Nouveau solde : ${response.data.newBalance}`);
+      setAmount("");
+      setTimeout(goBack, 2000);
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Erreur lors du dépôt");
+    }
+  };
+
   return (
     <div className="app-container">
-      {/* Sidebar */}
-      <CoolSidebar />
-
-      {/* Contenu principal */}
       <div className="main-content">
-        {/* Navbar */}
-        <Navbar />
-
-        {/* Contenu du dépôt */}
         <div className="wallet-container">
           <div className="wallet-header">
-            <h2>Dépôt</h2>
+            <h2>Deposit</h2>
             <button className="back-button" onClick={goBack}>
-              Retour
+              Return
             </button>
           </div>
 
           <div className="form-container">
             <label>
-              Montant :
-              <input type="number" placeholder="Entrez le montant" />
+              amount :
+              <input
+                type="number"
+                placeholder="Enter the amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
             </label>
-            <button className="submit-button">Déposer</button>
+            <button className="submit-button" onClick={handleDeposit}>
+            Deposit
+            </button>
+            {message && <p className="message">{message}</p>}
           </div>
         </div>
       </div>

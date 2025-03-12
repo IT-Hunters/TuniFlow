@@ -11,6 +11,8 @@ require('dotenv').config();
 const jwt=require("jsonwebtoken");
 const xlsx = require('xlsx');
 // Import des modèles discriminants
+
+const walletController = require("../controllers/walletcontroller");
 const FinancialManager = require("../model/FinancialManager");
 const BusinessOwner = require("../model/BusinessOwner");
 const Accountant = require("../model/Accountant");
@@ -32,97 +34,124 @@ async function getAll(req,res) {
 }
 
 const Register = async (req, res) => {
-    try {
-        // 1️⃣ Validation des données
-        const { errors, isValid } = validateRegister(req.body);
-        if (!isValid) {
-            return res.status(400).json(errors);
-        }
+  try {
+      // 1️⃣ Validation des données
+      const { errors, isValid } = validateRegister(req.body);
+      if (!isValid) {
+          return res.status(400).json(errors);
+      }
 
-        // 2️⃣ Vérifier si l'utilisateur existe déjà
-        const exist = await userModel.findOne({ email: req.body.email });
-        if (exist) {
-            return res.status(409).json({ email: "Utilisateur déjà existant" });
-        }
+      // 2️⃣ Vérifier si l'utilisateur existe déjà
+      const exist = await userModel.findOne({ email: req.body.email });
+      if (exist) {
+          return res.status(409).json({ email: "Utilisateur déjà existant" });
+      }
 
-        // 3️⃣ Hachage du mot de passe
-        req.body.password = await bcryptjs.hash(req.body.password, 10);
+      // 3️⃣ Hachage du mot de passe
+      req.body.password = await bcryptjs.hash(req.body.password, 10);
 
-        // 4️⃣ Sélection du modèle en fonction du rôle
-        let userType;
-        switch (req.body.role) {
-            case "BUSINESS_OWNER":
-                userType = new BusinessOwner({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    role: req.body.role,
-                    evidence: req.file ? req.file.path : null
+      // 4️⃣ Sélection du modèle en fonction du rôle
+      let userType;
+      let UserModel; // Modèle correspondant au rôle
+      switch (req.body.role) {
+          case "BUSINESS_OWNER":
+              userType = new BusinessOwner({
+                  email: req.body.email,
+                  password: req.body.password,
+                  fullname: req.body.fullname,
+                  lastname: req.body.lastname,
+                  role: req.body.role,
+                  evidence: req.file ? req.file.path : null
+              });
+              UserModel = BusinessOwner;
+              break;
 
-                  
-                });
-                break;
+          case "ACCOUNTANT":
+              userType = new Accountant({
+                  email: req.body.email,
+                  password: req.body.password,
+                  fullname: req.body.fullname,
+                  lastname: req.body.lastname,
+                  role: req.body.role
+              });
+              UserModel = Accountant;
+              break;
 
-            case "ACCOUNTANT":
-                userType = new Accountant({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    role: req.body.role
-                   
-                });
-                break;
+          case "RH":
+              userType = new RH({
+                  email: req.body.email,
+                  password: req.body.password,
+                  fullname: req.body.fullname,
+                  lastname: req.body.lastname,
+                  role: req.body.role
+              });
+              UserModel = RH;
+              break;
 
-            case "RH":
-                userType = new RH({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    role: req.body.role
-                    
-                });
-                break;
+          case "FINANCIAL_MANAGER":
+              userType = new FinancialManager({
+                  email: req.body.email,
+                  password: req.body.password,
+                  fullname: req.body.fullname,
+                  lastname: req.body.lastname,
+                  role: req.body.role
+              });
+              UserModel = FinancialManager;
+              break;
 
-            case "FINANCIAL_MANAGER":
-                userType = new FinancialManager({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    role: req.body.role
-                    
-                });
-                break;
+          case "BUSINESS_MANAGER":
+              userType = new BusinessManager({
+                  email: req.body.email,
+                  password: req.body.password,
+                  fullname: req.body.fullname,
+                  lastname: req.body.lastname,
+                  role: req.body.role
+              });
+              UserModel = BusinessManager;
+              break;
 
-            case "BUSINESS_MANAGER":
-                userType = new BusinessManager({
-                    email: req.body.email,
-                    password: req.body.password,
-                    fullname: req.body.fullname,
-                    lastname: req.body.lastname,
-                    wallet_id:req.body.wallet_id,
-                    role: req.body.role
-                   
-                });
-                break;
+          default:
+              return res.status(400).json({ role: "Rôle invalide" });
+      }
 
-            default:
-                return res.status(400).json({ role: "Rôle invalide" });
-        }
+      // 5️⃣ Sauvegarde de l'utilisateur
+      const result = await userType.save();
 
-        // 5️⃣ Sauvegarde de l'utilisateur
-        const result = await userType.save();
-        res.status(201).json({ message: "Inscription réussie", user: result });
+      // 6️⃣ Création automatique d'un wallet pour certains rôles (sauf ADMIN)
+      if (["BUSINESS_OWNER", "BUSINESS_MANAGER", "ACCOUNTANT", "FINANCIAL_MANAGER"].includes(req.body.role)) {
+          const walletData = {
+              user_id: result._id,
+              type: "Principal" // Type par défaut
+          };
 
-    } catch (error) {
-        console.error("Erreur lors de l'inscription:", error);
-        res.status(500).json({ message: "Erreur interne du serveur", error });
-    }
+          // Simuler une requête pour utiliser walletController.addWallet
+          const walletReq = { body: walletData };
+          const walletRes = {
+              status: (code) => ({
+                  json: async (data) => {
+                      if (code === 201) {
+                          console.log("Wallet créé avec succès dans Register:", data);
+                          // Utiliser le modèle approprié pour mettre à jour l'utilisateur avec l'ID du wallet
+                          await UserModel.findByIdAndUpdate(result._id, { wallet: data.wallet._id });
+                          result.wallet = data.wallet._id; // Mettre à jour l'instance localement
+                      } else {
+                          console.error("Erreur lors de la création du wallet:", data);
+                      }
+                  }
+              })
+          };
+
+          await walletController.addWallet(walletReq, walletRes);
+      }
+
+      // 7️⃣ Réponse avec l'utilisateur créé
+      res.status(201).json({ message: "Inscription réussie", user: result });
+
+  } catch (error) {
+      console.error("Erreur lors de l'inscription:", error);
+      res.status(500).json({ message: "Erreur interne du serveur", error });
+  }
 };
-
 
 const Login = async (req, res) => {
   const { errors, isValid } = validateLogin(req.body);

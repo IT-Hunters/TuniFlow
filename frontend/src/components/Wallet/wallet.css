@@ -80,6 +80,11 @@
 .transaction-history ul {
   list-style-type: none;
   padding: 0;
+  max-height: 300px; /* Hauteur maximale avant défilement */
+  overflow-y: auto; /* Active le défilement vertical */
+  background-color: white; /* Fond blanc pour cohérence */
+  border-radius: 5px; /* Coins arrondis */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre légère */
 }
 
 .transaction-item {

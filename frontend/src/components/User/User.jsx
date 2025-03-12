@@ -22,14 +22,14 @@ const TransactionList = ({ walletId }) => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
-        setLoading(true);
-        // Calculate the start and end of the current week
-        const now = new Date();
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
-        const endOfWeek = new Date(now);
-        endOfWeek.setDate(now.getDate() + (6 - now.getDay())); // Saturday
+      setLoading(true);
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+      const endOfWeek = new Date(now);
+      endOfWeek.setDate(now.getDate() + (6 - now.getDay())); // Saturday
 
+      try {
         const response = await axios.get(
           `http://localhost:3000/transactions/getTransactions/${walletId}`,
           {
@@ -40,26 +40,27 @@ const TransactionList = ({ walletId }) => {
           }
         );
         setTransactions(response.data);
-      
+        setError("");
+      } catch (err) {
+        setError("Erreur lors de la récupération des transactions");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     if (walletId) fetchTransactions();
   }, [walletId]);
 
-  // Handle loading, error, and empty states
   if (loading) return <p>Loading...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (transactions.length === 0) return <p>No transactions this week.</p>;
 
-  // Sort transactions by date
   const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-  // Prepare data for the bar chart
   const labels = sortedTransactions.map(t => new Date(t.date).toLocaleString());
   const amounts = sortedTransactions.map(t => t.type === "income" ? t.amount : -t.amount);
   const backgroundColors = sortedTransactions.map(t => t.type === "income" ? "#4caf50" : "#f44336");
 
-  // Chart data
   const data = {
     labels: labels,
     datasets: [
@@ -71,32 +72,20 @@ const TransactionList = ({ walletId }) => {
     ],
   };
 
-  // Chart options
   const options = {
     responsive: true,
     scales: {
       y: {
         beginAtZero: true,
-        title: {
-          display: true,
-          text: "Amount",
-        },
+        title: { display: true, text: "Amount" },
       },
       x: {
-        title: {
-          display: true,
-          text: "Date and Time",
-        },
+        title: { display: true, text: "Date and Time" },
       },
     },
     plugins: {
-      legend: {
-        display: false, // Hide legend since colors are intuitive
-      },
-      title: {
-        display: true,
-        text: "Weekly Transactions",
-      },
+      legend: { display: false },
+      title: { display: true, text: "Weekly Transactions" },
     },
   };
 
@@ -108,37 +97,51 @@ const TransactionList = ({ walletId }) => {
   );
 };
 
-// Dashboard Component
+// Dashboard Component with Dynamic Invoices
 const Dashbord = () => {
   const [date, setDate] = useState(new Date());
   const [events, setEvents] = useState({});
   const [newEvent, setNewEvent] = useState("");
-  const [ setUsers] = useState([]);
-  const [ setLoading] = useState(true);
-  const [ setError] = useState('');
-
-  const walletId = "67c4412beda8f25b329e2987"; // Replace with dynamic value if needed
+  const [users, setUsers] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const walletId = "67c4412beda8f25b329e2987"; // Remplacez par une valeur dynamique si nécessaire
 
   useEffect(() => {
     setEvents(loadEventsFromLocalStorage());
-  }, []);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setError('No token found. Please log in.');
-          setLoading(false);
-          return;
-        }
-        const response = await axios.get('http://localhost:3000/users/getall', {
+    const fetchData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('No token found. Please log in.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        // Récupérer les utilisateurs
+        const usersResponse = await axios.get('http://localhost:3000/users/getall', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUsers(response.data);
-      
+        setUsers(usersResponse.data);
+
+        // Récupérer les factures
+        const invoicesResponse = await axios.get('http://localhost:3000/invoices/my-invoices', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setInvoices(invoicesResponse.data);
+        setError('');
+      } catch (err) {
+        setError(err.response?.data?.message || 'Erreur lors du chargement des données');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchUsers();
+    fetchData();
   }, []);
 
   const handleDateChange = (selectedDate) => setDate(selectedDate);
@@ -184,6 +187,22 @@ const Dashbord = () => {
       }
     }
     return null;
+  };
+
+  const handleAcceptInvoice = async (invoiceId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`http://localhost:3000/invoices/${invoiceId}/accept`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setInvoices(invoices.map(invoice => 
+        invoice._id === invoiceId ? { ...invoice, status: 'PAID' } : invoice
+      ));
+      alert('Facture acceptée avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de l’acceptation:', error);
+      setError(error.response?.data?.message || 'Échec de l’acceptation de la facture');
+    }
   };
 
   return (
@@ -262,52 +281,54 @@ const Dashbord = () => {
 
             <div className="recent-invoices">
               <h4>Recent Invoices</h4>
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Customer Name</th>
-                    <th>Items</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>#045699</td>
-                    <td>Eren Yeager</td>
-                    <td>1 x Black Backpack</td>
-                    <td>07/12/2022</td>
-                    <td><span className="status paid">Paid</span></td>
-                    <td>$100</td>
-                  </tr>
-                  <tr>
-                    <td>#045700</td>
-                    <td>Levi Ackerman</td>
-                    <td>2 x T-Shirts</td>
-                    <td>08/12/2022</td>
-                    <td><span className="status pending">Pending</span></td>
-                    <td>$45</td>
-                  </tr>
-                  <tr>
-                    <td>#045701</td>
-                    <td>Mikasa Ackerman</td>
-                    <td>1 x Jacket</td>
-                    <td>09/12/2022</td>
-                    <td><span className="status refunded">Refunded</span></td>
-                    <td>$75</td>
-                  </tr>
-                  <tr>
-                    <td>#045702</td>
-                    <td>Historia Reiss</td>
-                    <td>2 x Bags</td>
-                    <td>10/12/2022</td>
-                    <td><span className="status paid">Paid</span></td>
-                    <td>$120</td>
-                  </tr>
-                </tbody>
-              </table>
+              {loading ? (
+                <p>Loading invoices...</p>
+              ) : error ? (
+                <p style={{ color: "red" }}>{error}</p>
+              ) : invoices.length === 0 ? (
+                <p>No invoices available.</p>
+              ) : (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Creator</th>
+                      <th>Category</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Price</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoices.map((invoice, index) => (
+                      <tr key={invoice._id}>
+                        <td>#{index + 1}</td>
+                        <td>{invoice.creator_id.fullname}</td>
+                        <td>{invoice.category || 'N/A'}</td>
+                        <td>{new Date(invoice.due_date).toLocaleDateString()}</td>
+                        <td>
+                          <span className={`status ${invoice.status.toLowerCase()}`}>
+                            {invoice.status}
+                          </span>
+                        </td>
+                        <td>{invoice.amount} TND</td>
+                        <td>
+                          {invoice.status === 'PENDING' && (
+                            <button
+                              onClick={() => handleAcceptInvoice(invoice._id)}
+                              className="accept-button"
+                              disabled={loading}
+                            >
+                              Accept
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
