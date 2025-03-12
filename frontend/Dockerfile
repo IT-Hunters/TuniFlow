@@ -1,16 +1,26 @@
-# Stage 1: Build React app with Node.js
-FROM node:18-alpine AS builder
+# syntax=docker/dockerfile:1.4
 
-WORKDIR /app
+# Stage 1: Development
+FROM node:lts AS development
 
-COPY package*.json ./
+ENV CI=true
+ENV PORT=3000
 
-RUN npm install --omit=dev && npm run build
+WORKDIR /code
+COPY package.json /code/package.json
+COPY package-lock.json /code/package-lock.json
+RUN npm ci
+COPY . /code
 
-# Stage 2: Serve app using Nginx (smaller image)
+# Build the application
+RUN npm run build
+
+# Stage 2: Nginx to serve built app
 FROM nginx:alpine
 
-COPY --from=builder /app/build /usr/share/nginx/html
+# Copy the build from the builder stage
+COPY --from=development /code/dist /usr/share/nginx/html
+
 
 EXPOSE 80
 
