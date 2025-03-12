@@ -1,0 +1,133 @@
+.MyProject-content h1 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  /* Project Details Section */
+  .MyProject-project-details {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .MyProject-project-details h2 {
+    font-size: 22px;
+    color: #444;
+    margin-bottom: 15px;
+  }
+  
+  .MyProject-project-details p {
+    font-size: 16px;
+    color: #666;
+    margin: 10px 0;
+  }
+  
+  .MyProject-project-info {
+    padding-left: 10px;
+  }
+  
+  .MyProject-project-info p {
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .MyProject-project-info strong {
+    color: #000;
+  }
+  
+  /* Assignment Table Section */
+  .MyProject-assignment-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .MyProject-assignment-section h2 {
+    font-size: 22px;
+    color: #444;
+    margin-bottom: 15px;
+  }
+  
+  .MyProject-assignment-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .MyProject-assignment-table th,
+  .MyProject-assignment-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .MyProject-assignment-table th {
+    background-color: #f8f8f8;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .MyProject-assignment-table td {
+    color: #666;
+  }
+  
+  .MyProject-assignment-table button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .MyProject-assignment-table button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .MyProject-assignment-table button:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  
+  .MyProject-unassign-btn {
+    padding: 8px 12px;
+    background-color: #dc3545; /* Red color for unassign */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .MyProject-unassign-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .MyProject-unassign-btn:hover:not(:disabled) {
+    background-color: #b02a37; /* Darker red on hover */
+  }
+  
+  /* Error and Success Messages */
+  .MyProject-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    font-size: 14px;
+  }
+  
+  .MyProject-success {
+    color: #155724;
+    background-color: #d4edda;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    font-size: 14px;
+  }

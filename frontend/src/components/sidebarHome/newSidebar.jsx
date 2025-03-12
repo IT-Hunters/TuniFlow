@@ -1,34 +1,70 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaHome, FaTachometerAlt, FaUsers, FaBell, FaCog, FaQuestionCircle, FaBars, FaChevronLeft, FaSignOutAlt, FaComments,FaFileInvoice } from "react-icons/fa";
+import {
+  FaHome,
+  FaTachometerAlt,
+  FaUsers,
+  FaBell,
+  FaCog,
+  FaQuestionCircle,
+  FaBars,
+  FaChevronLeft,
+  FaSignOutAlt,
+  FaComments,
+  FaFileInvoice,
+  FaPlus,
+  FaProjectDiagram, // Add icon for projects
+} from "react-icons/fa";
 import "./SidebarHome.css";
-import { findMyProfile,logout } from "../../services/UserService";
-import { useNavigate } from "react-router-dom"; // Ajout de useNavigate
-const navItems = [
-  { title: "Home", icon: FaHome, href: "/user" },
-  { title: "Assets", icon: FaTachometerAlt, href: "/Assets" },
-  { title: "Transacctions", icon: FaUsers, href: "/Transaction", badge: 5 },
-  { title: "Finance", icon: FaBell, href: "#", badge: 3 },
-  { title: "Objective", icon: FaCog, href: "#" },
-  { title: "Chat", icon: FaComments, href: "/chat" },
-  { title: "Help", icon: FaQuestionCircle, href: "#" },
-  { title: "Invoice", icon: FaFileInvoice, href: "/invoice" } 
-];
+import { findMyProfile, logout } from "../../services/UserService";
+import { useNavigate } from "react-router-dom";
 
 const CoolSidebar = () => {
   const [userData, setUserData] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("Dashboard");
-  const navigate = useNavigate(); // Hook pour navigation
+  const [error, setError] = useState(null); // Add state for error handling
+  const navigate = useNavigate();
+
+  // Base navigation items
+  const baseNavItems = [
+    { title: "Home", icon: FaHome, href: "/user" },
+    { title: "Assets", icon: FaTachometerAlt, href: "/Assets" },
+    { title: "Transactions", icon: FaUsers, href: "/Transaction", badge: 5 },
+    { title: "Finance", icon: FaBell, href: "#", badge: 3 },
+    { title: "Objective", icon: FaCog, href: "#" },
+    { title: "Chat", icon: FaComments, href: "/chat" },
+    { title: "Help", icon: FaQuestionCircle, href: "#" },
+    { title: "Invoice", icon: FaFileInvoice, href: "/invoice" },
+    { title: "Add Project", icon: FaPlus, href: "/AddProject" },
+    { title: "My Project", icon: FaProjectDiagram, href: "/MyProject" }, // Add new link for projects
+  ];
+
+  // Filter nav items based on user role
+  const navItems = baseNavItems.filter((item) => {
+    if (item.title === "Add Project") {
+      return userData?.userType === "BusinessOwner";
+    }
+    if (item.title === "My Project") {
+      return userData?.userType === "BusinessManager"; // Only show for Managers
+    }
+    return true;
+  });
 
   const handleLogout = () => {
-    const response = logout();
-    if (response) {
-      document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      navigate("/"); 
+    try {
+      const response = logout();
+      if (response) {
+        document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        navigate("/");
+      } else {
+        setError("Failed to logout. Please try again.");
+      }
+    } catch (error) {
+      console.error("Couldn't logout:", error);
+      setError("An error occurred during logout. Please try again.");
     }
-    else console.error("Couldn't logout :", error);
   };
 
   const handleNavigation = (item) => {
@@ -37,12 +73,12 @@ const CoolSidebar = () => {
 
     if (item.title === "Chat") {
       if (token) {
-        navigate("/chat"); // Redirige vers /chat si token présent
+        navigate("/chat");
       } else {
-        navigate("/"); // Redirige vers /login si pas de token
+        navigate("/");
       }
     } else {
-      navigate(item.href); // Redirige vers les autres routes
+      navigate(item.href);
     }
   };
 
@@ -50,14 +86,21 @@ const CoolSidebar = () => {
     const fetchUser = async () => {
       try {
         const response = await findMyProfile();
-        setUserData(response);
+        if (response) {
+          setUserData(response);
+        } else {
+          setError("Failed to load user profile. Please try again.");
+        }
       } catch (error) {
         console.error("Erreur lors de la récupération du profil :", error);
+        setError("An error occurred while fetching your profile. Please try again.");
       }
     };
     fetchUser();
   }, []);
+
   console.log(localStorage.getItem("token"));
+
   return (
     <div className={`sidebar-home ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-home-content">
@@ -70,10 +113,17 @@ const CoolSidebar = () => {
         <div className="user-profile">
           <div className="avatar">JD</div>
           <div className={`user-info ${collapsed ? "hidden" : ""}`}>
-            <span className="user-name">{userData?.fullname} {userData?.lastname}</span>
+            <span className="user-name">
+              {userData?.fullname} {userData?.lastname}
+            </span>
             <span className="user-role">{userData?.userType}</span>
           </div>
         </div>
+        {error && (
+          <div className="error-message">
+            <p>{error}</p>
+          </div>
+        )}
         <nav className="sidebar-home-nav">
           <ul>
             {navItems.map((item) => (
@@ -82,8 +132,8 @@ const CoolSidebar = () => {
                   href={item.href}
                   className={activeItem === item.title ? "active" : ""}
                   onClick={(e) => {
-                    e.preventDefault(); // Empêche le comportement par défaut du lien
-                    handleNavigation(item); // Utilise la fonction personnalisée
+                    e.preventDefault();
+                    handleNavigation(item);
                   }}
                 >
                   <item.icon />
@@ -105,4 +155,4 @@ const CoolSidebar = () => {
   );
 };
 
-export default CoolSidebar;
+export default CoolSidebar

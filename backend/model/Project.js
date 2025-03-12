@@ -14,7 +14,8 @@ const ProjectSchema = new Schema({
   assets_actif: [{ type: Schema.Types.ObjectId, ref: "AssetActif" }],
   assets_passif: [{ type: Schema.Types.ObjectId, ref: "AssetPassif" }],
   employees: [{ type: Schema.Types.ObjectId, ref: "Employe" }],
-  wallet: { type: Schema.Types.ObjectId, ref: "Wallet", unique: true } // Référence au wallet
+  wallet: { type: Schema.Types.ObjectId, ref: "Wallet", unique: true }, // Référence au wallet
+  objectifs: [{ type: Schema.Types.ObjectId, ref: "Objectif" }],
 }, {
   collection: "projects",
   timestamps: true
