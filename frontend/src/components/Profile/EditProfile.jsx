@@ -65,35 +65,74 @@ const EditProfile = () => {
         setError('No token found. Please log in.');
         return;
       }
-
+  
       if (!formData.fullname || !formData.lastname || !formData.email) {
         setError('Please fill in all required fields (Full Name, Last Name, Email).');
         return;
       }
-
+  
       const cleanedFormData = {
         fullname: formData.fullname,
         lastname: formData.lastname,
         email: formData.email,
-        companyName: formData.companyName || "",
-        registrationNumber: formData.registrationNumber ? Number(formData.registrationNumber) : undefined,
-        industry: formData.industry || "",
-        salary: formData.salary ? Number(formData.salary) : undefined,
-        autorization: formData.autorization || false,
-        evidence: formData.evidence || "",
-        picture: formData.picture || "", // Inclure l’URL de l’image
+        picture: formData.picture && !formData.picture.startsWith('http') 
+          ? `http://localhost:3000/images/${formData.picture}` 
+          : formData.picture || '',
       };
-
+  
+      switch (userData.role) {
+        case 'BUSINESS_OWNER':
+          cleanedFormData.companyName = formData.companyName || '';
+          cleanedFormData.registrationNumber = formData.registrationNumber ? Number(formData.registrationNumber) : undefined;
+          cleanedFormData.industry = formData.industry || '';
+          cleanedFormData.salary = formData.salary ? Number(formData.salary) : undefined;
+          cleanedFormData.autorization = formData.autorization || false;
+          cleanedFormData.evidence = formData.evidence || '';
+          break;
+        case 'BUSINESS_MANAGER':
+          cleanedFormData.certification = formData.certification || '';
+          cleanedFormData.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
+          cleanedFormData.specialization = formData.specialization || '';
+          cleanedFormData.salary = formData.salary ? Number(formData.salary) : undefined;
+          
+          break;
+        case 'ACCOUNTANT':
+          cleanedFormData.certification = formData.certification || '';
+          cleanedFormData.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
+          cleanedFormData.specialization = formData.specialization || '';
+          cleanedFormData.salary = formData.salary ? Number(formData.salary) : undefined;
+          
+          break;
+        case 'FINANCIAL_MANAGER':
+          cleanedFormData.department = formData.department || '';
+          cleanedFormData.salary = formData.salary ? Number(formData.salary) : undefined;
+          cleanedFormData.hireDate = formData.hireDate || '';
+          cleanedFormData.firstlogin = formData.firstlogin || false;
+          break;
+        case 'RH':
+          cleanedFormData.certification = formData.certification || '';
+          cleanedFormData.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
+          cleanedFormData.specialization = formData.specialization || '';
+          cleanedFormData.salary = formData.salary ? Number(formData.salary) : undefined;
+          cleanedFormData.firstlogin = formData.firstlogin || false;
+          break;
+        case 'ADMIN':
+          cleanedFormData.adminId = formData.adminId || '';
+          break;
+        default:
+          break;
+      }
+  
       console.log('Données envoyées à updateprofile :', JSON.stringify(cleanedFormData, null, 2));
-
+  
       const response = await axios.put('http://localhost:3000/users/updateprofile', cleanedFormData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-
-      console.log('Réponse serveur updateprofile :', response.data);
+  
+      console.log('Réponse serveur :', response.data);
       alert('Profile updated successfully!');
       setShowFirstUpdateMessage(false);
       navigate('/profile');
@@ -108,96 +147,140 @@ const EditProfile = () => {
     }
   };
 
-  const handleImageUpload = (e) => {
-    console.log('Événement onChange déclenché');
-    const file = e.target.files[0];
-    if (!file) {
-      setError('No file selected');
-      console.log('Aucun fichier sélectionné');
+ const handleImageUpload = (e) => {
+  console.log('Événement onChange déclenché');
+  const file = e.target.files[0];
+  if (!file) {
+    setError('No file selected');
+    console.log('Aucun fichier sélectionné');
+    return;
+  }
+
+  console.log('Fichier sélectionné :', file.name, file.size);
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    console.log('Aperçu local généré :', reader.result.substring(0, 50) + '...');
+    setDisplayImage(reader.result);
+    console.log('displayImage mis à jour avec aperçu :', reader.result.substring(0, 50) + '...');
+  };
+  reader.onerror = () => {
+    console.error('Erreur lors de la lecture du fichier');
+    setError('Error reading file');
+  };
+  reader.readAsDataURL(file);
+
+  const imageFormData = new FormData();
+  imageFormData.append('picture', file);
+
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('No token found. Please log in.');
       return;
     }
 
-    console.log('Fichier sélectionné :', file.name, file.size);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      console.log('Aperçu local généré :', reader.result.substring(0, 50) + '...');
-      setDisplayImage(reader.result);
-      console.log('displayImage mis à jour avec aperçu :', reader.result.substring(0, 50) + '...');
-    };
-    reader.onerror = () => {
-      console.error('Erreur lors de la lecture du fichier');
-      setError('Error reading file');
-    };
-    reader.readAsDataURL(file);
+    console.log('Début de l’upload vers le serveur');
+    axios.put('http://localhost:3000/users/uploadimage', imageFormData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }).then(response => {
+      console.log('Réponse serveur après upload (complet) :', response.data);
+      const imagePath = response.data.picture || response.data.data?.picture;
+      console.log('Chemin brut reçu :', imagePath);
+      const imageUrl = imagePath.startsWith('http') 
+        ? imagePath 
+        : `http://localhost:3000/images/${imagePath}`;
+      console.log('URL construite :', imageUrl);
+      
+      setUserData((prevState) => ({
+        ...prevState,
+        picture: imageUrl,
+      }));
+      setFormData((prevState) => ({
+        ...prevState,
+        picture: imageUrl,
+      }));
+      setDisplayImage(imageUrl);
+      console.log('displayImage mis à jour avec URL serveur :', imageUrl);
 
-    const imageFormData = new FormData();
-    imageFormData.append('picture', file);
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('No token found. Please log in.');
-        return;
+      const updatedProfile = {
+        fullname: formData.fullname || '',
+        lastname: formData.lastname || '',
+        email: formData.email || '',
+        picture: imageUrl,
+      };
+      switch (userData.role) {
+        case 'BUSINESS_OWNER':
+          updatedProfile.companyName = formData.companyName || '';
+          updatedProfile.registrationNumber = formData.registrationNumber ? Number(formData.registrationNumber) : undefined;
+          updatedProfile.industry = formData.industry || '';
+          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+          updatedProfile.autorization = formData.autorization || false;
+          updatedProfile.evidence = formData.evidence || '';
+          break;
+        case 'BUSINESS_MANAGER':
+          updatedProfile.certification = formData.certification || '';
+          updatedProfile.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
+          updatedProfile.specialization = formData.specialization || '';
+          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+          updatedProfile.firstlogin = formData.firstlogin || false;
+          break;
+        case 'ACCOUNTANT':
+          updatedProfile.certification = formData.certification || '';
+          updatedProfile.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
+          updatedProfile.specialization = formData.specialization || '';
+          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+          updatedProfile.firstlogin = formData.firstlogin || false;
+          break;
+        case 'FINANCIAL_MANAGER':
+          updatedProfile.department = formData.department || '';
+          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+          updatedProfile.hireDate = formData.hireDate || '';
+          updatedProfile.firstlogin = formData.firstlogin || false;
+          break;
+        case 'RH':
+          updatedProfile.certification = formData.certification || '';
+          updatedProfile.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
+          updatedProfile.specialization = formData.specialization || '';
+          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+          updatedProfile.firstlogin = formData.firstlogin || false;
+          break;
+        case 'ADMIN':
+          updatedProfile.adminId = formData.adminId || '';
+          break;
+        default:
+          break;
       }
 
-      console.log('Début de l’upload vers le serveur');
-      axios.put('http://localhost:3000/users/uploadimage', imageFormData, {
+      console.log('Données envoyées à updateprofile :', JSON.stringify(updatedProfile, null, 2));
+      axios.put('http://localhost:3000/users/updateprofile', updatedProfile, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-      }).then(response => {
-        console.log('Réponse serveur après upload (complet) :', response.data);
-        const imagePath = response.data.picture || response.data.data?.picture;
-        console.log('Chemin brut reçu :', imagePath);
-        const imageUrl = imagePath.startsWith('http') 
-          ? imagePath 
-          : `http://localhost:3000${imagePath.startsWith('/') ? '' : '/images/'}${imagePath}`;
-        console.log('URL construite :', imageUrl);
-        
-        // Mettre à jour userData et formData localement
-        setUserData((prevState) => ({
-          ...prevState,
-          picture: imageUrl,
-        }));
-        setFormData((prevState) => ({
-          ...prevState,
-          picture: imageUrl,
-        }));
-        setDisplayImage(imageUrl);
-        console.log('displayImage mis à jour avec URL serveur :', imageUrl);
-
-        // Persister l’URL dans la base de données
-        const updatedProfile = {
-          ...formData,
-          picture: imageUrl,
-        };
-        axios.put('http://localhost:3000/users/updateprofile', updatedProfile, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }).then(updateResponse => {
-          console.log('Profil mis à jour avec l’image :', updateResponse.data);
-        }).catch(updateErr => {
-          console.error('Erreur lors de la mise à jour du profil :', updateErr);
-          setError('Failed to save image URL to profile');
-        });
-
-        setError('');
-      }).catch(err => {
-        console.error('Erreur complète lors de l’upload :', err);
-        if (err.response) {
-          setError(err.response.data.message || 'Error uploading image');
-          setDisplayImage(null);
-        } else {
-          setError('Network error or server unreachable');
-        }
+      }).then(updateResponse => {
+        console.log('Profil mis à jour avec l’image :', updateResponse.data);
+      }).catch(updateErr => {
+        console.error('Erreur lors de la mise à jour du profil :', updateErr);
+        console.log('Détails de la réponse serveur :', updateErr.response?.data);
+        setError('Failed to save image URL to profile');
       });
-    } catch (err) {
-      console.error('Erreur inattendue :', err);
-    }
-  };
 
+      setError('');
+    }).catch(err => {
+      console.error('Erreur complète lors de l’upload :', err);
+      if (err.response) {
+        setError(err.response.data.message || 'Error uploading image');
+        setDisplayImage(null);
+      } else {
+        setError('Network error or server unreachable');
+      }
+    });
+  } catch (err) {
+    console.error('Erreur inattendue :', err);
+  }
+};
   const renderRoleSpecificFields = () => {
     switch (userData.role) {
       case 'ADMIN':
