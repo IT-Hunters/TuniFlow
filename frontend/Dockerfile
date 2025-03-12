@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --omit=dev 
+RUN npm install --omit=dev && npm run build
 
 # Stage 2: Serve app using Nginx (smaller image)
 FROM nginx:alpine
