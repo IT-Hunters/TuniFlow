@@ -19,8 +19,9 @@ import Tessst from "./components/tessst/Tessst";
 import Depossit from "./components/tessst/Depossit";
 import Transfer from "./components/tessst/Transfer";
 import Withdraw from "./components/tessst/Withdraw";
-
-
+import AddProject from "./components/Project/AddProject";
+import MyProject from "./components/Project/MyProject";
+import ObjectiveManagement from "./components/Objectif/ObjectifManagement";
 
 function App() {         
   return (
@@ -45,6 +46,9 @@ function App() {
         <Route path="/Depossit" element={<Depossit />} /> 
         <Route path="/Transfer" element={<Transfer />} />
         <Route path="/Withdraw" element={<Withdraw />} />
+        <Route path="/AddProject" element={<AddProject />} />
+        <Route path="/MyProject" element={<MyProject />} />
+        <Route path="/ObjectiveManagement" element={<ObjectiveManagement />} />
 
       </Routes>
     </Router>

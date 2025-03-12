@@ -3,21 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../navbar/Navbar';
 import Sidebar from '../sidebar/Sidebar';
-import userimg from '../assets/user.png';
 import './EditProfile.css';
 
 const EditProfile = () => {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null); // State to store user data
-  const [loading, setLoading] = useState(true); // State for loading state
-  const [error, setError] = useState(''); // State for error handling
-  const [formData, setFormData] = useState({}); // State for form data
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({});
+  const [showFirstUpdateMessage, setShowFirstUpdateMessage] = useState(false);
+  const [displayImage, setDisplayImage] = useState(null);
 
   useEffect(() => {
-    // Fetch user data when the component mounts
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token'); // Get the token from localStorage
+        const token = localStorage.getItem('token');
         if (!token) {
           setError('No token found. Please log in.');
           setLoading(false);
@@ -26,17 +26,23 @@ const EditProfile = () => {
 
         const response = await axios.get('http://localhost:3000/users/findMyProfile', {
           headers: {
-            Authorization: `Bearer ${token}`, // Attach the token to the request headers
+            Authorization: `Bearer ${token}`,
           },
         });
 
-        setUserData(response.data); // Set user data in state
-        setFormData(response.data); // Initialize form data with user data
+        console.log('Données utilisateur récupérées au chargement :', response.data);
+        setUserData(response.data);
+        setFormData(response.data);
+        setDisplayImage(response.data.picture || null);
+        console.log('displayImage initialisé avec :', response.data.picture || 'null');
+        if (response.data.role === 'BUSINESS_OWNER' && response.data.isFirstUpdate) {
+          setShowFirstUpdateMessage(true);
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'Error fetching profile data');
         console.error('Error fetching profile data:', err);
       } finally {
-        setLoading(false); // Stop loading after the request completes
+        setLoading(false);
       }
     };
 
@@ -59,46 +65,70 @@ const EditProfile = () => {
         setError('No token found. Please log in.');
         return;
       }
-  
-      // Basic validation for required fields
+
       if (!formData.fullname || !formData.lastname || !formData.email) {
         setError('Please fill in all required fields (Full Name, Last Name, Email).');
         return;
       }
-  
-      // Add logging here, before the axios.put call
-      console.log('Submitting profile update with the following data:', {
-        formData: formData,
-        token: token,
-      });
-  
-      // Update profile
-      await axios.put('http://localhost:3000/users/updateprofile', formData, {
+
+      const cleanedFormData = {
+        fullname: formData.fullname,
+        lastname: formData.lastname,
+        email: formData.email,
+        companyName: formData.companyName || "",
+        registrationNumber: formData.registrationNumber ? Number(formData.registrationNumber) : undefined,
+        industry: formData.industry || "",
+        salary: formData.salary ? Number(formData.salary) : undefined,
+        autorization: formData.autorization || false,
+        evidence: formData.evidence || "",
+        picture: formData.picture || "", // Inclure l’URL de l’image
+      };
+
+      console.log('Données envoyées à updateprofile :', JSON.stringify(cleanedFormData, null, 2));
+
+      const response = await axios.put('http://localhost:3000/users/updateprofile', cleanedFormData, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
-  
+
+      console.log('Réponse serveur updateprofile :', response.data);
       alert('Profile updated successfully!');
-      navigate('/profile'); // Redirect to profile page after update
+      setShowFirstUpdateMessage(false);
+      navigate('/profile');
     } catch (err) {
+      console.error('Erreur complète :', err);
       if (err.response) {
-        // Server responded with a status other than 2xx
-        setError(err.response.data.message || 'Error updating profile');
-      } else if (err.request) {
-        // No response received from server
-        setError('No response from server. Please try again later.');
+        console.log('Réponse serveur :', err.response.data);
+        setError(err.response.data.message || JSON.stringify(err.response.data));
       } else {
-        // Error setting up the request
-        setError('An unexpected error occurred.');
+        setError('Erreur réseau ou serveur injoignable');
       }
-      console.error('Error updating profile:', err);
     }
   };
 
-  const handleImageUpload = async (e) => {
+  const handleImageUpload = (e) => {
+    console.log('Événement onChange déclenché');
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file) {
+      setError('No file selected');
+      console.log('Aucun fichier sélectionné');
+      return;
+    }
+
+    console.log('Fichier sélectionné :', file.name, file.size);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      console.log('Aperçu local généré :', reader.result.substring(0, 50) + '...');
+      setDisplayImage(reader.result);
+      console.log('displayImage mis à jour avec aperçu :', reader.result.substring(0, 50) + '...');
+    };
+    reader.onerror = () => {
+      console.error('Erreur lors de la lecture du fichier');
+      setError('Error reading file');
+    };
+    reader.readAsDataURL(file);
 
     const imageFormData = new FormData();
     imageFormData.append('picture', file);
@@ -110,63 +140,85 @@ const EditProfile = () => {
         return;
       }
 
-      const response = await axios.put('http://localhost:3000/users/uploadimage', imageFormData, {
+      console.log('Début de l’upload vers le serveur');
+      axios.put('http://localhost:3000/users/uploadimage', imageFormData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
         },
-      });
+      }).then(response => {
+        console.log('Réponse serveur après upload (complet) :', response.data);
+        const imagePath = response.data.picture || response.data.data?.picture;
+        console.log('Chemin brut reçu :', imagePath);
+        const imageUrl = imagePath.startsWith('http') 
+          ? imagePath 
+          : `http://localhost:3000${imagePath.startsWith('/') ? '' : '/images/'}${imagePath}`;
+        console.log('URL construite :', imageUrl);
+        
+        // Mettre à jour userData et formData localement
+        setUserData((prevState) => ({
+          ...prevState,
+          picture: imageUrl,
+        }));
+        setFormData((prevState) => ({
+          ...prevState,
+          picture: imageUrl,
+        }));
+        setDisplayImage(imageUrl);
+        console.log('displayImage mis à jour avec URL serveur :', imageUrl);
 
-      setUserData((prevState) => ({
-        ...prevState,
-        picture: response.data.picture, // Update the picture URL in state
-      }));
+        // Persister l’URL dans la base de données
+        const updatedProfile = {
+          ...formData,
+          picture: imageUrl,
+        };
+        axios.put('http://localhost:3000/users/updateprofile', updatedProfile, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }).then(updateResponse => {
+          console.log('Profil mis à jour avec l’image :', updateResponse.data);
+        }).catch(updateErr => {
+          console.error('Erreur lors de la mise à jour du profil :', updateErr);
+          setError('Failed to save image URL to profile');
+        });
+
+        setError('');
+      }).catch(err => {
+        console.error('Erreur complète lors de l’upload :', err);
+        if (err.response) {
+          setError(err.response.data.message || 'Error uploading image');
+          setDisplayImage(null);
+        } else {
+          setError('Network error or server unreachable');
+        }
+      });
     } catch (err) {
-      setError(err.response?.data?.message || 'Error uploading image');
-      console.error('Error uploading image:', err);
+      console.error('Erreur inattendue :', err);
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>; // Loading state
-  }
-
-  if (error) {
-    return <div className="error-text">{error}</div>; // Error state
-  }
-
-  if (!userData) {
-    return <div>No user data available</div>; // No data state
-  }
-
-  // Function to render role-specific form fields
   const renderRoleSpecificFields = () => {
     switch (userData.role) {
       case 'ADMIN':
         return (
-          <>
-            <div className="edit-profile-form-group">
-              <label htmlFor="adminId" className="edit-profile-form-label">
-                Admin ID:
-              </label>
-              <input
-                type="text"
-                id="adminId"
-                name="adminId"
-                value={formData.adminId || ''}
-                onChange={handleChange}
-                className="edit-profile-form-input"
-              />
-            </div>
-          </>
+          <div className="edit-profile-form-group">
+            <label htmlFor="adminId" className="edit-profile-form-label">Admin ID:</label>
+            <input
+              type="text"
+              id="adminId"
+              name="adminId"
+              value={formData.adminId || ''}
+              onChange={handleChange}
+              className="edit-profile-form-input"
+            />
+          </div>
         );
       case 'BUSINESS_OWNER':
         return (
           <>
             <div className="edit-profile-form-group">
-              <label htmlFor="companyName" className="edit-profile-form-label">
-                Company Name:
-              </label>
+              <label htmlFor="companyName" className="edit-profile-form-label">Company Name:</label>
               <input
                 type="text"
                 id="companyName"
@@ -177,11 +229,9 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
-              <label htmlFor="registrationNumber" className="edit-profile-form-label">
-                Registration Number:
-              </label>
+              <label htmlFor="registrationNumber" className="edit-profile-form-label">Registration Number:</label>
               <input
-                type="number" // Changed to number to match backend schema
+                type="number"
                 id="registrationNumber"
                 name="registrationNumber"
                 value={formData.registrationNumber || ''}
@@ -190,14 +240,45 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
-              <label htmlFor="industry" className="edit-profile-form-label">
-                Industry:
-              </label>
+              <label htmlFor="industry" className="edit-profile-form-label">Industry:</label>
               <input
                 type="text"
                 id="industry"
                 name="industry"
                 value={formData.industry || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="salary" className="edit-profile-form-label">Salary:</label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="autorization" className="edit-profile-form-label">Authorization:</label>
+              <input
+                type="checkbox"
+                id="autorization"
+                name="autorization"
+                checked={formData.autorization || false}
+                onChange={(e) => setFormData({ ...formData, autorization: e.target.checked })}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="evidence" className="edit-profile-form-label">Evidence:</label>
+              <input
+                type="text"
+                id="evidence"
+                name="evidence"
+                value={formData.evidence || ''}
                 onChange={handleChange}
                 className="edit-profile-form-input"
               />
@@ -208,9 +289,7 @@ const EditProfile = () => {
         return (
           <>
             <div className="edit-profile-form-group">
-              <label htmlFor="certification" className="edit-profile-form-label">
-                Certification:
-              </label>
+              <label htmlFor="certification" className="edit-profile-form-label">Certification:</label>
               <input
                 type="text"
                 id="certification"
@@ -221,9 +300,7 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
-              <label htmlFor="experienceYears" className="edit-profile-form-label">
-                Experience Years:
-              </label>
+              <label htmlFor="experienceYears" className="edit-profile-form-label">Experience Years:</label>
               <input
                 type="number"
                 id="experienceYears"
@@ -234,9 +311,7 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
-              <label htmlFor="specialization" className="edit-profile-form-label">
-                Specialization:
-              </label>
+              <label htmlFor="specialization" className="edit-profile-form-label">Specialization:</label>
               <input
                 type="text"
                 id="specialization"
@@ -246,15 +321,35 @@ const EditProfile = () => {
                 className="edit-profile-form-input"
               />
             </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="salary" className="edit-profile-form-label">Salary:</label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="firstlogin" className="edit-profile-form-label">First Login:</label>
+              <input
+                type="checkbox"
+                id="firstlogin"
+                name="firstlogin"
+                checked={formData.firstlogin || false}
+                onChange={(e) => setFormData({ ...formData, firstlogin: e.target.checked })}
+                className="edit-profile-form-input"
+              />
+            </div>
           </>
         );
       case 'FINANCIAL_MANAGER':
         return (
           <>
             <div className="edit-profile-form-group">
-              <label htmlFor="department" className="edit-profile-form-label">
-                Department:
-              </label>
+              <label htmlFor="department" className="edit-profile-form-label">Department:</label>
               <input
                 type="text"
                 id="department"
@@ -265,9 +360,18 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
-              <label htmlFor="hireDate" className="edit-profile-form-label">
-                Hire Date:
-              </label>
+              <label htmlFor="salary" className="edit-profile-form-label">Salary:</label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="hireDate" className="edit-profile-form-label">Hire Date:</label>
               <input
                 type="date"
                 id="hireDate"
@@ -277,15 +381,24 @@ const EditProfile = () => {
                 className="edit-profile-form-input"
               />
             </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="firstlogin" className="edit-profile-form-label">First Login:</label>
+              <input
+                type="checkbox"
+                id="firstlogin"
+                name="firstlogin"
+                checked={formData.firstlogin || false}
+                onChange={(e) => setFormData({ ...formData, firstlogin: e.target.checked })}
+                className="edit-profile-form-input"
+              />
+            </div>
           </>
         );
       case 'BUSINESS_MANAGER':
         return (
           <>
             <div className="edit-profile-form-group">
-              <label htmlFor="certification" className="edit-profile-form-label">
-                Certification:
-              </label>
+              <label htmlFor="certification" className="edit-profile-form-label">Certification:</label>
               <input
                 type="text"
                 id="certification"
@@ -296,9 +409,7 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
-              <label htmlFor="experienceYears" className="edit-profile-form-label">
-                Experience Years:
-              </label>
+              <label htmlFor="experienceYears" className="edit-profile-form-label">Experience Years:</label>
               <input
                 type="number"
                 id="experienceYears"
@@ -309,15 +420,35 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
-              <label htmlFor="specialization" className="edit-profile-form-label">
-                Specialization:
-              </label>
+              <label htmlFor="specialization" className="edit-profile-form-label">Specialization:</label>
               <input
                 type="text"
                 id="specialization"
                 name="specialization"
                 value={formData.specialization || ''}
                 onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="salary" className="edit-profile-form-label">Salary:</label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="firstlogin" className="edit-profile-form-label">First Login:</label>
+              <input
+                type="checkbox"
+                id="firstlogin"
+                name="firstlogin"
+                checked={formData.firstlogin || false}
+                onChange={(e) => setFormData({ ...formData, firstlogin: e.target.checked })}
                 className="edit-profile-form-input"
               />
             </div>
@@ -327,9 +458,7 @@ const EditProfile = () => {
         return (
           <>
             <div className="edit-profile-form-group">
-              <label htmlFor="certification" className="edit-profile-form-label">
-                Certification:
-              </label>
+              <label htmlFor="certification" className="edit-profile-form-label">Certification:</label>
               <input
                 type="text"
                 id="certification"
@@ -340,9 +469,7 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
-              <label htmlFor="experienceYears" className="edit-profile-form-label">
-                Experience Years:
-              </label>
+              <label htmlFor="experienceYears" className="edit-profile-form-label">Experience Years:</label>
               <input
                 type="number"
                 id="experienceYears"
@@ -353,9 +480,7 @@ const EditProfile = () => {
               />
             </div>
             <div className="edit-profile-form-group">
-              <label htmlFor="specialization" className="edit-profile-form-label">
-                Specialization:
-              </label>
+              <label htmlFor="specialization" className="edit-profile-form-label">Specialization:</label>
               <input
                 type="text"
                 id="specialization"
@@ -365,12 +490,38 @@ const EditProfile = () => {
                 className="edit-profile-form-input"
               />
             </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="salary" className="edit-profile-form-label">Salary:</label>
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                value={formData.salary || ''}
+                onChange={handleChange}
+                className="edit-profile-form-input"
+              />
+            </div>
+            <div className="edit-profile-form-group">
+              <label htmlFor="firstlogin" className="edit-profile-form-label">First Login:</label>
+              <input
+                type="checkbox"
+                id="firstlogin"
+                name="firstlogin"
+                checked={formData.firstlogin || false}
+                onChange={(e) => setFormData({ ...formData, firstlogin: e.target.checked })}
+                className="edit-profile-form-input"
+              />
+            </div>
           </>
         );
       default:
         return null;
     }
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="error-text">{error}</div>;
+  if (!userData) return <div>No user data available</div>;
 
   return (
     <>
@@ -384,25 +535,36 @@ const EditProfile = () => {
               <div className="edit-profile-card">
                 <div className="edit-profile-card-inner">
                   <div className="edit-profile-card-front">
-                    <img
-                      src={userData.picture || userimg} // Display user avatar or fallback image
-                      alt="User Avatar"
-                      className="edit-profile-img-card"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = userimg; // Fallback if image doesn't load
-                      }}
-                    />
+                    {displayImage ? (
+                      <img
+                        src={displayImage}
+                        alt="User Avatar"
+                        className="edit-profile-img-card"
+                        key={displayImage}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.style.display = 'none';
+                          console.log('Erreur de chargement de l’image');
+                        }}
+                        onLoad={() => console.log('Image chargée avec succès')}
+                      />
+                    ) : (
+                      <div className="no-image-placeholder">No image uploaded</div>
+                    )}
                   </div>
                   <div className="edit-profile-card-back">
                     <input
                       type="file"
                       id="image-upload"
-                      accept="image/*"
+                      accept="image/png, image/jpg, image/jpeg"
                       style={{ display: 'none' }}
                       onChange={handleImageUpload}
                     />
-                    <label htmlFor="image-upload" className="edit-image-btn">
+                    <label
+                      htmlFor="image-upload"
+                      className="edit-image-btn"
+                      onClick={() => console.log('Clic sur le label Edit')}
+                    >
                       Edit
                       <svg className="edit-image-svg" viewBox="0 0 512 512">
                         <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
@@ -415,11 +577,14 @@ const EditProfile = () => {
               {/* User Info Card */}
               <div className="edit-profile-user-info-card">
                 <h2>Edit User Information</h2>
+                {showFirstUpdateMessage && (
+                  <div className="first-update-message" style={{ color: 'blue', marginBottom: '10px' }}>
+                    Welcome! Please complete your profile by adding your company name, registration number, and industry.
+                  </div>
+                )}
                 <form onSubmit={handleSubmit} className="edit-profile-form">
                   <div className="edit-profile-form-group">
-                    <label htmlFor="fullname" className="edit-profile-form-label">
-                      Full Name:
-                    </label>
+                    <label htmlFor="fullname" className="edit-profile-form-label">Full Name:</label>
                     <input
                       type="text"
                       id="fullname"
@@ -430,9 +595,7 @@ const EditProfile = () => {
                     />
                   </div>
                   <div className="edit-profile-form-group">
-                    <label htmlFor="lastname" className="edit-profile-form-label">
-                      Last Name:
-                    </label>
+                    <label htmlFor="lastname" className="edit-profile-form-label">Last Name:</label>
                     <input
                       type="text"
                       id="lastname"
@@ -443,9 +606,7 @@ const EditProfile = () => {
                     />
                   </div>
                   <div className="edit-profile-form-group">
-                    <label htmlFor="email" className="edit-profile-form-label">
-                      Email:
-                    </label>
+                    <label htmlFor="email" className="edit-profile-form-label">Email:</label>
                     <input
                       type="email"
                       id="email"
@@ -455,11 +616,8 @@ const EditProfile = () => {
                       className="edit-profile-form-input"
                     />
                   </div>
-                  {/* Render role-specific fields */}
                   {renderRoleSpecificFields()}
-                  <button type="submit" className="edit-profile-form-submit">
-                    Save Changes
-                  </button>
+                  <button type="submit" className="edit-profile-form-submit">Save Changes</button>
                 </form>
               </div>
             </div>

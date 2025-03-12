@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const ProjectSchema = new Schema({
   status: { type: String, required: true },
-  due_date: { type: Date, required: true, unique: true },
+  due_date: { type: Date, required: true, unique: false },
   businessManager: { type: Schema.Types.ObjectId, ref: "BusinessManager", unique: true },
   accountants: [{ type: Schema.Types.ObjectId, ref: "Accountant" }],
   financialManagers: [{ type: Schema.Types.ObjectId, ref: "FinancialManager" }],
@@ -14,7 +14,8 @@ const ProjectSchema = new Schema({
   assets_actif: [{ type: Schema.Types.ObjectId, ref: "AssetActif" }],
   assets_passif: [{ type: Schema.Types.ObjectId, ref: "AssetPassif" }],
   employees: [{ type: Schema.Types.ObjectId, ref: "Employe" }],
-  wallet: { type: Schema.Types.ObjectId, ref: "Wallet", unique: true } // Référence au wallet
+  wallet: { type: Schema.Types.ObjectId, ref: "Wallet", unique: true }, // Référence au wallet
+  objectifs: [{ type: Schema.Types.ObjectId, ref: "Objectif" }],
 }, {
   collection: "projects",
   timestamps: true

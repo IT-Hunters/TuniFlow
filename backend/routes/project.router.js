@@ -5,11 +5,11 @@ const { addProject,assignAccountantToProject,assignFinancialManagerToProject,ass
 } = require("../controllers/projectController");
 const { authenticateJWT } = require('../config/autorisation');
 
-router.post("/addproject/:businessManagerName", authenticateJWT, async (req, res) => {
+router.post("/addproject/:businessManagerId", authenticateJWT, async (req, res) => {
     try {
         console.log("Requête reçue :", req.body);
 
-        const { businessManagerName } = req.params; // Récupérer le nom ou l'ID du BusinessManager
+        const { businessManagerId } = req.params; // Récupérer l'ID du BusinessManager
         const projectData = req.body; // Récupérer les données du projet
 
         // Ajouter le token JWT à projectData
@@ -17,7 +17,7 @@ router.post("/addproject/:businessManagerName", authenticateJWT, async (req, res
         console.log("Token ajouté à projectData :", projectData.token);
 
         // Appeler la fonction addProject
-        const result = await addProject(businessManagerName, projectData);
+        const result = await addProject(businessManagerId, projectData);
 
         // Réponse réussie
         res.status(201).json(result);
