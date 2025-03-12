@@ -38,4 +38,9 @@ const objectifSchema = new Schema({
 
 const Objectif = mongoose.model("Objectif", objectifSchema, "objectif");
 
-module.exports = Objectif;
+// Fonction pour récupérer tous les types d'objectifs
+function getAllTypeObjectif() {
+    return objectifSchema.path('objectivetype').enumValues;
+}
+
+module.exports = { Objectif, getAllTypeObjectif };
