@@ -18,6 +18,13 @@ const UserSchema = new Schema({
   collection: "users",
   timestamps: true
 });
+UserSchema.statics.getAllRoles = function () {
+  const allRoles = this.schema.path('role').enumValues; // Récupère toutes les valeurs de l'énumération
+  const specificRoles = allRoles.filter(role => 
+    role === "RH" || role === "ACCOUNTANT" || role === "FINANCIAL_MANAGER"
+  );
+  return specificRoles; // Retourne uniquement les rôles spécifiques
+};
 
 const User = mongoose.model("User", UserSchema);
 module.exports = User;
