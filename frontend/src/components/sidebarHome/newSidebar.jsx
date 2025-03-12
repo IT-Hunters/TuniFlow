@@ -14,7 +14,7 @@ import {
   FaComments,
   FaFileInvoice,
   FaPlus,
-  FaProjectDiagram, // Add icon for projects
+  FaProjectDiagram,
 } from "react-icons/fa";
 import "./SidebarHome.css";
 import { findMyProfile, logout } from "../../services/UserService";
@@ -24,7 +24,7 @@ const CoolSidebar = () => {
   const [userData, setUserData] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("Dashboard");
-  const [error, setError] = useState(null); // Add state for error handling
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   // Base navigation items
@@ -38,18 +38,21 @@ const CoolSidebar = () => {
     { title: "Help", icon: FaQuestionCircle, href: "#" },
     { title: "Invoice", icon: FaFileInvoice, href: "/invoice" },
     { title: "Add Project", icon: FaPlus, href: "/AddProject" },
-    { title: "My Project", icon: FaProjectDiagram, href: "/MyProject" }, // Add new link for projects
+    { title: "My Project", icon: FaProjectDiagram, href: "/MyProject" },
   ];
 
   // Filter nav items based on user role
   const navItems = baseNavItems.filter((item) => {
     if (item.title === "Add Project") {
-      return userData?.userType === "BusinessOwner";
+      return userData?.userType === "BusinessOwner"; // Visible uniquement pour BusinessOwner
     }
     if (item.title === "My Project") {
-      return userData?.userType === "BusinessManager"; // Only show for Managers
+      return userData?.userType === "BusinessManager"; // Visible uniquement pour BusinessManager
     }
-    return true;
+    if (item.title === "Invoice") {
+      return userData?.userType === "BusinessManager"; // Visible uniquement pour BusinessManager
+    }
+    return true; // Autres éléments visibles pour tous
   });
 
   const handleLogout = () => {
@@ -155,4 +158,4 @@ const CoolSidebar = () => {
   );
 };
 
-export default CoolSidebar
+export default CoolSidebar;

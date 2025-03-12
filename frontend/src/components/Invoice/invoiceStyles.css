@@ -1,241 +1,118 @@
-/* Styles for CreateInvoice and SendInvoice components */
-
-.invoice-container {
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    margin: 20px;
-}
-
-.invoice-header {
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-.invoice-form {
-    display: flex;
-    flex-direction: column;
-}
-
-.invoice-form input,
-.invoice-form textarea,
-.invoice-input {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.invoice-button {
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.invoice-button:hover {
-    background-color: #0056b3;
-}
-
-
-.invoice-form button {
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.invoice-form button:hover {
-    background-color: #0056b3;
-}
-.send-invoice-page {
-    display: flex;
-    height: 100vh;
-}
-
-.send-invoice-main {
-    flex: 1;
-    padding: 20px;
-    background-color: #f9f9f9;
-}
-
-.send-invoice-container {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.invoice-header {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-.invoice-form {
-    display: flex;
-    flex-direction: column;
-}
-
-.invoice-input {
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.invoice-submit-button {
-    padding: 12px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.invoice-submit-button:disabled {
-    background-color: #ccc;
-}
-
-.error-message {
-    color: red;
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-/* Style global de la page */
+/* Conteneur global de la page */
 .create-invoice-page {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
     background-color: #f4f4f4;
-}
-
-/* Style de la barre latérale */
-.create-invoice-page .CoolSidebar {
-    width: 250px;
-    background-color: #333;
-    color: #fff;
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Style pour les éléments dans la sidebar */
-.create-invoice-page .CoolSidebar ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.create-invoice-page .CoolSidebar ul li {
-    padding: 15px;
-    text-align: center;
-    width: 100%;
-    border-bottom: 1px solid #444;
-}
-
-.create-invoice-page .CoolSidebar ul li:hover {
-    background-color: #575757;
-}
-
-/* Style pour la zone principale avec la barre de navigation */
-.create-invoice-page .create-invoice-main {
-    margin-left: 250px; /* Pour laisser de l'espace pour la sidebar */
-    width: 100%;
+  }
+  
+  /* Contenu principal à droite de la sidebar */
+  .create-invoice-main {
+    flex: 1;
     padding: 20px;
-}
-
-/* Style de la barre de navigation */
-/* Style de la barre de navigation */
-.create-invoice-main .Navbar {
-    background-color: #007bff;
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    left: 250px; /* Aligning with the sidebar */
-    width: calc(100% - 250px); /* Ensure it fills the remaining space */
-    height: 60px; /* Set a fixed height */
-    z-index: 1000; /* Ensure it stays on top */
-}
-
-
-/* Style pour le conteneur de la création de la facture */
-.invoice-container {
-    margin-top: 80px; /* Pour éviter que le formulaire soit masqué par la navbar */
-    padding: 20px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Style pour l'en-tête du formulaire */
-.invoice-header {
+  }
+  
+  /* Conteneur du formulaire */
+  .invoice-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Titre du formulaire */
+  .invoice-header {
     font-size: 24px;
-    margin-bottom: 20px;
-}
-
-/* Style des champs du formulaire */
-.invoice-form {
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  /* Formulaire */
+  .invoice-form {
     display: flex;
     flex-direction: column;
-}
-
-.invoice-input {
-    margin-bottom: 15px;
-    padding: 10px;
+    gap: 20px;
+  }
+  
+  /* Champs de saisie (input et select) */
+  .invoice-input {
+    width: 100%;
+    padding: 12px 15px;
     font-size: 16px;
-    border-radius: 4px;
+    color: #555;
+    background-color: #f9f9f9;
     border: 1px solid #ddd;
-}
-
-.invoice-input:focus {
-    border-color: #007bff;
+    border-radius: 6px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  /* Style au focus pour les champs */
+  .invoice-input:focus {
     outline: none;
-}
-
-.invoice-button {
-    padding: 10px;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  
+  /* Placeholder */
+  .invoice-input::placeholder {
+    color: #999;
+  }
+  
+  /* Style spécifique pour le select */
+  .invoice-input[type="select"] {
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23555" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 35px;
+  }
+  
+  /* Bouton de soumission */
+  .invoice-button {
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
     background-color: #007bff;
-    color: white;
-    font-size: 16px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-}
-
-.invoice-button:hover {
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  /* Effet hover sur le bouton */
+  .invoice-button:hover:not(:disabled) {
     background-color: #0056b3;
-}
-
-
-.error-message {
-    color: red;
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-.create-invoice-main {
-    margin-left: 250px;
-    width: calc(100% - 250px); /* Adjust width dynamically */
-}
-.invoice-container {
-    margin-top: 80px; /* Adjust to navbar height */
-}
+    transform: translateY(-2px);
+  }
+  
+  /* Bouton désactivé */
+  .invoice-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .create-invoice-main {
+      padding: 10px;
+    }
+  
+    .invoice-container {
+      margin: 20px auto;
+      padding: 20px;
+    }
+  
+    .invoice-header {
+      font-size: 20px;
+    }
+  
+    .invoice-input,
+    .invoice-button {
+      font-size: 14px;
+    }
+  }
