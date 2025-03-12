@@ -116,7 +116,7 @@ const Navbar = ({ notifications: externalNotifications }) => {
 
   // Redirection vers la page Wallet
   const handleWalletClick = () => {
-    navigate("/Tessst"); // Assurez-vous que la route "/wallet" est correcte
+    navigate("/Transaction"); // Assurez-vous que la route "/wallet" est correcte
   };
 
   return (
