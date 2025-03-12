@@ -10,15 +10,15 @@ const CreateInvoice = () => {
     due_date: '',
     category: ''
   });
-  const [businessOwner, setBusinessOwner] = useState(null); // Name of the Business Owner
+  const [businessOwner, setBusinessOwner] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchProjectData = async () => {
       try {
         const token = localStorage.getItem('token');
-        // New route to fetch the Business Manager's project
-        const response = await axios.get('http://localhost:3000/projects/my-project', {
+        console.log('Token pour GET /project/my-project:', token);
+        const response = await axios.get('http://localhost:3000/project/my-project', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const project = response.data;
@@ -28,6 +28,7 @@ const CreateInvoice = () => {
         });
       } catch (error) {
         console.error('Error fetching project:', error);
+        console.log('Erreur détails:', error.response?.data);
       }
     };
     fetchProjectData();
@@ -43,11 +44,14 @@ const CreateInvoice = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3000/invoices', invoiceData, {
+      console.log('Token pour POST /invoices/create:', token);
+      console.log('Données envoyées:', invoiceData);
+      const response = await axios.post('http://localhost:3000/invoices/create', invoiceData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const invoiceId = response.data.invoice._id;
 
+      console.log('Facture créée, ID:', invoiceId);
       await axios.post(`http://localhost:3000/invoices/send/${invoiceId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -56,6 +60,7 @@ const CreateInvoice = () => {
       setInvoiceData({ amount: '', due_date: '', category: '' });
     } catch (error) {
       console.error('Error:', error);
+      console.log('Server response:', error.response?.data);
       alert('Failed to create or send the invoice');
     } finally {
       setLoading(false);
