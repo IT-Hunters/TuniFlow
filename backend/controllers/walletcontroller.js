@@ -23,7 +23,23 @@ const getWalletByUser = async (req, res) => {
       .populate("user_id", "fullname email")
       .populate("project", "status due_date");
     if (!wallet) {
-      return res.status(404).json({ message: "Aucun wallet trouvé" });
+      return res.status(404).json({ message: "Aucun wallet trouvé pour cet utilisateur" });
+    }
+    res.status(200).json(wallet);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// 📌 Obtenir un wallet par walletId (Nouveau)
+const getWalletById = async (req, res) => {
+  try {
+    const { walletId } = req.params;
+    const wallet = await Wallet.findById(walletId)
+      .populate("user_id", "fullname email")
+      .populate("project", "status due_date");
+    if (!wallet) {
+      return res.status(404).json({ message: "Wallet introuvable" });
     }
     res.status(200).json(wallet);
   } catch (err) {
@@ -124,7 +140,6 @@ const updateWallet = async (req, res) => {
         await Project.findByIdAndUpdate(projectId, { wallet: walletId });
       }
     }
-    
 
     await wallet.save();
     res.status(200).json({ message: "Wallet mis à jour avec succès", wallet });
@@ -132,15 +147,15 @@ const updateWallet = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-// Get the top 5 projects based on wallet balance
+
+// 📌 Obtenir les 5 projets avec les plus gros soldes
 const getTopProjects = async (req, res) => {
   try {
     const topProjects = await Project.find()
-      .populate("wallet", "balance") // Fetch wallet balance
-      .populate("businessManager", "name") // Fetch Business Manager's name
-      .sort({ "wallet.balance": -1 }) // Sort by balance in descending order
-      .limit(5); // Limit to top 5 projects
-
+      .populate("wallet", "balance")
+      .populate("businessManager", "name")
+      .sort({ "wallet.balance": -1 })
+      .limit(5);
     res.json(topProjects);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -253,6 +268,7 @@ const calculateCashFlowHistory = async (req, res) => {
 module.exports = {
   getWallets,
   getWalletByUser,
+  getWalletById, // Ajouté ici
   addWallet,
   deleteWallet,
   updateWallet,

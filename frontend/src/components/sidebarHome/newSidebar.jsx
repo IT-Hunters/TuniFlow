@@ -31,9 +31,8 @@ const CoolSidebar = () => {
   const baseNavItems = [
     { title: "Home", icon: FaHome, href: "/user" },
     { title: "Assets", icon: FaTachometerAlt, href: "/Assets" },
-    { title: "Transactions", icon: FaUsers, href: "/Transaction", badge: 5 },
     { title: "Finance", icon: FaBell, href: "#", badge: 3 },
-    { title: "Objective", icon: FaCog, href: "#" },
+    { title: "Objective", icon: FaCog, href: "/ObjectiveManagement" },
     { title: "Chat", icon: FaComments, href: "/chat" },
     { title: "Help", icon: FaQuestionCircle, href: "#" },
     { title: "Invoice", icon: FaFileInvoice, href: "/invoice" },

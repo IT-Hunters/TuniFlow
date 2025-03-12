@@ -7,7 +7,8 @@ const FinancialManager = User.discriminator("FinancialManager", new mongoose.Sch
   hireDate: { type: Date },
   picture: { type: String },
   firstlogin: { type: Boolean, default: true },
-  project: { type: mongoose.Schema.Types.ObjectId, ref: "Project", unique: true } // Un seul projet par FinancialManage
+  project: { type: mongoose.Schema.Types.ObjectId, ref: "Project", unique: true }, // Un seul projet par FinancialManage
+  wallet: { type: mongoose.Schema.Types.ObjectId, ref: "Wallet" }
 }));
 
 module.exports = FinancialManager;
