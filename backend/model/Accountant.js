@@ -8,7 +8,8 @@ const Accountant = User.discriminator("Accountant", new mongoose.Schema({
   specialization: { type: String },
   picture: { type: String },
   firstlogin: { type: Boolean, default: true },
-  project: { type: mongoose.Schema.Types.ObjectId, ref: "Project", unique: true } // Un seul projet par accountant
+  project: { type: mongoose.Schema.Types.ObjectId, ref: "Project", unique: true }, // Un seul projet par accountant
+  wallet: { type: mongoose.Schema.Types.ObjectId, ref: "Wallet" }
 }));
 
 module.exports = Accountant;

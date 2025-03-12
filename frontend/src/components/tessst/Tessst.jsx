@@ -1,90 +1,167 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory } from "react-icons/fa";
 import Deposit from "./Depossit";
 import Withdraw from "./Withdraw";
 import Transfer from "./Transfer";
-import CoolSidebar from "../sidebarHome/newSidebar"; // Assurez-vous que le chemin est correct
+import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 import "./Tessst.css";
 
 const Wallet = () => {
   const [activeScreen, setActiveScreen] = useState("main");
+  const [walletData, setWalletData] = useState({ balance: 0, currency: "TND", transactions: [] });
+  const [walletId, setWalletId] = useState("");
+  const [error, setError] = useState("");
 
-  // Données statiques pour le solde et les transactions
-  const walletData = {
-    balance: 1500,
-    currency: "TND",
-    transactions: [
-      { id: 1, type: "income", amount: 500, date: "2023-10-01", description: "Dépôt" },
-      { id: 2, type: "expense", amount: 200, date: "2023-10-02", description: "Retrait" },
-      { id: 3, type: "transfer", amount: 300, date: "2023-10-03", description: "Transfert" },
-    ],
+  const fetchUserProfile = async (token) => {
+    try {
+      console.log("Étape 1 : Récupération du profil utilisateur...");
+      const response = await axios.get("http://localhost:5000/users/findMyProfile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Profil utilisateur récupéré :", response.data);
+      return response.data._id;
+    } catch (error) {
+      throw new Error(
+        `Erreur lors de la récupération du profil : ${error.response?.status} - ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
+  };
+
+  const fetchWallet = async (userId, token) => {
+    try {
+      console.log("Étape 2 : Récupération du wallet pour userId :", userId);
+      const response = await axios.get(`http://localhost:5000/wallets/user/${userId}`, { // Corrigé ici
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Wallet récupéré :", response.data);
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        `Erreur lors de la récupération du wallet : ${error.response?.status} - ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
+  };
+
+  const fetchTransactions = async (walletId, token) => {
+    try {
+      console.log("Étape 3 : Récupération des transactions pour walletId :", walletId);
+      const response = await axios.get(`http://localhost:5000/transactions/getTransactions/${walletId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Transactions récupérées :", response.data);
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        `Erreur lors de la récupération des transactions : ${error.response?.status} - ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
+  };
+
+  const fetchWalletData = async () => {
+    setError(""); // Réinitialiser l'erreur au début
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Veuillez vous connecter pour voir votre portefeuille.");
+        console.log("Erreur : Aucun token trouvé dans localStorage");
+        return;
+      }
+
+      // Étape 1 : Récupérer l'ID de l'utilisateur
+      const userId = await fetchUserProfile(token);
+
+      // Étape 2 : Récupérer le wallet
+      const wallet = await fetchWallet(userId, token);
+      setWalletId(wallet._id);
+
+      // Étape 3 : Récupérer les transactions
+      const transactions = await fetchTransactions(wallet._id, token);
+
+      // Mettre à jour l'état avec les données récupérées
+      setWalletData({
+        balance: wallet.balance,
+        currency: wallet.currency,
+        transactions: transactions,
+      });
+    } catch (error) {
+      console.error("Erreur dans fetchWalletData :", error);
+      setError(error.message || "Erreur lors de la récupération des données.");
+    }
+  };
+
+  useEffect(() => {
+    fetchWalletData();
+  }, []);
+
+  const refreshWalletData = () => {
+    fetchWalletData();
+    setActiveScreen("main");
   };
 
   return (
     <div className="app-container">
-      {/* Sidebar */}
       <CoolSidebar />
-
-      {/* Contenu principal */}
       <div className="main-content">
-        {/* Navbar */}
         <Navbar />
-
-        {/* Afficher l'écran principal du portefeuille */}
         {activeScreen === "main" && (
           <div className="wallet-container">
-            {/* En-tête du portefeuille */}
             <div className="wallet-header">
-              <h2>Mon Portefeuille</h2>
+              <h2> Wallet</h2>
               <p className="wallet-balance">
-                Solde : {walletData.balance} {walletData.currency}
+                Balance : {walletData.balance} {walletData.currency}
               </p>
+              {error && <p className="error-message">{error}</p>}
             </div>
 
-            {/* Actions du portefeuille (Dépôt, Retrait, Transfert) */}
             <div className="wallet-actions">
               <div className="action" onClick={() => setActiveScreen("deposit")}>
                 <div className="action-icon">
                   <FaArrowDown />
                 </div>
-                <p>Dépôt</p>
+                <p>Deposit</p>
               </div>
               <div className="action" onClick={() => setActiveScreen("withdraw")}>
                 <div className="action-icon">
                   <FaArrowUp />
                 </div>
-                <p>Retrait</p>
+                <p>Withdrawal</p>
               </div>
               <div className="action" onClick={() => setActiveScreen("transfer")}>
                 <div className="action-icon">
                   <FaExchangeAlt />
                 </div>
-                <p>Transfert</p>
+                <p>Transfer</p>
               </div>
             </div>
 
-            {/* Historique des transactions */}
             <div className="transaction-history">
               <h3>
-                <FaHistory /> Historique des Transactions
+                <FaHistory /> Recent Transactions
               </h3>
               {walletData.transactions.length > 0 ? (
                 <ul>
                   {walletData.transactions.map((transaction) => (
-                    <li key={transaction.id} className="transaction-item">
+                    <li key={transaction._id} className="transaction-item">
                       <div className="transaction-icon">
                         {transaction.type === "income" ? (
                           <FaArrowDown className="income" />
-                        ) : transaction.type === "expense" ? (
-                          <FaArrowUp className="expense" />
                         ) : (
-                          <FaExchangeAlt className="transfer" />
+                          <FaArrowUp className="expense" />
                         )}
                       </div>
                       <div className="transaction-details">
-                        <p className="transaction-description">{transaction.description}</p>
-                        <p className="transaction-date">{transaction.date}</p>
+                        <p className="transaction-description">{transaction.description || transaction.type}</p>
+                        <p className="transaction-date">
+                          {new Date(transaction.date).toLocaleDateString()}
+                        </p>
                       </div>
                       <p className={`transaction-amount ${transaction.type}`}>
                         {transaction.type === "income" ? "+" : "-"} {transaction.amount} {walletData.currency}
@@ -99,14 +176,9 @@ const Wallet = () => {
           </div>
         )}
 
-        {/* Afficher l'écran de dépôt */}
-        {activeScreen === "deposit" && <Deposit goBack={() => setActiveScreen("main")} />}
-
-        {/* Afficher l'écran de retrait */}
-        {activeScreen === "withdraw" && <Withdraw goBack={() => setActiveScreen("main")} />}
-
-        {/* Afficher l'écran de transfert */}
-        {activeScreen === "transfer" && <Transfer goBack={() => setActiveScreen("main")} />}
+        {activeScreen === "deposit" && <Deposit goBack={refreshWalletData} walletId={walletId} />}
+        {activeScreen === "withdraw" && <Withdraw goBack={refreshWalletData} walletId={walletId} />}
+        {activeScreen === "transfer" && <Transfer goBack={refreshWalletData} walletId={walletId} />}
       </div>
     </div>
   );

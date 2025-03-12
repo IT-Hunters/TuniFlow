@@ -7,7 +7,6 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import "./chatAdmin.css";
 
-
 const Chat = () => {
   const [socket, setSocket] = useState(null);
   const [chatId, setChatId] = useState("");
@@ -19,7 +18,6 @@ const Chat = () => {
   const [typingUser, setTypingUser] = useState(null);
   const [error, setError] = useState(null);
 
-  // Initialisation avec JWT et Socket.IO
   useEffect(() => {
     console.log("Chat component mounted");
     const token = localStorage.getItem("token");
@@ -62,7 +60,6 @@ const Chat = () => {
     };
   }, []);
 
-  // Gestion des événements Socket.IO
   useEffect(() => {
     if (!socket) return;
 
@@ -70,11 +67,7 @@ const Chat = () => {
 
     socket.on("newMessage", (message) => {
       console.log("New message received:", message);
-      setMessages((prev) => {
-        const updatedMessages = [...prev, message];
-        console.log("Updated messages:", updatedMessages); // Vérifiez ici
-        return updatedMessages;
-      });
+      setMessages((prev) => [...prev, message]);
       setTypingUser(null);
     });
 
@@ -109,36 +102,59 @@ const Chat = () => {
     };
   }, [socket, senderId]);
 
-  // Rejoindre un chat
-  const joinChat = () => {
-    if (!chatId || !recipientId) {
-      setError("Veuillez entrer un Chat ID et un ID de destinataire");
+  const startChat = async () => {
+    if (!recipientId) {
+      setError("Veuillez entrer un ID de destinataire");
       return;
     }
-    console.log("Joining chat with chatId:", chatId);
-    socket.emit("joinChat", chatId);
+
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Starting chat with recipientId:", recipientId);
+      console.log("Token used:", token);
+
+      const response = await axios.post(
+        "http://localhost:5000/chat/start",
+        { recipientId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      const newChatId = response.data.chat._id;
+      console.log("Chat started, chatId:", newChatId);
+      setChatId(newChatId);
+      socket.emit("joinChat", newChatId);
+
+      const historyResponse = await axios.get(`http://localhost:5000/chat/${newChatId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Chat history loaded:", historyResponse.data.messages);
+      setMessages(historyResponse.data.messages);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message;
+      console.error("Erreur lors du démarrage du chat, détails:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      setError(`Erreur lors du démarrage du chat : ${errorMessage}`);
+    }
   };
 
-  // Envoyer un message
   const sendMessage = () => {
     if (messageInput && chatId && senderId) {
-      const messageData = { chatId, content: messageInput, senderId };
-      console.log("Sending message:", messageData);
-      socket.emit("sendMessage", messageData);
+      console.log("Sending message:", { chatId, content: messageInput, senderId });
+      socket.emit("sendMessage", { chatId, content: messageInput, senderId });
       socket.emit("stopTyping", { chatId, senderId });
-      // Ajouter le message localement immédiatement pour l’affichage instantané
-      setMessages((prev) => [
-        ...prev,
-        { sender: senderId, content: messageInput, timestamp: new Date() }
-      ]);
       setMessageInput("");
     } else {
       console.log("Cannot send message, missing data:", { messageInput, chatId, senderId });
-      setError("Veuillez entrer un Chat ID, un message et être connecté");
     }
   };
 
-  // Gérer le typage
   const handleTyping = (e) => {
     setMessageInput(e.target.value);
     if (chatId && senderId) {
@@ -157,7 +173,7 @@ const Chat = () => {
       <div className="chat-page">
         <CoolSidebar />
         <div className="chat-main">
-          <Navbar notifications={notifications} />
+          <Navbar />
           <div className="chat-container">
             <p style={{ color: "red" }}>{error}</p>
           </div>
@@ -208,17 +224,11 @@ const Chat = () => {
             <div className="chat-start">
               <input
                 type="text"
-                placeholder="Chat ID"
-                value={chatId}
-                onChange={(e) => setChatId(e.target.value)}
-              />
-              <input
-                type="text"
                 placeholder="ID du destinataire (ex. Admin)"
                 value={recipientId}
                 onChange={(e) => setRecipientId(e.target.value)}
               />
-              <button onClick={joinChat}>Rejoindre le chat</button>
+              <button onClick={startChat}>Démarrer le chat</button>
             </div>
           )}
         </div>
