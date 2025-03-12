@@ -16,7 +16,7 @@ const RH = require("../model/RH");
 const Project = require("../model/Project");
 const BusinessManager = require("../model/BusinessManager");
 
-async function addProject(businessManagerName, projectData) {
+async function addProject(businessManagerId, projectData) {
     try {
         console.log("Début de la fonction addProject");
 
@@ -31,8 +31,8 @@ async function addProject(businessManagerName, projectData) {
         const businessOwner = await getBusinessOwnerFromToken(token);
         console.log("BusinessOwner récupéré :", businessOwner);
 
-        // 🔎 Rechercher le BusinessManager par son ID ou nom
-        const manager = await BusinessManager.findOne({ fullname: businessManagerName }); // ou findOne({ fullname: businessManagerName })
+        // 🔎 Rechercher le BusinessManager par son ID
+        const manager = await BusinessManager.findById(businessManagerId);
         if (!manager) {
             throw new Error("BusinessManager non trouvé");
         }

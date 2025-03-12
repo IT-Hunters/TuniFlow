@@ -10,6 +10,7 @@ const { Server } = require("socket.io");
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var invoiceRoutes = require('./routes/invoiceRoutes');
+var ObjectifRouter = require('./routes/ObjectifRoutes');
 var assetsactifsRoutes = require('./routes/assetActifRoutes');
 var assetspassifsRoutes = require('./routes/assetPassifRoutes');
 var assetCalculationRoutes = require('./routes/AssetRoutes');
@@ -57,6 +58,8 @@ app.use('/assetCalculation', assetCalculationRoutes);
 app.use('/taxes', taxeRoutes);
 app.use('/wallets', walletRoutes);
 app.use('/transactions', transactionRoutes);
+
+app.use('/objectif', ObjectifRouter);
 app.use('/chat', chatRouter);
 app.use('/userLogs', userLogsRoutes);
 

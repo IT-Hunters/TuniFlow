@@ -196,7 +196,30 @@ const Login = async (req, res) => {
     return res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 };
+const updateFirstLogin = async (userId) => {
+  try {
+    // Trouver l'utilisateur par son ID
+    const user = await userModel.findById(userId);
 
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    // Vérifier si firstlogin est true
+    if (user.firstlogin === true) {
+      user.firstlogin = false; // Mettre à jour firstlogin à false
+      await user.save(); // Sauvegarder les modifications
+      console.log(`firstlogin mis à jour à false pour l'utilisateur : ${userId}`);
+      return { success: true, message: "firstlogin mis à jour à false" };
+    } else {
+      console.log(`firstlogin est déjà false pour l'utilisateur : ${userId}`);
+      return { success: false, message: "firstlogin est déjà false" };
+    }
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de firstlogin :", error.message);
+    throw error;
+  }
+};
 
 const logout = (req, res) => {
   try {
@@ -234,70 +257,71 @@ const logout = (req, res) => {
 /****************Update Profile********************* */ 
 
 const updateProfile = async (req, res) => {
-  const userId = req.user.userId; // Récupéré à partir du middleware authenticateJWT
-  const updates = req.body; // Les champs à mettre à jour
+  const userId = req.user.userId;
+  const updates = req.body;
+
+  console.log('Utilisateur ID :', userId);
+  console.log('Données reçues :', updates);
 
   try {
-      // Trouver l'utilisateur dans la base de données
-      const user = await userModel.findById(userId);
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
 
-      if (!user) {
-          return res.status(404).json({ message: "Utilisateur non trouvé" });
-      }
+    console.log('Rôle de l’utilisateur :', user.role);
 
-      // Valider les données en fonction du rôle
-      const { errors, isValid } = validateUpdateProfil(updates, user.role);
+    const { errors, isValid } = validateUpdateProfil(updates, user.role);
+    console.log('Résultat de la validation :', { errors, isValid });
 
-      if (!isValid) {
-          return res.status(400).json(errors); // 400 pour une requête invalide
-      }
+    if (!isValid) {
+      return res.status(400).json(errors);
+    }
 
-      // Vérifier le type d'utilisateur et mettre à jour les champs spécifiques
-      switch (user.role) {
-          case "BUSINESS_MANAGER":
-              await BusinessManager.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          case "BUSINESS_OWNER":
-              await BusinessOwner.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          case "RH":
-              await RH.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          case "FINANCIAL_MANAGER":
-              await FinancialManager.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          case "ACCOUNTANT":
-              await Accountant.findOneAndUpdate(
-                  { _id: userId },
-                  { $set: updates },
-                  { new: true, runValidators: true }
-              );
-              break;
-          default:
-              return res.status(400).json({ message: "Rôle d'utilisateur non valide" });
-      }
+    switch (user.role) {
+      case "BUSINESS_MANAGER":
+        await BusinessManager.findOneAndUpdate(
+          { _id: userId },
+          { $set: updates },
+          { new: true, runValidators: true }
+        );
+        break;
+      case "BUSINESS_OWNER":
+        await BusinessOwner.findOneAndUpdate(
+          { _id: userId },
+          { $set: { ...updates, isFirstUpdate: false } },
+          { new: true, runValidators: true }
+        );
+        break;
+      case "RH":
+        await RH.findOneAndUpdate(
+          { _id: userId },
+          { $set: updates },
+          { new: true, runValidators: true }
+        );
+        break;
+      case "FINANCIAL_MANAGER":
+        await FinancialManager.findOneAndUpdate(
+          { _id: userId },
+          { $set: updates },
+          { new: true, runValidators: true }
+        );
+        break;
+      case "ACCOUNTANT":
+        await Accountant.findOneAndUpdate(
+          { _id: userId },
+          { $set: updates },
+          { new: true, runValidators: true }
+        );
+        break;
+      default:
+        return res.status(400).json({ message: "Rôle d'utilisateur non valide" });
+    }
 
-      // Renvoyer une réponse de succès
-      return res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
+    return res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
   } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
-      return res.status(500).json({ message: "Erreur interne du serveur" });
+    console.error("Erreur détaillée :", error.stack); // Afficher la stacktrace complète
+    return res.status(500).json({ message: "Erreur interne du serveur", error: error.message });
   }
 };
 
@@ -609,6 +633,28 @@ const AddPicture = async (req, res) => {
       res.status(500).json({ message: 'Erreur serveur' });
     }
   }
+  const findMyProjectsOwner = async (req, res) => {
+    try {
+      const userId = req.user.userId; // L'ID de l'utilisateur est extrait du token après authentification
+  
+      // Trouver l'utilisateur dans la base de données pour obtenir le projet associé
+      const user = await userModel.findById(userId).populate('projects'); // On suppose que 'project' est une référence à un autre modèle
+  
+      if (!user) {
+        return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      }
+  
+      if (!user.projects) {
+        return res.status(404).json({ message: 'Aucun projet trouvé pour cet utilisateur' });
+      }
+  
+      // Si un projet est trouvé, on le retourne dans la réponse
+      res.status(200).json(user.projects);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du projet : ", error);
+      res.status(500).json({ message: 'Erreur serveur' });
+    }
+  };
   // Envoi du code de vérification par e-mail
 async function sendVerificationCode(req, res) {
   try {
@@ -928,66 +974,62 @@ const Registerwithproject = async (req, res) => {
       return res.status(400).json({ message: 'Aucun fichier fourni' });
     }
 
-    // Récupérer le token JWT de l'en-tête Authorization
-    const token = req.headers.authorization.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ message: 'Token manquant' });
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: 'En-tête Authorization manquant' });
     }
 
-    // Décoder le token pour récupérer l'ID de l'utilisateur
+    const token = authHeader.split(" ")[1];
     const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
-    const userId = decodedToken.userId; // Récupérer l'ID de l'utilisateur
+    const userId = decodedToken.userId;
 
-    if (!userId) {
-      return res.status(400).json({ message: "ID de l'utilisateur manquant dans le token" });
-    }
-
-    // Récupérer l'utilisateur dans la base de données
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
 
-    // Vérifier si l'utilisateur est de type RH
     if (user.userType !== "RH") {
       return res.status(400).json({ message: "L'utilisateur connecté n'est pas de type RH" });
     }
 
-    // Récupérer l'ID du projet (uniquement pour les RH)
     const projectId = user.project;
     if (!projectId) {
       return res.status(400).json({ message: "Aucun projet associé à l'utilisateur connecté" });
     }
 
-    // Lire le fichier Excel
     const workbook = xlsx.readFile(req.file.path);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const employeesData = xlsx.utils.sheet_to_json(worksheet);
 
-    // Valider les données des employés
     const employees = [];
     for (const emp of employeesData) {
       if (!emp.password) {
         console.warn(`Employé ${emp.name || 'sans nom'} ignoré : mot de passe manquant`);
-        continue; // Ignorer les employés sans mot de passe
+        continue;
       }
 
-      // Hasher le mot de passe
       const hashedPassword = await bcryptjs.hash(emp.password, 10);
       employees.push({
         name: emp.name,
         email: emp.email,
         password: hashedPassword,
         role: emp.role,
-        project: projectId // Ajouter l'ID du projet
+        project: projectId
       });
     }
 
-    // Insérer les employés dans la base de données
     if (employees.length > 0) {
-      await Employe.insertMany(employees);
-      return res.status(201).json({ message: 'Employés ajoutés avec succès' });
+      const insertedEmployees = await Employe.insertMany(employees);
+
+      const employeeIds = insertedEmployees.map(emp => emp._id);
+
+      await Project.findByIdAndUpdate(
+        projectId,
+        { $push: { employees: { $each: employeeIds } } }
+      );
+
+      return res.status(201).json({ message: 'Employés aded with succes', employees: insertedEmployees });
     } else {
       return res.status(400).json({ message: 'Aucun employé valide à ajouter' });
     }
@@ -996,6 +1038,7 @@ const Registerwithproject = async (req, res) => {
     res.status(500).json({ message: 'Erreur interne du serveur', error });
   }
 };
+
   
 async function getAllempl(req,res) {
   try{
@@ -1006,6 +1049,47 @@ async function getAllempl(req,res) {
       res.send(err);
   }
 }
+async function getbyid(req,res) {
+  try{
+      const data = await userModel.findById(req.params.id)
+      res.send(data);
+  }
+  catch(err){
+      res.send(err);
+  }
+}
+async function deleteById(req, res) {
+  try {
+      const data = await userModel.findByIdAndDelete(req.params.id);
+      if (!data) {
+          return res.status(404).send({ message: "user not exist" });
+      }
+      res.send({ message: "User deleted with succès", data });
+  } catch (err) {
+      res.status(500).send(err);
+  }
+}
+async function updateById(req, res) {
+  try {
+      const { fullname, lastname, email } = req.body;  // Récupère les données depuis le corps de la requête
+
+      const updatedUser = await userModel.findByIdAndUpdate(
+          req.params.id,           // L'ID de l'utilisateur à mettre à jour
+          { fullname, lastname,email },   // Les nouvelles données envoyées dans le corps de la requête
+          { new: true }             // Retourner le document mis à jour plutôt que l'original
+      );
+
+      if (!updatedUser) {
+          return res.status(404).send({ message: "Utilisateur non trouvé" });
+      }
+
+      res.send({ message: "Utilisateur mis à jour avec succès", data: updatedUser });
+  } catch (err) {
+      res.status(500).send(err);
+  }
+}
+
+
 async function downloadEvidence(req, res) {
   try {
     const fileName = req.params.fileName;
@@ -1294,7 +1378,7 @@ module.exports = {
     acceptAutorisation,updateProfile,AddPicture,getBusinessOwnerFromToken,
     getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,getAllRH,findMyProject,Registerwithproject,
     resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,startChat,          // New
-    sendMessage,getAllRoles,findMyPicture,logout,      // New
+    sendMessage,getAllRoles,findMyPicture,logout,getbyid,deleteById,updateById,findMyProjectsOwner,updateFirstLogin,    // New
     getChatHistory};
 
 

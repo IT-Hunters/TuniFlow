@@ -18,17 +18,22 @@ const ITEMS_PER_PAGE = 10
 const UsersTable = () => {
   const [users, setUsers] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedRoles, setSelectedRoles] = useState({})
+  const [selectedRole, setSelectedRole] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null })
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [formData, setFormData] = useState({ fullname: "", lastname: "", email: "" })
 
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true)
       try {
         const response = await getAllUsers()
+        // Log the response to inspect the user objects
+        console.log("Fetched users:", response)
         setUsers(response)
         setError(null)
       } catch (error) {
@@ -41,17 +46,10 @@ const UsersTable = () => {
 
     fetchUsers()
   }, [])
-  const handleRoleChange = (role) => {
-    setSelectedRoles((prevState) => ({
-      ...prevState,
-      [role]: !prevState[role],
-    }))
-    setCurrentPage(1) 
-  }
 
   const clearFilters = () => {
     setSearchTerm("")
-    setSelectedRoles({})
+    setSelectedRole("")
     setCurrentPage(1)
   }
 
@@ -69,14 +67,11 @@ const UsersTable = () => {
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
 
-      // If no roles are selected, show all users
-      const activeRoleFilters = Object.entries(selectedRoles).filter(([_, isSelected]) => isSelected)
-      const matchesRole = activeRoleFilters.length === 0 || selectedRoles[user.userType]
+      const matchesRole = !selectedRole || user.userType === selectedRole
 
       return matchesSearch && matchesRole
     })
 
-    // Then sort the filtered users
     if (sortConfig.key) {
       return [...filteredUsers].sort((a, b) => {
         let aValue, bValue
@@ -100,7 +95,7 @@ const UsersTable = () => {
     }
 
     return filteredUsers
-  }, [users, searchTerm, selectedRoles, sortConfig])
+  }, [users, searchTerm, selectedRole, sortConfig])
 
   const totalPages = Math.ceil(filteredAndSortedUsers.length / ITEMS_PER_PAGE)
   const paginatedUsers = useMemo(() => {
@@ -146,6 +141,89 @@ const UsersTable = () => {
     return <span className={config.className}>{config.label}</span>
   }
 
+  // Handle edit button click
+  const handleEdit = (user) => {
+    if (!user || !user._id) {
+      alert("User ID is missing. Cannot edit this user.")
+      return
+    }
+    setSelectedUser(user)
+    setFormData({
+      fullname: user.fullname ,
+      lastname: user.lastname,
+      email: user.email,
+    })
+    setEditModalOpen(true)
+  }
+
+  // Handle delete button click
+  const handleDelete = async (userId) => {
+    if (!userId) {
+      alert("User ID is missing. Cannot delete this user.")
+      return
+    }
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      try {
+        const response = await fetch(`http://localhost:3000/users/deletbyid/${userId}`, {
+          method: "DELETE",
+        })
+        const result = await response.json()
+        if (response.ok) {
+          setUsers(users.filter((user) => user._id !== userId))
+          alert(result.message)
+        } else {
+          alert(result.message || "Failed to delete user")
+        }
+      } catch (err) {
+        console.error("Error deleting user:", err)
+        alert("An error occurred while deleting the user: " + (err.message || err))
+      }
+    }
+  }
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!selectedUser || !selectedUser._id) {
+      alert("User ID is missing. Cannot update this user.")
+      return
+    }
+    try {
+      const [firstname, ...lastnameArr] = formData.fullname.split(" ")
+      const lastname = lastnameArr.join(" ")
+      const response = await fetch(`http://localhost:3000/users/updatebyid/${selectedUser._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullname: formData.fullname,
+          lastname,
+          email: formData.email,
+        }),
+      })
+      const result = await response.json()
+      if (response.ok) {
+        setUsers(users.map((user) =>
+          user._id === selectedUser._id ? { ...user, firstname, lastname, email: formData.email } : user
+        ))
+        setEditModalOpen(false)
+        alert(result.message)
+      } else {
+        alert(result.message || "Failed to update user")
+      }
+    } catch (err) {
+      console.error("Error updating user:", err)
+      alert("An error occurred while updating the user: " + (err.message || err))
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="users-card">
@@ -166,7 +244,6 @@ const UsersTable = () => {
     )
   }
 
-  // Error state
   if (error) {
     return (
       <div className="users-card error">
@@ -176,8 +253,7 @@ const UsersTable = () => {
         </div>
         <div className="card-content">
           <button onClick={() => window.location.reload()} className="btn btn-outline">
-            <span className="icon">↻</span>
-            Retry
+            <span className="icon">↻</span> Retry
           </button>
         </div>
       </div>
@@ -188,53 +264,53 @@ const UsersTable = () => {
     <div className="users-card min-users-card">
       <div className="card-header">
         <div className="header-top">
-          <h2 className="title">Gestion des Utilisateurs</h2>
-          <div className="search-container">
-            <div className="search-input-wrapper">
-              <span className="search-icon">🔍</span>
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value)
-                  setCurrentPage(1) 
-                }}
-                className="search-input"
-              />
-              {searchTerm && (
-                <button className="clear-search" onClick={() => setSearchTerm("")}>
-                  ✕
-                </button>
-              )}
+          <h2 className="title">User Management</h2>
+          <div className="filter-and-search-container">
+            <select
+              value={selectedRole}
+              onChange={(e) => {
+                setSelectedRole(e.target.value)
+                setCurrentPage(1)
+              }}
+              className="role-dropdown"
+            >
+              <option value="">All Roles</option>
+              {Object.keys(roleConfig).map((role) => (
+                <option key={role} value={role}>
+                  {roleConfig[role].label}
+                </option>
+              ))}
+            </select>
+            <div className="search-container">
+              <div className="search-input-wrapper">
+                <span className="search-icon">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className="search-input"
+                />
+                {searchTerm && (
+                  <button className="clear-search" onClick={() => setSearchTerm("")}>
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
-        <div className="filter-section">
-          <span className="filter-label">Filter by role:</span>
-          <div className="role-filters">
-            {Object.keys(roleConfig).map((role) => (
-              <div key={role} className="filter-checkbox">
-                <input
-                  type="checkbox"
-                  id={`role-${role}`}
-                  checked={selectedRoles[role] || false}
-                  onChange={() => handleRoleChange(role)}
-                />
-                <label htmlFor={`role-${role}`}>{roleConfig[role].label}</label>
-              </div>
-            ))}
-          </div>
-          {(searchTerm || Object.values(selectedRoles).some(Boolean)) && (
-            <button className="btn btn-text clear-filters" onClick={clearFilters}>
-              <span className="icon">✕</span>
-              Clear filters
-            </button>
-          )}
-        </div>
+        {(searchTerm || selectedRole) && (
+          <button className="btn btn-text clear-filters" onClick={clearFilters}>
+            <span className="icon">✕</span> Clear filters
+          </button>
+        )}
       </div>
       <div className="card-content">
-        <div className="table-container min-users-table">
+        <div className="table-container">
           <table className="users-table">
             <thead>
               <tr>
@@ -248,23 +324,38 @@ const UsersTable = () => {
                 <th className="column-sortable" onClick={() => requestSort("userType")}>
                   Role {getSortDirectionIcon("userType")}
                 </th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {paginatedUsers.length > 0 ? (
                 paginatedUsers.map((user, index) => (
-                  <tr key={user.id} className="table-row">
+                  <tr key={user._id} className="table-row">
                     <td className="column-number">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
                     <td className="column-name">
                       {user.firstname} {user.lastname}
                     </td>
                     <td className="column-email">{user.email}</td>
                     <td className="column-role">{renderRoleBadge(user.userType)}</td>
+                    <td className="column-actions">
+                      <button
+                        className="btn btn-action btn-edit"
+                        onClick={() => handleEdit(user)}
+                      >
+                        <span className="icon">✎</span> Edit
+                      </button>
+                      <button
+                        className="btn btn-action btn-delete"
+                        onClick={() => handleDelete(user._id)}
+                      >
+                        <span className="icon">✖</span> Delete
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr className="empty-row">
-                  <td colSpan={4} className="empty-message">
+                  <td colSpan={5} className="empty-message">
                     No users found.
                   </td>
                 </tr>
@@ -321,10 +412,62 @@ const UsersTable = () => {
             )}
           </div>
         )}
+
+        {/* Edit Modal */}
+        {editModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2>Edit User</h2>
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input
+                    type="text"
+                    name="fullname"
+                    value={formData.fullname}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Last Name</label>
+                  <input
+                    type="text"
+                    name="lastname"
+                    value={formData.lastname}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="modal-actions">
+                  <button type="submit" className="btn btn-action btn-save">
+                    <span className="icon">✓</span> Save
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-action btn-cancel"
+                    onClick={() => setEditModalOpen(false)}
+                  >
+                    <span className="icon">✖</span> Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
 export default UsersTable
-

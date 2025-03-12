@@ -1,0 +1,148 @@
+
+.content {
+  margin-top: 20px;
+}
+
+.business-managers {
+  margin-top: 30px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-button,
+.refresh-button,
+.submit-button,
+.cancel-button,
+.assign-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-button,
+.submit-button,
+.assign-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.cancel-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.refresh-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.add-button:hover,
+.submit-button:hover,
+.assign-button:hover {
+  background-color: #0056b3;
+}
+
+.cancel-button:hover {
+  background-color: #c82333;
+}
+
+.refresh-button:hover {
+  background-color: #218838;
+}
+
+.add-button:disabled,
+.refresh-button:disabled,
+.submit-button:disabled,
+.assign-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.manager-form,
+.project-form {
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.manager-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.manager-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.manager-item:hover {
+  background-color: #f9f9f9;
+}
+
+.manager-info {
+  flex: 1;
+}
+
+.manager-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.manager-email {
+  color: #666;
+  font-size: 0.9em;
+  margin-left: 10px;
+}
+
+.manager-assigned {
+  color: #dc3545;
+  font-size: 0.9em;
+  margin-left: 10px;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
+
+.success {
+  color: green;
+  font-weight: bold;
+}
