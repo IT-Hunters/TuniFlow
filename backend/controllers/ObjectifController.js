@@ -1,6 +1,16 @@
 const Project = require("../model/Project");
 const Objectif = require("../model/Objectif");
 const mongoose = require("mongoose");
+const getObjectifTypes = async (req, res) => {
+    try {
+        const types = Objectif.schema.path('objectivetype').enumValues; // Récupère les valeurs de l'énumération
+        res.status(200).json({ success: true, data: types });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Erreur lors de la récupération des types d\'objectifs', error: error.message });
+    }
+};
+
+module.exports = { getObjectifTypes };
 const createObjectif = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -268,7 +278,7 @@ async function generateObjectiveReport(req, res) {
 
 module.exports = {
     createObjectif,getAllObjectifsByProjectId,
-    findObjectifs,updateProgress,
+    findObjectifs,updateProgress,getObjectifTypes,
     markObjectifAsCompleted,
     markObjectifAsFailed,deleteObjectifById,updateObjectifById,generateObjectiveReport
 };
