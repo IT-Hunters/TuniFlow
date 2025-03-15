@@ -13,6 +13,49 @@ const EditProfile = () => {
   const [formData, setFormData] = useState({});
   const [showFirstUpdateMessage, setShowFirstUpdateMessage] = useState(false);
   const [displayImage, setDisplayImage] = useState(null);
+  const [alertMessage, setAlertMessage] = useState(null);
+
+  const Alert = ({ message, onClose }) => {
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }, [onClose]);
+
+    return (
+      <div className="alert-message" style={{
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        padding: '15px 25px',
+        backgroundColor: '#4CAF50',
+        color: 'white',
+        borderRadius: '5px',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+        zIndex: 1000,
+        maxWidth: '300px',
+        animation: 'slideIn 0.3s ease-out'
+      }}>
+        {message}
+        <button 
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '5px',
+            right: '10px',
+            background: 'none',
+            border: 'none',
+            color: 'white',
+            fontSize: '18px',
+            cursor: 'pointer'
+          }}
+        >
+          ×
+        </button>
+      </div>
+    );
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -94,14 +137,12 @@ const EditProfile = () => {
           cleanedFormData.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
           cleanedFormData.specialization = formData.specialization || '';
           cleanedFormData.salary = formData.salary ? Number(formData.salary) : undefined;
-          
           break;
         case 'ACCOUNTANT':
           cleanedFormData.certification = formData.certification || '';
           cleanedFormData.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
           cleanedFormData.specialization = formData.specialization || '';
           cleanedFormData.salary = formData.salary ? Number(formData.salary) : undefined;
-          
           break;
         case 'FINANCIAL_MANAGER':
           cleanedFormData.department = formData.department || '';
@@ -133,9 +174,12 @@ const EditProfile = () => {
       });
   
       console.log('Réponse serveur :', response.data);
-      alert('Profile updated successfully!');
+      setAlertMessage('Profile updated successfully!');
       setShowFirstUpdateMessage(false);
-      navigate('/profile');
+      // Redirect to Profile page after a short delay to allow the user to see the alert
+      setTimeout(() => {
+        navigate('/profile');
+      }, 2000); // 2-second delay before redirection
     } catch (err) {
       console.error('Erreur complète :', err);
       if (err.response) {
@@ -147,140 +191,146 @@ const EditProfile = () => {
     }
   };
 
- const handleImageUpload = (e) => {
-  console.log('Événement onChange déclenché');
-  const file = e.target.files[0];
-  if (!file) {
-    setError('No file selected');
-    console.log('Aucun fichier sélectionné');
-    return;
-  }
-
-  console.log('Fichier sélectionné :', file.name, file.size);
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    console.log('Aperçu local généré :', reader.result.substring(0, 50) + '...');
-    setDisplayImage(reader.result);
-    console.log('displayImage mis à jour avec aperçu :', reader.result.substring(0, 50) + '...');
-  };
-  reader.onerror = () => {
-    console.error('Erreur lors de la lecture du fichier');
-    setError('Error reading file');
-  };
-  reader.readAsDataURL(file);
-
-  const imageFormData = new FormData();
-  imageFormData.append('picture', file);
-
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('No token found. Please log in.');
+  const handleImageUpload = (e) => {
+    console.log('Événement onChange déclenché');
+    const file = e.target.files[0];
+    if (!file) {
+      setError('No file selected');
+      console.log('Aucun fichier sélectionné');
       return;
     }
 
-    console.log('Début de l’upload vers le serveur');
-    axios.put('http://localhost:3000/users/uploadimage', imageFormData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }).then(response => {
-      console.log('Réponse serveur après upload (complet) :', response.data);
-      const imagePath = response.data.picture || response.data.data?.picture;
-      console.log('Chemin brut reçu :', imagePath);
-      const imageUrl = imagePath.startsWith('http') 
-        ? imagePath 
-        : `http://localhost:3000/images/${imagePath}`;
-      console.log('URL construite :', imageUrl);
-      
-      setUserData((prevState) => ({
-        ...prevState,
-        picture: imageUrl,
-      }));
-      setFormData((prevState) => ({
-        ...prevState,
-        picture: imageUrl,
-      }));
-      setDisplayImage(imageUrl);
-      console.log('displayImage mis à jour avec URL serveur :', imageUrl);
+    console.log('Fichier sélectionné :', file.name, file.size);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      console.log('Aperçu local généré :', reader.result.substring(0, 50) + '...');
+      setDisplayImage(reader.result);
+      console.log('displayImage mis à jour avec aperçu :', reader.result.substring(0, 50) + '...');
+    };
+    reader.onerror = () => {
+      console.error('Erreur lors de la lecture du fichier');
+      setError('Error reading file');
+    };
+    reader.readAsDataURL(file);
 
-      const updatedProfile = {
-        fullname: formData.fullname || '',
-        lastname: formData.lastname || '',
-        email: formData.email || '',
-        picture: imageUrl,
-      };
-      switch (userData.role) {
-        case 'BUSINESS_OWNER':
-          updatedProfile.companyName = formData.companyName || '';
-          updatedProfile.registrationNumber = formData.registrationNumber ? Number(formData.registrationNumber) : undefined;
-          updatedProfile.industry = formData.industry || '';
-          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
-          updatedProfile.autorization = formData.autorization || false;
-          updatedProfile.evidence = formData.evidence || '';
-          break;
-        case 'BUSINESS_MANAGER':
-          updatedProfile.certification = formData.certification || '';
-          updatedProfile.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
-          updatedProfile.specialization = formData.specialization || '';
-          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
-          updatedProfile.firstlogin = formData.firstlogin || false;
-          break;
-        case 'ACCOUNTANT':
-          updatedProfile.certification = formData.certification || '';
-          updatedProfile.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
-          updatedProfile.specialization = formData.specialization || '';
-          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
-          updatedProfile.firstlogin = formData.firstlogin || false;
-          break;
-        case 'FINANCIAL_MANAGER':
-          updatedProfile.department = formData.department || '';
-          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
-          updatedProfile.hireDate = formData.hireDate || '';
-          updatedProfile.firstlogin = formData.firstlogin || false;
-          break;
-        case 'RH':
-          updatedProfile.certification = formData.certification || '';
-          updatedProfile.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
-          updatedProfile.specialization = formData.specialization || '';
-          updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
-          updatedProfile.firstlogin = formData.firstlogin || false;
-          break;
-        case 'ADMIN':
-          updatedProfile.adminId = formData.adminId || '';
-          break;
-        default:
-          break;
+    const imageFormData = new FormData();
+    imageFormData.append('picture', file);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('No token found. Please log in.');
+        return;
       }
 
-      console.log('Données envoyées à updateprofile :', JSON.stringify(updatedProfile, null, 2));
-      axios.put('http://localhost:3000/users/updateprofile', updatedProfile, {
+      console.log('Début de l’upload vers le serveur');
+      axios.put('http://localhost:3000/users/uploadimage', imageFormData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
-      }).then(updateResponse => {
-        console.log('Profil mis à jour avec l’image :', updateResponse.data);
-      }).catch(updateErr => {
-        console.error('Erreur lors de la mise à jour du profil :', updateErr);
-        console.log('Détails de la réponse serveur :', updateErr.response?.data);
-        setError('Failed to save image URL to profile');
-      });
+      }).then(response => {
+        console.log('Réponse serveur après upload (complet) :', response.data);
+        const imagePath = response.data.picture || response.data.data?.picture;
+        console.log('Chemin brut reçu :', imagePath);
+        const imageUrl = imagePath.startsWith('http') 
+          ? imagePath 
+          : `http://localhost:3000/images/${imagePath}`;
+        console.log('URL construite :', imageUrl);
+        
+        setUserData((prevState) => ({
+          ...prevState,
+          picture: imageUrl,
+        }));
+        setFormData((prevState) => ({
+          ...prevState,
+          picture: imageUrl,
+        }));
+        setDisplayImage(imageUrl);
+        console.log('displayImage mis à jour avec URL serveur :', imageUrl);
 
-      setError('');
-    }).catch(err => {
-      console.error('Erreur complète lors de l’upload :', err);
-      if (err.response) {
-        setError(err.response.data.message || 'Error uploading image');
-        setDisplayImage(null);
-      } else {
-        setError('Network error or server unreachable');
-      }
-    });
-  } catch (err) {
-    console.error('Erreur inattendue :', err);
-  }
-};
+        const updatedProfile = {
+          fullname: formData.fullname || '',
+          lastname: formData.lastname || '',
+          email: formData.email || '',
+          picture: imageUrl,
+        };
+        switch (userData.role) {
+          case 'BUSINESS_OWNER':
+            updatedProfile.companyName = formData.companyName || '';
+            updatedProfile.registrationNumber = formData.registrationNumber ? Number(formData.registrationNumber) : undefined;
+            updatedProfile.industry = formData.industry || '';
+            updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+            updatedProfile.autorization = formData.autorization || false;
+            updatedProfile.evidence = formData.evidence || '';
+            break;
+          case 'BUSINESS_MANAGER':
+            updatedProfile.certification = formData.certification || '';
+            updatedProfile.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
+            updatedProfile.specialization = formData.specialization || '';
+            updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+            updatedProfile.firstlogin = formData.firstlogin || false;
+            break;
+          case 'ACCOUNTANT':
+            updatedProfile.certification = formData.certification || '';
+            updatedProfile.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
+            updatedProfile.specialization = formData.specialization || '';
+            updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+            updatedProfile.firstlogin = formData.firstlogin || false;
+            break;
+          case 'FINANCIAL_MANAGER':
+            updatedProfile.department = formData.department || '';
+            updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+            updatedProfile.hireDate = formData.hireDate || '';
+            updatedProfile.firstlogin = formData.firstlogin || false;
+            break;
+          case 'RH':
+            updatedProfile.certification = formData.certification || '';
+            updatedProfile.experienceYears = formData.experienceYears ? Number(formData.experienceYears) : undefined;
+            updatedProfile.specialization = formData.specialization || '';
+            updatedProfile.salary = formData.salary ? Number(formData.salary) : undefined;
+            updatedProfile.firstlogin = formData.firstlogin || false;
+            break;
+          case 'ADMIN':
+            updatedProfile.adminId = formData.adminId || '';
+            break;
+          default:
+            break;
+        }
+
+        console.log('Données envoyées à updateprofile :', JSON.stringify(updatedProfile, null, 2));
+        axios.put('http://localhost:3000/users/updateprofile', updatedProfile, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }).then(updateResponse => {
+          console.log('Profil mis à jour avec l’image :', updateResponse.data);
+          setAlertMessage('Profile image updated successfully!');
+          // Redirect to Profile page after a short delay to allow the user to see the alert
+          setTimeout(() => {
+            navigate('/profile');
+          }, 2000); // 2-second delay before redirection
+        }).catch(updateErr => {
+          console.error('Erreur lors de la mise à jour du profil :', updateErr);
+          console.log('Détails de la réponse serveur :', updateErr.response?.data);
+          setError('Failed to save image URL to profile');
+        });
+
+        setError('');
+      }).catch(err => {
+        console.error('Erreur complète lors de l’upload :', err);
+        if (err.response) {
+          setError(err.response.data.message || 'Error uploading image');
+          setDisplayImage(null);
+        } else {
+          setError('Network error or server unreachable');
+        }
+      });
+    } catch (err) {
+      console.error('Erreur inattendue :', err);
+    }
+  };
+
   const renderRoleSpecificFields = () => {
     switch (userData.role) {
       case 'ADMIN':
@@ -603,11 +653,16 @@ const EditProfile = () => {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div className="error-text">{error}</div>;
   if (!userData) return <div>No user data available</div>;
 
   return (
     <>
+      {alertMessage && (
+        <Alert
+          message={alertMessage}
+          onClose={() => setAlertMessage(null)}
+        />
+      )}
       <div className="container">
         <Sidebar />
         <div className="main">
@@ -663,6 +718,11 @@ const EditProfile = () => {
                 {showFirstUpdateMessage && (
                   <div className="first-update-message" style={{ color: 'blue', marginBottom: '10px' }}>
                     Welcome! Please complete your profile by adding your company name, registration number, and industry.
+                  </div>
+                )}
+                {error && (
+                  <div className="error-text" style={{ color: 'red', marginBottom: '10px' }}>
+                    {error}
                   </div>
                 )}
                 <form onSubmit={handleSubmit} className="edit-profile-form">

@@ -1,18 +1,19 @@
 const Wallet = require("../model/wallet");
 const Transaction = require("../model/Transaction");
-// 📌 Effectuer un dépôt (Deposit)
+
+// 📌 Perform a deposit
 exports.deposit = async (req, res, io) => {
   try {
     const { walletId } = req.params;
     const { amount } = req.body;
 
     if (!amount || amount <= 0) {
-      return res.status(400).json({ message: "Le montant doit être supérieur à 0" });
+      return res.status(400).json({ message: "The amount must be greater than 0" });
     }
 
     const wallet = await Wallet.findById(walletId);
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet introuvable" });
+      return res.status(404).json({ message: "Wallet not found" });
     }
 
     const transactions = await Transaction.find({ wallet_id: walletId });
@@ -28,37 +29,37 @@ exports.deposit = async (req, res, io) => {
 
     await transaction.save();
 
-    // 🔹 Mise à jour du solde dans le wallet
+    // 🔹 Update the balance in the wallet
     wallet.balance += amount;
     await wallet.save();
 
     global.io.emit("transactionUpdate", { walletId, balance: wallet.balance, transaction });
-    res.status(200).json({ message: "Dépôt effectué avec succès", transaction, newBalance: wallet.balance });
+    res.status(200).json({ message: "Deposit completed successfully", transaction, newBalance: wallet.balance });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 📌 Effectuer un retrait (Withdraw)
+// 📌 Perform a withdrawal
 exports.withdraw = async (req, res) => {
   try {
     const { walletId } = req.params;
     const { amount } = req.body;
 
     if (!amount || amount <= 0) {
-      return res.status(400).json({ message: "Le montant doit être supérieur à 0" });
+      return res.status(400).json({ message: "The amount must be greater than 0" });
     }
 
     const wallet = await Wallet.findById(walletId);
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet introuvable" });
+      return res.status(404).json({ message: "Wallet not found" });
     }
 
     const transactions = await Transaction.find({ wallet_id: walletId });
     const balance = transactions.reduce((acc, t) => acc + (t.type === "income" ? t.amount : -t.amount), 0);
 
     if (balance < amount) {
-      return res.status(400).json({ message: "Fonds insuffisants" });
+      return res.status(400).json({ message: "Insufficient funds" });
     }
 
     const transaction = new Transaction({
@@ -70,28 +71,28 @@ exports.withdraw = async (req, res) => {
 
     await transaction.save();
 
-    // 🔹 Mise à jour du solde dans le wallet
+    // 🔹 Update the balance in the wallet
     wallet.balance -= amount;
     await wallet.save();
 
     global.io.emit("transactionUpdate", { walletId, balance: wallet.balance, transaction });
-    res.status(200).json({ message: "Retrait effectué avec succès", transaction, newBalance: wallet.balance });
+    res.status(200).json({ message: "Withdrawal completed successfully", transaction, newBalance: wallet.balance });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 📌 Obtenir le solde d'un wallet
+// 📌 Get the balance of a wallet
 exports.getBalance = async (req, res) => {
   try {
     const { walletId } = req.params;
     const wallet = await Wallet.findById(walletId);
     
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet introuvable" });
+      return res.status(404).json({ message: "Wallet not found" });
     }
 
-    // Calcul du solde basé sur les transactions
+    // Calculate the balance based on transactions
     const transactions = await Transaction.find({ wallet_id: walletId });
     const balance = transactions.reduce((acc, t) => acc + (t.type === "income" ? t.amount : -t.amount), 0);
 
@@ -123,24 +124,25 @@ exports.getTransactions = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 exports.cancelTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params;
 
     const transaction = await Transaction.findById(transactionId);
     if (!transaction) {
-      return res.status(404).json({ message: "Transaction introuvable" });
+      return res.status(404).json({ message: "Transaction not found" });
     }
 
     if (transaction.status !== "pending") {
-      return res.status(400).json({ message: "Seules les transactions en attente peuvent être annulées" });
+      return res.status(400).json({ message: "Only pending transactions can be canceled" });
     }
 
-    // Mettre à jour la transaction
+    // Update the transaction
     transaction.status = "canceled";
     await transaction.save();
 
-    // Si c'était un dépôt, retirer le montant du wallet
+    // If it was a deposit, subtract the amount from the wallet
     if (transaction.type === "income") {
       const wallet = await Wallet.findById(transaction.wallet_id);
       if (wallet) {
@@ -149,11 +151,12 @@ exports.cancelTransaction = async (req, res) => {
       }
     }
 
-    res.status(200).json({ message: "Transaction annulée avec succès", transaction });
+    res.status(200).json({ message: "Transaction canceled successfully", transaction });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 exports.updateTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -161,71 +164,72 @@ exports.updateTransaction = async (req, res) => {
 
     const transaction = await Transaction.findById(transactionId);
     if (!transaction) {
-      return res.status(404).json({ message: "Transaction introuvable" });
+      return res.status(404).json({ message: "Transaction not found" });
     }
 
     if (transaction.status !== "pending") {
-      return res.status(400).json({ message: "Seules les transactions en attente peuvent être modifiées" });
+      return res.status(400).json({ message: "Only pending transactions can be modified" });
     }
 
     if (amount && amount <= 0) {
-      return res.status(400).json({ message: "Le montant doit être supérieur à 0" });
+      return res.status(400).json({ message: "The amount must be greater than 0" });
     }
 
-    // Mise à jour des champs
+    // Update the fields
     if (amount) transaction.amount = amount;
     if (description) transaction.description = description;
 
     await transaction.save();
-    res.status(200).json({ message: "Transaction mise à jour avec succès", transaction });
+    res.status(200).json({ message: "Transaction updated successfully", transaction });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 exports.transfer = async (req, res) => {
   try {
     const { senderWalletId, receiverWalletId } = req.params;
     const { amount } = req.body;
 
     if (!amount || amount <= 0) {
-      return res.status(400).json({ message: "Le montant doit être supérieur à 0" });
+      return res.status(400).json({ message: "The amount must be greater than 0" });
     }
 
     const senderWallet = await Wallet.findById(senderWalletId);
     const receiverWallet = await Wallet.findById(receiverWalletId);
 
     if (!senderWallet || !receiverWallet) {
-      return res.status(404).json({ message: "L'un des wallets est introuvable" });
+      return res.status(404).json({ message: "One of the wallets was not found" });
     }
 
     if (senderWallet.balance < amount) {
-      return res.status(400).json({ message: "Fonds insuffisants" });
+      return res.status(400).json({ message: "Insufficient funds" });
     }
 
-    // Calcul des nouveaux soldes
+    // Calculate new balances
     const newSenderBalance = senderWallet.balance - amount;
     const newReceiverBalance = receiverWallet.balance + amount;
 
-    // Créer la transaction de retrait pour l'expéditeur
+    // Create the withdrawal transaction for the sender
     const senderTransaction = new Transaction({
       wallet_id: senderWalletId,
       amount: amount,
       type: "expense",
-      balanceAfterTransaction: newSenderBalance, // Correction ici
+      balanceAfterTransaction: newSenderBalance, // Fixed here
     });
 
-    // Créer la transaction de dépôt pour le destinataire
+    // Create the deposit transaction for the receiver
     const receiverTransaction = new Transaction({
       wallet_id: receiverWalletId,
       amount: amount,
       type: "income",
-      balanceAfterTransaction: newReceiverBalance, // Correction ici
+      balanceAfterTransaction: newReceiverBalance, // Fixed here
     });
 
     await senderTransaction.save();
     await receiverTransaction.save();
 
-    // Mettre à jour les soldes des wallets
+    // Update the wallet balances
     senderWallet.balance = newSenderBalance;
     receiverWallet.balance = newReceiverBalance;
 
@@ -233,7 +237,7 @@ exports.transfer = async (req, res) => {
     await receiverWallet.save();
 
     res.status(200).json({
-      message: "Transfert effectué avec succès",
+      message: "Transfer completed successfully",
       senderTransaction,
       receiverTransaction
     });

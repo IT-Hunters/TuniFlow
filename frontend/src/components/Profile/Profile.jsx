@@ -1,7 +1,6 @@
 import './profile.css';
 import Navbar from '../navbar/Navbar';
 import Sidebar from '../sidebar/Sidebar';
-import userimg from '../assets/user.png';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -176,12 +175,11 @@ const ViewProfile = () => {
                 <div className="profile-card-inner">
                   <div className="profile-card-front">
                     <img
-                      src={userData.picture || userimg} // Display user avatar or fallback image
+                      src={userData.picture } // Display user avatar or fallback image
                       alt="User Avatar"
                       className="profile-img-card"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = userimg; // Fallback if image doesn't load
                       }}
                     />
                   </div>

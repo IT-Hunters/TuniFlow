@@ -22,7 +22,9 @@ import Withdraw from "./components/tessst/Withdraw";
 import AddProject from "./components/Project/AddProject";
 import MyProject from "./components/Project/MyProject";
 import ObjectiveManagement from "./components/Objectif/ObjectifManagement";
-
+import AddObjective from "./components/Objectif/AddObjectif";
+import EditObjective from "./components/Objectif/EditObjectif";
+import ObjectifDetails from "./components/Objectif/ObjectifDetails";
 function App() {         
   return (
     <Router>
@@ -49,7 +51,9 @@ function App() {
         <Route path="/AddProject" element={<AddProject />} />
         <Route path="/MyProject" element={<MyProject />} />
         <Route path="/ObjectiveManagement" element={<ObjectiveManagement />} />
-
+        <Route path="/AddObjective" element={<AddObjective />} />
+        <Route path="/EditObjective" element={<EditObjective/>} />
+        <Route path="/ObjectifDetails" element={<ObjectifDetails />} />
       </Routes>
     </Router>
   );

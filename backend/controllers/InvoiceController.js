@@ -9,18 +9,18 @@ const path = require("path");
 const { v4: uuidv4 } = require('uuid');
 
 // Vérifiez que fs.createWriteStream est disponible
-console.log('fs.createWriteStream disponible:', typeof fs.createWriteStream === 'function');
+console.log('fs.createWriteStream available:', typeof fs.createWriteStream === 'function');
 
 // Générer le PDF de la facture
 const generateInvoicePDF = async (invoice) => {
   const pdfPath = path.join(__dirname, '../invoices', `invoice_${invoice._id}.pdf`);
-  console.log('Tentative de génération du PDF à:', pdfPath);
+  console.log('Attempting to generate PDF at:', pdfPath);
 
   // Créer le dossier invoices s’il n’existe pas
   const dir = path.join(__dirname, '../invoices');
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
-    console.log('Dossier invoices créé:', dir);
+    console.log('Invoices directory created:', dir);
   }
 
   const doc = new PDFDocument();
@@ -28,21 +28,21 @@ const generateInvoicePDF = async (invoice) => {
 
   return new Promise((resolve, reject) => {
     stream.on('finish', () => {
-      console.log('PDF généré avec succès à:', pdfPath);
+      console.log('PDF generated successfully at:', pdfPath);
       resolve(pdfPath);
     });
     stream.on('error', (err) => {
-      console.error('Erreur lors de l’écriture du PDF:', err);
+      console.error('Error writing PDF:', err);
       reject(err);
     });
 
     doc.pipe(stream);
-    doc.fontSize(20).text("Facture", { align: "center" });
+    doc.fontSize(20).text("Invoice", { align: "center" });
     doc.text(`ID: ${invoice._id}`);
-    doc.text(`Créateur: ${invoice.creator_id.fullname}`);
-    doc.text(`Destinataire: ${invoice.recipient_id.fullname}`);
-    doc.text(`Montant: ${invoice.amount} TND`);
-    doc.text(`Date d'échéance: ${invoice.due_date.toLocaleDateString()}`);
+    doc.text(`Creator: ${invoice.creator_id.fullname}`);
+    doc.text(`Recipient: ${invoice.recipient_id.fullname}`);
+    doc.text(`Amount: ${invoice.amount} TND`);
+    doc.text(`Due Date: ${invoice.due_date.toLocaleDateString()}`);
     doc.end();
   });
 };
@@ -53,16 +53,16 @@ exports.createInvoice = async (req, res) => {
     const { amount, due_date, category } = req.body;
     const creator_id = req.user.userId;
 
-    console.log('Données reçues:', { amount, due_date, category });
+    console.log('Received data:', { amount, due_date, category });
     console.log('Creator ID:', creator_id);
 
     const project = await Project.findOne({ businessManager: creator_id }).populate('businessOwner');
-    console.log('Projet trouvé:', project);
+    console.log('Project found:', project);
     if (!project) {
-      return res.status(404).json({ message: "Aucun projet trouvé pour ce Business Manager" });
+      return res.status(404).json({ message: "No project found for this Business Manager" });
     }
     if (!project.businessOwner) {
-      return res.status(400).json({ message: "Aucun Business Owner assigné à ce projet" });
+      return res.status(400).json({ message: "No Business Owner assigned to this project" });
     }
 
     const recipient_id = project.businessOwner._id;
@@ -78,15 +78,15 @@ exports.createInvoice = async (req, res) => {
       status: "PENDING",
       project_id: project._id
     });
-    console.log('Nouvelle facture avant sauvegarde:', newInvoice);
+    console.log('New invoice before saving:', newInvoice);
 
     await newInvoice.save();
-    console.log('Facture sauvegardée avec succès');
+    console.log('Invoice saved successfully');
 
-    res.status(201).json({ message: "Facture créée avec succès", invoice: newInvoice });
+    res.status(201).json({ message: "Invoice created successfully", invoice: newInvoice });
   } catch (error) {
-    console.error("Erreur création facture:", error.message);
-    res.status(500).json({ message: "Erreur lors de la création de la facture", error: error.message });
+    console.error("Error creating invoice:", error.message);
+    res.status(500).json({ message: "Error while creating the invoice", error: error.message });
   }
 };
 
@@ -162,6 +162,7 @@ exports.sendInvoice = async (req, res) => {
     res.status(500).json({ message: "Error while sending the invoice", error: error.message });
   }
 };
+
 exports.acceptInvoice = async (req, res) => {
   try {
     const { invoiceId } = req.params;
@@ -234,6 +235,7 @@ exports.acceptInvoice = async (req, res) => {
     res.status(500).json({ message: "Error while accepting the invoice" });
   }
 };
+
 exports.getMyInvoices = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -241,8 +243,8 @@ exports.getMyInvoices = async (req, res) => {
       .populate("creator_id", "fullname email");
     res.status(200).json(invoices);
   } catch (error) {
-    console.error("Erreur récupération factures:", error.message);
-    res.status(500).json({ message: "Erreur lors de la récupération des factures", error: error.message });
+    console.error("Error retrieving invoices:", error.message);
+    res.status(500).json({ message: "Error while retrieving invoices", error: error.message });
   }
 };
 
@@ -251,8 +253,7 @@ exports.getBusinessOwners = async (req, res) => {
     const businessOwners = await User.find({ role: "BUSINESS_OWNER" }, "fullname lastname email");
     res.status(200).json(businessOwners);
   } catch (error) {
-    console.error("Erreur récupération Business Owners:", error.message);
-    res.status(500).json({ message: "Erreur lors de la récupération des Business Owners", error: error.message });
+    console.error("Error retrieving Business Owners:", error.message);
+    res.status(500).json({ message: "Error while retrieving Business Owners", error: error.message });
   }
 };
-

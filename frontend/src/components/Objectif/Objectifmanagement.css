@@ -1,3 +1,4 @@
+/* General Layout */
 .objective-management {
     max-width: 1200px;
     margin: 0 auto;
@@ -84,6 +85,121 @@
     margin-top: 20px;
 }
 
+/* Objective Card Updates */
+.objectif-card {
+    width: 370px; /* Adjusted to match image proportions */
+    height: 350px; /* Adjusted height */
+    background: #fff;
+    border-radius: 10px;
+    position: relative;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(30, 88, 179, 0.3); /* Default shadow */
+    transition: all 0.5s ease-out;
+    overflow: visible;
+}
+
+/* Bookmark for Objective Type */
+.objectif-bookmark {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: rgb(30, 88, 179);
+    color: #fff;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-bottom-left-radius: 10px;
+    border-top-right-radius: 5px;
+}
+
+/* Card Details */
+.objectif-card-details {
+    color: rgb(30, 88, 179);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+/* Title */
+.objectif-text-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+/* Description */
+.objectif-description {
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+/* Progress Section */
+.progress-section {
+    margin: 0.5rem 0;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: rgb(30, 88, 179);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Due Date */
+.due-date {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+/* Card Button */
+.objectif-card-button {
+    width: 60%;
+    border-radius: 1rem;
+    border: none;
+    background-color: #008bf8;
+    color: #fff;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    position: absolute;
+    left: 50%;
+    bottom: 1rem;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: 0.3s ease-out;
+}
+
+/* Hover States - Fixed Shadow Behavior */
+.objectif-card:hover {
+    box-shadow: 0 8px 24px rgba(30, 88, 179, 0.5); /* Enhanced shadow on hover */
+}
+
+.objectif-card:hover .objectif-card-button {
+    opacity: 1;
+}
+
+/* Additional Existing Styles */
 .objective-card {
     background-color: white;
     border: 1px solid #ddd;
@@ -95,10 +211,6 @@
 .objective-card h3 {
     margin-top: 0;
     color: #2c3e50;
-}
-
-.progress-section {
-    margin: 15px 0;
 }
 
 .progress-section input[type="range"] {
@@ -164,6 +276,7 @@
 .report li:last-child {
     border-bottom: none;
 }
+
 .create-objective-section {
     background-color: #f9f9f9;
     padding: 20px;
@@ -208,6 +321,7 @@
     background-color: #95a5a6;
     cursor: not-allowed;
 }
+
 .no-project-message {
     text-align: center;
     padding: 20px;
@@ -216,7 +330,7 @@
     border-radius: 5px;
     margin-top: 20px;
 }
-/* Existing styles remain the same */
+
 .add-objective-section {
     margin: 20px 0;
 }
@@ -265,15 +379,6 @@
     background-color: #95a5a6;
     cursor: not-allowed;
 }
-/* Existing styles remain the same */
-.objective-card {
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-}
 
 .edit-objective-btn {
     background-color: #3498db;
@@ -296,33 +401,6 @@
     cursor: not-allowed;
 }
 
-/* Ensure the edit form uses the same styling as the create form */
-.create-objective-section form {
-    display: grid;
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.create-objective-section button[type="button"] {
-    background-color: #e74c3c;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-left: 10px;
-}
-
-.create-objective-section button[type="button"]:hover {
-    background-color: #c0392b;
-}
-
-.create-objective-section button[type="button"]:disabled {
-    background-color: #95a5a6;
-    cursor: not-allowed;
-}
-/* Existing styles remain the same */
 .PB-range-slider {
     -webkit-appearance: none;
     width: 100%;
@@ -333,9 +411,9 @@
     opacity: 0.7;
     -webkit-transition: .2s;
     transition: opacity .2s;
-  }
-  
-  .PB-range-slider::-webkit-slider-thumb {
+}
+
+.PB-range-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 15px;
@@ -344,22 +422,22 @@
     background-color: #000000;
     cursor: pointer;
     transition: 0.3s ease-in-out;
-  }
-  
-  .PB-range-slider::-webkit-slider-thumb:hover {
+}
+
+.PB-range-slider::-webkit-slider-thumb:hover {
     box-shadow: 0px 0px 0px 8px rgba(0, 0, 0, 0.16);
     transition: 0.3s ease-in-out;
-  }
-  
-  .PB-range-slider::-moz-range-thumb {
+}
+
+.PB-range-slider::-moz-range-thumb {
     width: 15px;
     height: 15px;
     border-radius: 50%;
     background-color: #000000;
     cursor: pointer;
-  }
-  
-  .PB-range-slider-div {
+}
+
+.PB-range-slider-div {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -368,65 +446,306 @@
     border-radius: 6px;
     border: 1px solid #C6CACE;
     box-shadow: 0px 1px 2px 0px #1F1E241F;
-  }
-  
-  .PB-range-slidervalue {
+}
+
+.PB-range-slidervalue {
     font-weight: 600;
-  }
-  
-  /* Ensure compatibility with existing layout */
-  .objective-card {
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-  }
-  
-  .edit-objective-btn {
-    background-color: #3498db;
-    color: white;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
-    display: block;
-  }
-  
-  .edit-objective-btn:hover {
-    background-color: #2980b9;
-  }
-  
-  .edit-objective-btn:disabled {
-    background-color: #95a5a6;
-    cursor: not-allowed;
-  }
-  
-  .create-objective-section form {
-    display: grid;
+}
+
+/* Details page styles */
+.objectif-details-container {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.objectif-details-card {
+    background: #f5f5f5;
+    border-radius: 15px;
+    padding: 30px;
+    width: 100%;
+    max-width: 600px;
+    border: 2px solid #c3c6ce;
+    box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.1);
+}
+
+.objectif-details-title {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+.objectif-details-content {
+    margin-bottom: 30px;
+}
+
+.objectif-details-content p {
+    margin: 10px 0;
+    font-size: 1.1em;
+    color: #444;
+}
+
+.objectif-details-content p strong {
+    color: #222;
+    margin-right: 10px;
+}
+
+.objectif-details-buttons {
+    display: flex;
     gap: 15px;
-    margin-top: 10px;
-  }
-  
-  .create-objective-section button[type="button"] {
-    background-color: #e74c3c;
-    color: white;
+    justify-content: center;
+}
+
+.edit-objective-btn,
+.back-button {
     padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s;
-    margin-left: 10px;
-  }
-  
-  .create-objective-section button[type="button"]:hover {
-    background-color: #c0392b;
-  }
-  
-  .create-objective-section button[type="button"]:disabled {
-    background-color: #95a5a6;
-    cursor: not-allowed;
-  }
+    transition: all 0.3s ease;
+}
+
+.edit-objective-btn {
+    background-color: #008bf8;
+    color: white;
+    border: none;
+}
+
+.edit-objective-btn:hover {
+    background-color: #0077d9;
+}
+
+.back-button {
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+}
+
+.back-button:hover {
+    background-color: #d0d0d0;
+}
+
+/* New Styles for ObjectifDetails Page */
+.objectif-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.objectif-details-back-link {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.objectif-details-back-link:hover {
+    color: #333;
+}
+
+.objectif-details-status {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.objectif-details-type {
+    background-color: rgb(30, 88, 179);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.objectif-details-status-label {
+    background-color: #e5e7eb;
+    color: #333;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.objectif-details-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.objectif-details-edit-btn {
+    background-color: white;
+    border: 1px solid #d1d5db;
+    color: #1e5fbd;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.objectif-details-edit-btn:hover {
+    background-color: #f3f4f6;
+}
+
+.objectif-details-update-progress-btn {
+    background-color: #1e5fbd;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.objectif-details-update-progress-btn:hover {
+    background-color: #1e5fbd;
+}
+
+.objectif-details-heading {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: #000;
+}
+
+.objectif-details-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.objectif-details-card {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.objectif-details-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.objectif-details-icon {
+    font-size: 1.25rem;
+}
+
+.objectif-details-card-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.objectif-details-card-content p {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0.25rem 0;
+}
+
+.objectif-details-card-content p strong {
+    color: #333;
+}
+
+.objectif-details-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.objectif-details-progress-fill {
+    height: 100%;
+    background: #000;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.objectif-details-description {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.objectif-details-description h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.objectif-details-description p {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.objectif-details-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.objectif-details-edit-objective-btn {
+    background-color: #1e5fbd;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.objectif-details-edit-objective-btn:hover {
+    background-color: #0077d9;
+}
+
+.objectif-details-back-btn {
+    background-color: #e0e0e0;
+    color: #333;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.objectif-details-back-btn:hover {
+    background-color: #d0d0d0;
+}
+
+.objectif-details-tabs {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.objectif-details-tab {
+    background-color: #f3f4f6;
+    color: #666;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.objectif-details-tab:hover {
+    background-color: #e5e7eb;
+}

@@ -22,23 +22,23 @@ async function getDailyLogins(req, res) {
     return res.status(200).json({ logs });
   } catch (error) {
     console.error("Aggregation error:", error);
-    return res.status(500).json({ message: "Erreur interne du serveur" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 }
 
 async function createLog(userId) {
-    try {
-      const newLog = new UserLogs({
-        user_id: userId,
-        login_time: new Date(),
-      });
-  
-      await newLog.save();
-      return { message: "Log created successfully" };
-    } catch (error) {
-      console.error("Error creating log:", error);
-      throw new Error("Error creating log");
-    }
-  }
+  try {
+    const newLog = new UserLogs({
+      user_id: userId,
+      login_time: new Date(),
+    });
 
-module.exports = { getDailyLogins , createLog};
+    await newLog.save();
+    return { message: "Log created successfully" };
+  } catch (error) {
+    console.error("Error creating log:", error);
+    throw new Error("Error creating log");
+  }
+}
+
+module.exports = { getDailyLogins, createLog };
