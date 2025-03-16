@@ -132,7 +132,7 @@ const ObjectivesList = () => {
                           </div>
                         </div>
                         <button 
-                          className="objectif-card-button"
+                          className="objectif-card-button objective-button"
                           onClick={() => handleViewDetails(objective)}
                           disabled={loading}
                         >
@@ -145,7 +145,7 @@ const ObjectivesList = () => {
               )}
               <div className="add-objective-section">
                 <button 
-                  className="add-objective-btn"
+                  className="add-objective-btn objective-button add-objective-button"
                   onClick={handleAddObjective}
                   disabled={loading}
                 >

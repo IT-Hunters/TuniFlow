@@ -29,7 +29,7 @@ const EditObjective = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-      navigate('/objectives');
+      navigate('/ObjectiveManagement');
     } catch (err) {
       setError('Failed to update objective');
     } finally {

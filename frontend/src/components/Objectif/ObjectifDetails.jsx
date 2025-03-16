@@ -31,7 +31,7 @@ const ObjectifDetails = () => {
             <p>No objective data available</p>
             <button 
               className="objectif-details-back-btn"
-              onClick={() => navigate('/objectives')}
+              onClick={() => navigate('/ObjectiveManagement')}
             >
               Back to Objectives
             </button>
@@ -117,7 +117,7 @@ const ObjectifDetails = () => {
         <div className="content">
           <div className="objectif-details-header">
             <button 
-              className="objectif-details-back-link"
+              className="objectif-details-back-link objective-button"
               onClick={() => navigate('/ObjectiveManagement')}
               disabled={loading}
             >
@@ -127,35 +127,20 @@ const ObjectifDetails = () => {
               <span className="objectif-details-type">{objective.objectivetype}</span>
               <span className="objectif-details-status-label">{objectiveStatus}</span>
             </div>
-            <div className="objectif-details-actions">
-              <button 
-                className="objectif-details-edit-btn"
-                onClick={handleEditObjective}
-                disabled={loading}
-              >
-                Edit
-              </button>
-              <button 
-                className="objectif-details-update-progress-btn"
-                onClick={handleUpdateProgress}
-                disabled={loading}
-              >
-                Update Progress
-              </button>
-            </div>
+          
           </div>
           
           <h1 className="objectif-details-heading">{objective.name}</h1>
           <div className="objectif-details-tabs">
             <button 
-              className="objectif-details-tab"
+              className="objectif-details-tab objective-button"
               onClick={handleMarkAsCompleted}
               disabled={loading || objectiveStatus === 'Completed'}
             >
               {loading && objectiveStatus !== 'Failed' ? 'Marking...' : 'Mark as Completed'}
             </button>
             <button 
-              className="objectif-details-tab"
+              className="objectif-details-tab objective-button"
               onClick={handleMarkAsFailed}
               disabled={loading || objectiveStatus === 'Failed'}
             >
@@ -217,16 +202,16 @@ const ObjectifDetails = () => {
           </div>
 
           {/* Buttons */}
-          <div className="objectif-details-buttons">
+          <div className="objectif-details-buttons ">
             <button 
-              className="objectif-details-edit-objective-btn"
+              className="objectif-details-edit-objective-btn objective-button"
               onClick={handleEditObjective}
               disabled={loading}
             >
               Edit Objective
             </button>
             <button 
-              className="objectif-details-back-btn"
+              className="objectif-details-back-btn objective-button"
               onClick={() => navigate('/ObjectiveManagement')}
               disabled={loading}
             >
