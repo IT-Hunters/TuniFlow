@@ -1,14 +1,39 @@
-
-
-/* ========== Error & Loading Styles ========== */
-.error-message {
-    color: #ff4d4d;
-    background: #ffecec;
-    padding: 10px;
-    border-radius: 5px;
-    text-align: center;
+/* ========== Alerts ========== */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
 }
 
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+/* Field-specific error styles */
+.field-error {
+    color: #721c24;
+    font-size: 0.9rem;
+    margin-top: 5px;
+    padding: 5px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+}
+
+/* ========== Loading Styles ========== */
 .loading {
     text-align: center;
     color: #0077d9;
@@ -181,14 +206,26 @@
     gap: 15px;
 }
 
-.create-objective-section input,
-.create-objective-section textarea,
-.create-objective-section select {
-    padding: 12px;
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px;
     border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: 0.3s ease;
+    border-radius: 4px;
+}
+
+.form-group textarea {
+    height: 100px;
 }
 
 .create-objective-section input:focus,
@@ -198,27 +235,32 @@
     outline: none;
 }
 
-.create-objective-section button {
-    background: #0077d9;
-    color: white;
-    padding: 12px;
-    border-radius: 8px;
+.button-group {
+    margin-top: 20px;
+}
+
+.button-group button {
+    padding: 10px 20px;
+    margin-right: 10px;
     border: none;
+    border-radius: 4px;
     cursor: pointer;
-    transition: 0.3s ease;
+    font-weight: 600;
 }
 
-.create-objective-section button:hover {
-    background: #005bb5;
+.button-group button[type="submit"] {
+    background-color: #28a745;
+    color: white;
 }
 
-.create-objective-section button.secondary {
-    background: #ddd;
-    color: #333;
+.button-group button[type="button"] {
+    background-color: #6c757d;
+    color: white;
 }
 
-.create-objective-section button.secondary:hover {
-    background: #bbb;
+.button-group button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Progress Slider */
@@ -247,39 +289,6 @@
     font-size: 1rem;
 }
 
-
-
-/* ========== Error & Loading Styles ========== */
-.error-message {
-    color: #ff4d4d;
-    background: #ffecec;
-    padding: 10px;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.loading {
-    text-align: center;
-    color: #0077d9;
-    font-weight: 600;
-}
-
-/* ========== Project Selection Dropdown ========== */
-.project-selection select {
-    width: 250px;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: white;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: 0.3s ease;
-}
-
-.project-selection select:hover {
-    border-color: #0077d9;
-}
-
 /* ========== Buttons ========== */
 .objective-button {
     display: inline-block;
@@ -294,6 +303,7 @@
     text-transform: capitalize;
     margin-top: 10px;
 }
+
 .add-objective-button {
     background: #0077d9;
     color: white;
@@ -344,119 +354,6 @@ button:disabled {
     background: #ccc;
     cursor: not-allowed;
     opacity: 0.6;
-}
-
-/* Buttons Group for Actions */
-.objectif-details-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.objectif-details-buttons button {
-    flex: 1;
-}
-
-/* ========== Objective Details Page ========== */
-.objectif-details-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 30px;
-    padding: 20px;
-    max-width: 1200px;
-    margin: auto;
-}
-
-.objectif-details-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    flex: 1;
-}
-
-.objectif-details-title {
-    font-size: 1.8rem;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-.objectif-details-progress-bar {
-    width: 100%;
-    height: 10px;
-    background: #ddd;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-top: 10px;
-}
-
-.objectif-details-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #0077d9, #00c6ff);
-    transition: width 0.3s ease;
-}
-
-/* ========== Edit Objective Page ========== */
-.create-objective-section {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    margin: auto;
-}
-
-.create-objective-section form {
-    display: grid;
-    gap: 15px;
-}
-
-.create-objective-section input,
-.create-objective-section textarea,
-.create-objective-section select {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: 0.3s ease;
-}
-
-.create-objective-section input:focus,
-.create-objective-section textarea:focus,
-.create-objective-section select:focus {
-    border-color: #0077d9;
-    outline: none;
-}
-
-.create-objective-section button {
-    font-weight: 600;
-}
-
-/* Progress Slider */
-.PB-range-slider {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 8px;
-    border-radius: 5px;
-    background: #ddd;
-    outline: none;
-    transition: opacity 0.3s ease;
-}
-
-.PB-range-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    background: #0077d9;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.PB-range-slidervalue {
-    text-align: center;
-    font-weight: 600;
-    font-size: 1rem;
 }
 
 /* ========== Objective Status & Type (More Visible) ========== */

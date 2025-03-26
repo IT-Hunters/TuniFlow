@@ -24,7 +24,7 @@ const createObjectif = async (req, res) => {
         });
 
         if (!project) {
-            return res.status(404).json({ message: "Project not found for this user" });
+            return res.status(404).json({ success: false, message: "Project not found for this user" });
         }
 
         // Retrieve objective data from the request body
@@ -39,6 +39,60 @@ const createObjectif = async (req, res) => {
             objectivetype,
             isStatic,
         } = req.body;
+
+        // Validation errors object
+        const errors = {};
+
+        // Validate required fields
+        if (!name || name.trim() === "") {
+            errors.name = "Objective name is required.";
+        }
+        if (!description || description.trim() === "") {
+            errors.description = "Objective description is required.";
+        }
+        if (!target_amount || target_amount <= 0) {
+            errors.target_amount = "Target amount must be a positive number.";
+        }
+        if (!minbudget || minbudget < 0) {
+            errors.minbudget = "Minimum budget must be a non-negative number.";
+        }
+        if (!maxbudget || maxbudget <= 0) {
+            errors.maxbudget = "Maximum budget must be a positive number.";
+        }
+        if (minbudget > maxbudget) {
+            errors.minbudget = errors.minbudget || [];
+            errors.maxbudget = errors.maxbudget || [];
+            errors.minbudget = "Minimum budget cannot exceed maximum budget.";
+            errors.maxbudget = "Minimum budget cannot exceed maximum budget.";
+        }
+        if (!datedebut) {
+            errors.datedebut = "Start date is required.";
+        }
+        if (!datefin) {
+            errors.datefin = "End date is required.";
+        }
+        if (new Date(datedebut) >= new Date(datefin)) {
+            errors.datedebut = errors.datedebut || [];
+            errors.datefin = errors.datefin || [];
+            errors.datedebut = "End date must be after start date.";
+            errors.datefin = "End date must be after start date.";
+        }
+        if (!objectivetype) {
+            errors.objectivetype = "Objective type is required.";
+        }
+        // Validate objectivetype against enum values
+        const validTypes = Objectif.schema.path('objectivetype').enumValues;
+        if (!validTypes.includes(objectivetype)) {
+            errors.objectivetype = `Objective type must be one of: ${validTypes.join(", ")}.`;
+        }
+        if (typeof isStatic !== "boolean") {
+            errors.isStatic = "isStatic must be a boolean value.";
+        }
+
+        // If there are validation errors, return them
+        if (Object.keys(errors).length > 0) {
+            return res.status(400).json({ success: false, errors });
+        }
 
         // Create a new objective
         const nouvelObjectif = new Objectif({
@@ -64,10 +118,10 @@ const createObjectif = async (req, res) => {
         await project.save();
 
         // Successful response
-        res.status(201).json({ message: "Objective created successfully", objectif: nouvelObjectif });
+        res.status(201).json({ success: true, message: "Objective created successfully", objectif: nouvelObjectif });
     } catch (error) {
         console.error("Error creating objective:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ success: false, message: "Internal server error", error: error.message });
     }
 };
 
@@ -165,6 +219,52 @@ const updateObjectifById = async (req, res) => {
         const { objectifId } = req.params; // Retrieve the objective ID from URL parameters
         const updateData = req.body; // Update data sent in the request body
 
+        // Validation errors object
+        const errors = {};
+
+        // Validate provided fields
+        if (updateData.name && updateData.name.trim() === "") {
+            errors.name = "Objective name cannot be empty.";
+        }
+        if (updateData.description && updateData.description.trim() === "") {
+            errors.description = "Objective description cannot be empty.";
+        }
+        if (updateData.target_amount !== undefined && updateData.target_amount <= 0) {
+            errors.target_amount = "Target amount must be a positive number.";
+        }
+        if (updateData.minbudget !== undefined && updateData.minbudget < 0) {
+            errors.minbudget = "Minimum budget must be a non-negative number.";
+        }
+        if (updateData.maxbudget !== undefined && updateData.maxbudget <= 0) {
+            errors.maxbudget = "Maximum budget must be a positive number.";
+        }
+        if (updateData.minbudget !== undefined && updateData.maxbudget !== undefined && updateData.minbudget > updateData.maxbudget) {
+            errors.minbudget = errors.minbudget || [];
+            errors.maxbudget = errors.maxbudget || [];
+            errors.minbudget = "Minimum budget cannot exceed maximum budget.";
+            errors.maxbudget = "Minimum budget cannot exceed maximum budget.";
+        }
+        if (updateData.datedebut && updateData.datefin && new Date(updateData.datedebut) >= new Date(updateData.datefin)) {
+            errors.datedebut = errors.datedebut || [];
+            errors.datefin = errors.datefin || [];
+            errors.datedebut = "End date must be after start date.";
+            errors.datefin = "End date must be after start date.";
+        }
+        if (updateData.objectivetype) {
+            const validTypes = Objectif.schema.path('objectivetype').enumValues;
+            if (!validTypes.includes(updateData.objectivetype)) {
+                errors.objectivetype = `Objective type must be one of: ${validTypes.join(", ")}.`;
+            }
+        }
+        if (updateData.isStatic !== undefined && typeof updateData.isStatic !== "boolean") {
+            errors.isStatic = "isStatic must be a boolean value.";
+        }
+
+        // If there are validation errors, return them
+        if (Object.keys(errors).length > 0) {
+            return res.status(400).json({ success: false, errors });
+        }
+
         // Update the objective by its ID
         const objectif = await Objectif.findByIdAndUpdate(objectifId, updateData, {
             new: true, // Return the updated objective
@@ -172,14 +272,14 @@ const updateObjectifById = async (req, res) => {
         });
 
         if (!objectif) {
-            return res.status(404).json({ message: "Objective not found" });
+            return res.status(404).json({ success: false, message: "Objective not found" });
         }
 
         // Successful response with the updated objective
-        res.status(200).json({ objectif });
+        res.status(200).json({ success: true, objectif });
     } catch (error) {
         console.error("Error updating objective:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ success: false, message: "Internal server error", error: error.message });
     }
 };
 
