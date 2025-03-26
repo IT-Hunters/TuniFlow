@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import {
   FaHome,
   FaTachometerAlt,
-  FaUsers,
   FaBell,
   FaCog,
   FaQuestionCircle,
@@ -15,6 +14,7 @@ import {
   FaFileInvoice,
   FaPlus,
   FaProjectDiagram,
+  FaUserFriends, // Added for Manager List
 } from "react-icons/fa";
 import "./SidebarHome.css";
 import { findMyProfile, logout } from "../../services/UserService";
@@ -38,20 +38,18 @@ const CoolSidebar = () => {
     { title: "Invoice", icon: FaFileInvoice, href: "/invoice" },
     { title: "Add Project", icon: FaPlus, href: "/AddProject" },
     { title: "My Project", icon: FaProjectDiagram, href: "/MyProject" },
+    { title: "Manager List", icon: FaUserFriends, href: "/ManagerList" }, // New item
   ];
 
   // Filter nav items based on user role
   const navItems = baseNavItems.filter((item) => {
-    if (item.title === "Add Project") {
-      return userData?.userType === "BusinessOwner"; // Visible uniquement pour BusinessOwner
+    if (item.title === "Add Project" || item.title === "Manager List") {
+      return userData?.userType === "BusinessOwner"; // Visible only for BusinessOwner
     }
-    if (item.title === "My Project") {
-      return userData?.userType === "BusinessManager"; // Visible uniquement pour BusinessManager
+    if (item.title === "My Project" || item.title === "Invoice") {
+      return userData?.userType === "BusinessManager"; // Visible only for BusinessManager
     }
-    if (item.title === "Invoice") {
-      return userData?.userType === "BusinessManager"; // Visible uniquement pour BusinessManager
-    }
-    return true; // Autres éléments visibles pour tous
+    return true; // Other items visible to all
   });
 
   const handleLogout = () => {

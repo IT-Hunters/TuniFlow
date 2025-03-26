@@ -25,6 +25,8 @@ import ObjectiveManagement from "./components/Objectif/ObjectifManagement";
 import AddObjective from "./components/Objectif/AddObjectif";
 import EditObjective from "./components/Objectif/EditObjectif";
 import ObjectifDetails from "./components/Objectif/ObjectifDetails";
+import CreateManager from "./components/Project/Createmanager";
+import ManagerList from "./components/Project/ManagerList";
 function App() {         
   return (
     <Router>
@@ -54,6 +56,8 @@ function App() {
         <Route path="/AddObjective" element={<AddObjective />} />
         <Route path="/EditObjective" element={<EditObjective/>} />
         <Route path="/ObjectifDetails" element={<ObjectifDetails />} />
+        <Route path="/CreateManager" element={<CreateManager />} />
+        <Route path="/ManagerList" element={<ManagerList />} />
       </Routes>
     </Router>
   );
