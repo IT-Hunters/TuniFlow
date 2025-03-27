@@ -27,6 +27,7 @@ import EditObjective from "./components/Objectif/EditObjectif";
 import ObjectifDetails from "./components/Objectif/ObjectifDetails";
 import CreateManager from "./components/Project/Createmanager";
 import ManagerList from "./components/Project/ManagerList";
+import AddUser from "./components/Project/AddUser";
 function App() {         
   return (
     <Router>
@@ -58,6 +59,7 @@ function App() {
         <Route path="/ObjectifDetails" element={<ObjectifDetails />} />
         <Route path="/CreateManager" element={<CreateManager />} />
         <Route path="/ManagerList" element={<ManagerList />} />
+        <Route path="/AddUser" element={<AddUser />} />
       </Routes>
     </Router>
   );

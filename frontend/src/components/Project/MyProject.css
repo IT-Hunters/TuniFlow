@@ -1,133 +1,167 @@
-.MyProject-content h1 {
-    font-size: 28px;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  /* Project Details Section */
-  .MyProject-project-details {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-  }
-  
-  .MyProject-project-details h2 {
-    font-size: 22px;
-    color: #444;
-    margin-bottom: 15px;
-  }
-  
-  .MyProject-project-details p {
-    font-size: 16px;
-    color: #666;
-    margin: 10px 0;
-  }
-  
-  .MyProject-project-info {
-    padding-left: 10px;
-  }
-  
-  .MyProject-project-info p {
-    font-size: 16px;
-    color: #333;
-  }
-  
-  .MyProject-project-info strong {
-    color: #000;
-  }
-  
-  /* Assignment Table Section */
-  .MyProject-assignment-section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .MyProject-assignment-section h2 {
-    font-size: 22px;
-    color: #444;
-    margin-bottom: 15px;
-  }
-  
-  .MyProject-assignment-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  
-  .MyProject-assignment-table th,
-  .MyProject-assignment-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .MyProject-assignment-table th {
-    background-color: #f8f8f8;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .MyProject-assignment-table td {
-    color: #666;
-  }
-  
-  .MyProject-assignment-table button {
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .MyProject-assignment-table button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-  
-  .MyProject-assignment-table button:hover:not(:disabled) {
-    background-color: #0056b3;
-  }
-  
-  .MyProject-unassign-btn {
-    padding: 8px 12px;
-    background-color: #dc3545; /* Red color for unassign */
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .MyProject-unassign-btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-  
-  .MyProject-unassign-btn:hover:not(:disabled) {
-    background-color: #b02a37; /* Darker red on hover */
-  }
-  
-  /* Error and Success Messages */
-  .MyProject-error {
-    color: #721c24;
-    background-color: #f8d7da;
-    padding: 10px;
-    border-radius: 5px;
-    margin: 10px 0;
-    font-size: 14px;
-  }
-  
-  .MyProject-success {
-    color: #155724;
-    background-color: #d4edda;
-    padding: 10px;
-    border-radius: 5px;
-    margin: 10px 0;
-    font-size: 14px;
-  }
+/* MyProject.css */
+:root {
+  --primary: #007bff;
+  --primary-hover: #0056b3;
+  --secondary: #6c757d;
+  --secondary-hover: #5a6268;
+  --danger: #dc3545;
+  --danger-hover: #b02a37;
+  --background: #f4f7fa;
+  --card-bg: #ffffff;
+  --text: #212529;
+  --text-muted: #6c757d;
+  --error: #dc3545;
+  --success: #28a745;
+  --shadow: 0 8px 16px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.1);
+  --border: #dee2e6;
+  --gradient: linear-gradient(135deg, #007bff, #00c4ff);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Reuse styles from previous components */
+.card {
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.alert {
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+}
+
+.alert-error {
+  background-color: #fff1f2;
+  color: var(--error);
+}
+
+.alert-success {
+  background-color: #e6ffe6;
+  color: var(--success);
+}
+
+.btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--gradient);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--danger-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+/* MyProject Specific Styles */
+.MyProject-project-details {
+  margin-bottom: 30px;
+}
+
+.MyProject-project-details h2,
+.MyProject-assignment-section h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.MyProject-project-info p {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin: 12px 0;
+}
+
+.MyProject-project-info strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.MyProject-assignment-section {
+  position: relative;
+}
+
+.MyProject-add-user-btn {
+  margin-bottom: 20px;
+}
+
+.MyProject-assignment-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.MyProject-assignment-table th,
+.MyProject-assignment-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.MyProject-assignment-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.MyProject-assignment-table td {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.MyProject-assignment-table tr:hover {
+  background-color: #f1f3f5;
+}
