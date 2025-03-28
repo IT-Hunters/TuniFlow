@@ -47,15 +47,16 @@ const AddUser = () => {
     setLoading(true);
     setErrors({});
     setSuccess(null);
-
+  
     if (!validateForm()) {
       setLoading(false);
       return;
     }
-
+  
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No authentication token found. Please log in.');
+      if (!token) throw new Error('No authentication token found');
+  
       const response = await axios.post(
         `${API_URL}/registerwithproject`,
         {
@@ -64,9 +65,16 @@ const AddUser = () => {
           lastname: formData.lastname,
           email: formData.email,
           password: formData.password,
+          confirm: formData.confirm // Ajoutez ce champ
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
+  
       setSuccess(response.data.message);
       setFormData({
         role: '',
@@ -76,6 +84,8 @@ const AddUser = () => {
         password: '',
         confirm: '',
       });
+  
+    
       setTimeout(() => navigate('/MyProject', { state: { refresh: true } }), 2000);
     } catch (err) {
       console.error('Add User Error:', err.response?.data || err.message); // Log full response
