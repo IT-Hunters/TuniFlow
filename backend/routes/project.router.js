@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 const authorizeRole = require('../middleware/autorizedrole');
 const { addProject,assignAccountantToProject,assignFinancialManagerToProject,assignRHManagerToProject,
-    unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById,getMyProject
+    unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById,getMyProject,getbyid
 } = require("../controllers/projectController");
 const { authenticateJWT } = require('../config/autorisation');
 
@@ -40,5 +40,5 @@ router.get("/my-project",
     authorizeRole(["BUSINESS_MANAGER"]), 
     getMyProject
   );
-
+  router.get("/getbyid/:id", getbyid);
 module.exports = router;

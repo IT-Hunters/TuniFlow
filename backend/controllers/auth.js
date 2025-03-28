@@ -608,26 +608,53 @@ const getAllAccountants = async (req, res) => {
     }
 };
 
-const findMyProject = async (req, res) => {
+async function findMyProject(req, res) {
     try {
-        const userId = req.user.userId; // L'ID de l'utilisateur est extrait du token après authentification
+        // Récupérer l'ID du BusinessManager depuis le token
+        const businessManagerId = req.user.userId;
+        console.log("BusinessManager ID:", businessManagerId);
 
-        // Trouver l'utilisateur dans la base de données pour obtenir le projet associé
-        const user = await userModel.findById(userId).populate('project'); // On suppose que 'project' est une référence à un autre modèle
+        // Trouver le BusinessManager avec son projet associé
+        const manager = await userModel.findById(businessManagerId)
+            .populate({
+                path: 'project',
+                populate: [
+                    { path: 'businessOwner', select: 'fullname email' },
+                    { path: 'accountants', select: 'fullname email' },
+                    { path: 'financialManagers', select: 'fullname email' },
+                    { path: 'rhManagers', select: 'fullname email' }
+                ]
+            });
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        if (!manager) {
+            return res.status(404).json({ message: "BusinessManager not found" });
         }
 
-        if (!user.project) {
-            return res.status(404).json({ message: 'No project found for this user' });
+        if (!manager.project) {
+            return res.status(404).json({ message: "No project assigned to this manager" });
         }
 
-        // Si un projet est trouvé, on le retourne dans la réponse
-        res.status(200).json(user.project);
+        // Formater la réponse
+        const projectData = {
+            id: manager.project._id,
+            name: `Project ${manager.project._id.toString().slice(-4)}`, // Nom générique
+            description: `Managed by ${manager.fullname}`,
+            status: manager.project.status,
+            amount: manager.project.amount,
+            startDate: manager.project.createdAt, // Utilise la date de création
+            endDate: manager.project.due_date,
+            businessOwner: manager.project.businessOwner,
+            teamMembers: {
+                accountants: manager.project.accountants,
+                financialManagers: manager.project.financialManagers,
+                rhManagers: manager.project.rhManagers
+            }
+        };
+
+        res.status(200).json(projectData);
     } catch (error) {
-        console.error("Error retrieving project:", error);
-        res.status(500).json({ message: 'Server error' });
+        console.error("Error in findMyProject:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
     }
 }
 

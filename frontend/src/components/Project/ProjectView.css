@@ -1,0 +1,198 @@
+/* Container principal */
+.project-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  /* Titre de la page */
+  .project-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: #1a365d;
+  }
+  
+  /* Carte du projet */
+  .project-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Titre du projet */
+  .project-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2d3748;
+  }
+  
+  /* Grille des détails */
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    .details-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  /* Groupe de détails */
+  .detail-group {
+    margin-bottom: 1rem;
+  }
+  
+  .detail-label {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.25rem;
+  }
+  
+  .detail-value {
+    color: #4a5568;
+  }
+  
+  /* Badge de statut */
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+  
+  .status-active {
+    background-color: #f0fff4;
+    color: #38a169;
+  }
+  
+  .status-inactive {
+    background-color: #fff5f5;
+    color: #e53e3e;
+  }
+  
+  .status-pending {
+    background-color: #ebf8ff;
+    color: #3182ce;
+  }
+  
+  /* Chargement */
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .spinner {
+    animation: spin 1s linear infinite;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #4299e1;
+    height: 3rem;
+    width: 3rem;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Messages d'erreur */
+  .error-message {
+    max-width: 28rem;
+    margin: 2.5rem auto 0;
+    padding: 1rem;
+    background-color: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 0.375rem;
+    color: #e53e3e;
+  }
+  
+  .retry-button {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #e53e3e;
+    color: white;
+    border-radius: 0.25rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .retry-button:hover {
+    background-color: #c53030;
+  }
+  
+  /* Message aucun projet */
+  .no-project-message {
+    max-width: 28rem;
+    margin: 2.5rem auto 0;
+    padding: 1rem;
+    background-color: #fffaf0;
+    border: 1px solid #feebc8;
+    border-radius: 0.375rem;
+    color: #b7791f;
+  }
+  /* Team Members Section */
+.team-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2d3748;
+  }
+  
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.5rem;
+  }
+  
+  @media (min-width: 768px) {
+    .team-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .team-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  .team-group {
+    background-color: #f8fafc;
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  .team-label {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+  }
+  
+  .team-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+  }
+  
+  .team-list li {
+    padding: 0.25rem 0;
+    color: #4a5568;
+  }

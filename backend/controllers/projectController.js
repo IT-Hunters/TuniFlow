@@ -119,7 +119,14 @@ async function assignAccountantToProject(req, res) {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-
+async function getbyid(req, res) {
+    try {
+        const data = await Project.findById(req.params.id);
+        res.send(data);
+    } catch (err) {
+        res.send(err);
+    }
+}
 async function assignFinancialManagerToProject(req, res) {
     try {
         const financialManagerId = req.params.financialManagerId;
@@ -346,5 +353,5 @@ module.exports = {
     unassignFinancialManagerFromProject,
     unassignAccountantFromProject,
     getProjectById,
-    getMyProject,
+    getMyProject,getbyid
 };

@@ -1,0 +1,288 @@
+/* Base Styles */
+.project-details-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  /* Header Section */
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .project-title {
+    font-size: 2rem;
+    color: #2d3748;
+    margin: 0;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .edit-button, .delete-button, .back-link {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  
+  .edit-button {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .edit-button:hover {
+    background-color: #2563eb;
+  }
+  
+  .delete-button {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .delete-button:hover {
+    background-color: #dc2626;
+  }
+  
+  .back-link {
+    display: inline-block;
+    margin-top: 2rem;
+    color: #3b82f6;
+    border: 1px solid #3b82f6;
+  }
+  
+  .back-link:hover {
+    background-color: #eff6ff;
+  }
+  
+  /* Loading State */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+  }
+  
+  .spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #3b82f6;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Error State */
+  .error-container, .not-found-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .error-container {
+    background-color: #fee2e2;
+    border: 1px solid #ef4444;
+  }
+  
+  .not-found-container {
+    background-color: #fffbeb;
+    border: 1px solid #f59e0b;
+  }
+  
+  .error-container h3, .not-found-container h3 {
+    margin-top: 0;
+  }
+  
+  .retry-button {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0.5rem;
+  }
+  
+  /* Project Content */
+  .project-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .main-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .detail-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+  }
+  
+  .detail-title {
+    font-size: 1.25rem;
+    color: #1e40af;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  
+  .detail-label {
+    font-weight: 500;
+    color: #4b5563;
+  }
+  
+  .detail-value {
+    color: #374151;
+  }
+  
+  .project-description {
+    color: #4b5563;
+    line-height: 1.6;
+  }
+  
+  /* Status Badges */
+  .status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+  
+  .status-badge.active {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  
+  .status-badge.inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  
+  .status-badge.pending {
+    background-color: #fef9c3;
+    color: #854d0e;
+  }
+  
+  /* Team Section */
+  .team-section {
+    margin-top: 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+  }
+  
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .team-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+  }
+  
+  .team-title {
+    font-size: 1.1rem;
+    color: #1e40af;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .team-member {
+    font-weight: 500;
+    margin: 0.5rem 0 0.25rem;
+    color: #374151;
+  }
+  
+  .team-email {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+  
+  .team-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .team-list li {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .team-list li:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  
+  .no-member {
+    color: #9ca3af;
+    font-style: italic;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .project-details-container {
+      padding: 1rem;
+    }
+    
+    .header-section {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .action-buttons {
+      width: 100%;
+      flex-direction: column;
+    }
+    
+    .edit-button, .delete-button {
+      width: 100%;
+      text-align: center;
+    }
+  }

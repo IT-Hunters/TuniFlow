@@ -39,6 +39,8 @@ const CoolSidebar = () => {
     { title: "Add Project", icon: FaPlus, href: "/AddProject" },
     { title: "My Project", icon: FaProjectDiagram, href: "/MyProject" },
     { title: "Manager List", icon: FaUserFriends, href: "/ManagerList" }, // New item
+    { title: "Project View", icon: FaUserFriends, href: "/ProjectView" }, // New item
+    { title: "OwnerProjectsView", icon: FaUserFriends, href: "/OwnerProjectsView" }, // New item
   ];
 
   // Filter nav items based on user role

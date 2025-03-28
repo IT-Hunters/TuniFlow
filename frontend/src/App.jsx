@@ -11,7 +11,9 @@ import AdminUsers from "./components/Admin/AdminUsers";
 import  User  from "./components/User/User";
 import  Chat  from "./components/Chat/chat";
 import ChatAdmin  from "./components/ChatAdmin/chatAdmin";
-
+import ProjectView from './components/Project/ProjectView';
+import ProjectDetails from './components/Project/ProjectDetails';
+import OwnerProjectsView from './components/Project/OwnerProjectsView';
 import CreateInvoice from './components/Invoice/CreateInvoice'; 
 import SendInvoice from './components/Invoice/SendInvoice'; 
 import Wallet from "./components/Wallet/Wallet";
@@ -60,6 +62,9 @@ function App() {
         <Route path="/CreateManager" element={<CreateManager />} />
         <Route path="/ManagerList" element={<ManagerList />} />
         <Route path="/AddUser" element={<AddUser />} />
+        <Route path="/projectview" element={<ProjectView  />} />
+        <Route path="/OwnerProjectsView" element={<OwnerProjectsView  />} />
+        <Route path="/projects/:id" element={<ProjectDetails />} />
       </Routes>
     </Router>
   );
