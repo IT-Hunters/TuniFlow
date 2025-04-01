@@ -217,11 +217,7 @@ exports.transfer = async (req, res) => {
       wallet_id: senderWalletId,
       amount: amount,
       type: "expense",
-<<<<<<< HEAD
       balanceAfterTransaction: newSenderBalance,
-=======
-      balanceAfterTransaction: newSenderBalance, // Fixed here
->>>>>>> 493d820ae0c413f72290395c2ac8134e5d9e87a4
     });
 
     // Create the deposit transaction for the receiver
