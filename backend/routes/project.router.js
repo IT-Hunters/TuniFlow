@@ -3,7 +3,7 @@ var router = express.Router();
 const authorizeRole = require('../middleware/autorizedrole');
 const { addProject,assignAccountantToProject,assignFinancialManagerToProject,assignRHManagerToProject,
     unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById,getMyProject,
-    getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject
+    getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,updateproject,deleteProjectById
 } = require("../controllers/projectController");
 const { authenticateJWT } = require('../config/autorisation');
 router.get("/getAllAccountantsofproject",authenticateJWT,getAllAccountantsofproject)
@@ -38,6 +38,8 @@ router.post("/unassignaccountant/:accountantId", authenticateJWT, unassignAccoun
 router.post("/unassignfinancialmanager/:financialManagerId", authenticateJWT, unassignFinancialManagerFromProject);
 router.post("/unassignrh/:rhId", authenticateJWT, unassignRHManagerFromProject);
 router.get("/getProject/:id", getProjectById);
+router.delete("/deleteProjectById/:id", deleteProjectById);
+router.put("/updateproject/:id", updateproject);
 router.get("/my-project", 
     authenticateJWT, 
     authorizeRole(["BUSINESS_MANAGER"]), 

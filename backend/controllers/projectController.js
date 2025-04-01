@@ -423,15 +423,59 @@ const getAllFinancialManagersOfProject = async (req, res) => {
         return res.status(500).json({ message: "Erreur serveur" });
     }
 };
-
+const updateproject = async (req, res) => {
+    const projectID = req.params.id;
+    // Récupérer les nouveaux champs du contact à partir du body de la requête
   
+    try {
+      // Recherche du contact à modifier et mise à jour
+      const updatedproject = await Project.findByIdAndUpdate(projectID, req.body, { new: true });
+  
+      if (!updatedproject) {
+        return res.status(404).json({ message: 'pays non trouvé' });
+      }
+  
+      res.status(200).json({ message: 'project mis à jour avec succès', project: updatedproject });
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour du project:', err);
+      res.status(500).json({ message: 'Erreur interne', error: err });
+    }
+  };
+  
+  const deleteProjectById = async (req, res) => {
+    try {
+        const { id: projectId } = req.params; // Correction ici ✅
+
+        // Vérifier si le projet existe
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Projet non trouvé" });
+        }
+
+        // Désaffecter les utilisateurs liés
+        await BusinessManager.updateOne({ _id: project.businessManager }, { $unset: { project: "" } });
+        await Accountant.updateMany({ _id: { $in: project.accountants } }, { $pull: { projects: projectId } });
+        await FinancialManager.updateMany({ _id: { $in: project.financialManagers } }, { $pull: { projects: projectId } });
+        await BusinessOwner.updateOne({ _id: project.businessOwner }, { $unset: { project: "" } });
+        await RH.updateMany({ _id: { $in: project.rhManagers } }, { $pull: { projects: projectId } });
+
+        // Supprimer le projet
+        await Project.findByIdAndDelete(projectId);
+
+        res.status(200).json({ message: "Projet supprimé avec succès et utilisateurs désaffectés" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la suppression du projet" });
+    }
+};
 
 module.exports = {
     addProject,
     assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,
-    assignRHManagerToProject,
+    assignRHManagerToProject,updateproject,
     assignFinancialManagerToProject,
-    unassignRHManagerFromProject,
+    unassignRHManagerFromProject,deleteProjectById,
     unassignFinancialManagerFromProject,
     unassignAccountantFromProject,
     getProjectById,

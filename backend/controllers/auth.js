@@ -648,7 +648,9 @@ async function findMyProject(req, res) {
                 accountants: manager.project.accountants,
                 financialManagers: manager.project.financialManagers,
                 rhManagers: manager.project.rhManagers
-            }
+            },
+            taxes: manager.project.taxes,
+            assets_actif: manager.project.assets_actif
         };
 
         res.status(200).json(projectData);
