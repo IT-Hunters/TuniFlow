@@ -1,5 +1,6 @@
 const Wallet = require("../model/wallet");
 const Transaction = require("../model/Transaction");
+const mongoose = require("mongoose");
 // 📌 Effectuer un dépôt (Deposit)
 exports.deposit = async (req, res, io) => {
   try {
@@ -123,6 +124,7 @@ exports.getTransactions = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 exports.cancelTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -154,6 +156,7 @@ exports.cancelTransaction = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 exports.updateTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -182,6 +185,7 @@ exports.updateTransaction = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 exports.transfer = async (req, res) => {
   try {
     const { senderWalletId, receiverWalletId } = req.params;
@@ -211,7 +215,7 @@ exports.transfer = async (req, res) => {
       wallet_id: senderWalletId,
       amount: amount,
       type: "expense",
-      balanceAfterTransaction: newSenderBalance, // Correction ici
+      balanceAfterTransaction: newSenderBalance,
     });
 
     // Créer la transaction de dépôt pour le destinataire
@@ -219,7 +223,7 @@ exports.transfer = async (req, res) => {
       wallet_id: receiverWalletId,
       amount: amount,
       type: "income",
-      balanceAfterTransaction: newReceiverBalance, // Correction ici
+      balanceAfterTransaction: newReceiverBalance,
     });
 
     await senderTransaction.save();
@@ -239,5 +243,92 @@ exports.transfer = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// 📌 Get the total revenue (income transactions)
+exports.getRevenue = async (req, res) => {
+  try {
+    const { walletId } = req.params;
+
+    // Fetch all income transactions for the given wallet
+    const transactions = await Transaction.find({ wallet_id: walletId, type: "income" });
+
+    // Calculate total revenue by summing the amounts of all income transactions
+    const totalRevenue = transactions.reduce((acc, t) => acc + t.amount, 0);
+
+    // Calculate the change in revenue
+    const previousWeekRevenue = await getPreviousWeekRevenue(walletId);
+    const revenueChange = totalRevenue - previousWeekRevenue;
+
+    res.status(200).json({
+      totalRevenue,
+      revenueChange,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Helper function to fetch the previous week's revenue
+async function getPreviousWeekRevenue(walletId) {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const previousWeekTransactions = await Transaction.find({
+    wallet_id: walletId,
+    type: "income",
+    date: { $gte: oneWeekAgo }
+  });
+
+  return previousWeekTransactions.reduce((acc, t) => acc + t.amount, 0);
+}
+
+exports.getExpenses = async (req, res) => {
+  try {
+    const { walletId } = req.params;
+    const { period } = req.query;
+    const objectId = new mongoose.Types.ObjectId(walletId);
+
+    const today = new Date();
+    let startDate, endDate;
+
+    if (period === 'current') {
+      // Last 7 days
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 7);
+      endDate = today;
+    } else if (period === 'previous') {
+      // Previous 7 days before last week
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 14);
+      endDate = new Date(today);
+      endDate.setDate(today.getDate() - 7);
+    } else {
+      return res.status(400).json({ message: "Invalid period parameter. Use 'current' or 'previous'" });
+    }
+
+    const expenses = await Transaction.aggregate([
+      {
+        $match: {
+          wallet_id: objectId, // Changed from walletId to wallet_id to match schema
+          type: 'expense', // Changed from transactionType to type to match your schema
+          date: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalExpenses: { $sum: '$amount' }
+        }
+      }
+    ]);
+
+    const totalExpenses = expenses.length > 0 ? expenses[0].totalExpenses : 0;
+
+    res.status(200).json({ totalExpenses });
+  } catch (error) {
+    console.error("Error calculating expenses:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

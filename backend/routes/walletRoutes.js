@@ -12,5 +12,5 @@ router.get("/cashflow/candlestick2/:walletId", walletcontroller.calculateCashFlo
 router.get("/wallet/:walletId", walletcontroller.getWalletById); // Récupérer un wallet par walletId (à ajouter)
 router.get("/user/:userId", walletcontroller.getWalletByUser); // Récupérer un wallet par userId
 router.get("/top-projects", walletcontroller.getTopProjects);
-
+router.get("/calculateProfitMargin/:walletId", walletcontroller.calculateProfitMargin);
 module.exports = router;

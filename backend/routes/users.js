@@ -47,7 +47,7 @@ router.get("/roles", getAllRoles);
 });*/
 router.post('/registerwithproject',authenticateJWT,Registerwithproject);
 router.post('/registermanager',authenticateJWT,RegisterManger);
-router.put("/update-firstlogin", authenticateJWT, async (req, res) => {
+router.put('/update-firstlogin', authenticateJWT, async (req, res) => {
   try {
     const userId = req.user.userId; // Récupérer l'ID de l'utilisateur depuis le token
 

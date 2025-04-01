@@ -34,7 +34,7 @@ mongoose.connect(connection.url)
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'], 
 }));
 
 // 🟢 View Engine Setup
@@ -77,6 +77,7 @@ global.io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
+
 
 // 🟢 Import Models
 const Chat = require('./model/Chat');

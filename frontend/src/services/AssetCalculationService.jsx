@@ -50,4 +50,28 @@ export const fetchWorkingCapital = async (projectId) => {
       console.error("Error fetching candlestick data:", error);
     }
   };
-  
+  export const fetchWorkingCapitalStatus = async (projectId) => {
+    try {
+        // Adjusting the URL to the new endpoint
+        const response = await fetch(`http://localhost:5000/assetCalculation/WorkingCapitalStatus/${projectId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`, 
+                "Cache-Control": "no-cache", 
+            },
+        });
+
+        console.log(token);
+
+        if (!response.ok) throw new Error("Failed to fetch data");
+
+        const data = await response.json();
+        console.log("Working Capital data fetched successfully:" + data);
+        return data;
+
+    } catch (error) {
+        console.error("Error fetching working capital data:", error);
+        return [];
+    }
+};

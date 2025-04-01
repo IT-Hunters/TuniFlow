@@ -435,3 +435,63 @@ table tbody tr:last-child td {
 .status.refunded {
   background-color: #dc3545; /* red */
 }
+/* Ensure rows with side-by-side cards have equal heights */
+.equal-height-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch; /* Makes cards stretch to match the tallest sibling */
+}
+
+/* Ensure columns stretch to fill the row height */
+.equal-height-row .col-lg-6 {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make cards stretch to fill their column */
+.equal-height-row .stretch-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure card-body takes up available space */
+.equal-height-row .assetcard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.equal-height-row {
+  flex: 1; /* Allow these rows to take available space */
+  align-items: stretch; /* Ensure cards stretch to match tallest sibling */
+}
+.scrollable-card {
+  overflow-y: auto; /* Enable scrolling if content exceeds height */
+}
+.equal-height-row .col-lg-6 .assetcard {
+  min-height: 0; /* Allow shrinking if content is less */
+}
+
+
+
+.equal-height-row .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Optional: Set a max height for Projects Overview to prevent excessive growth */
+.equal-height-row .card-body > *:last-child {
+  flex: 1;
+  overflow-y: auto; /* Add scroll if content exceeds height */
+}
+
+/* Adjust padding and margins for consistency */
+.grid-margin {
+  margin-bottom: 1.5rem;
+}
+
+/* Ensure card titles don’t shrink */
+.card-title {
+  flex-shrink: 0;
+}

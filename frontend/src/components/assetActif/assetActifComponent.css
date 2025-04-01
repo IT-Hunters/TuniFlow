@@ -6,12 +6,14 @@
   display: flex;
   -webkit-flex-direction: column;
   flex-direction: column;
+  flex: 1;
 }
 .Big-Numbers{
   font-size: 6em;
 }
 
 .content-wrapper {
+  flex: 1;
   background: #F4F5F7;
   padding: 1.5rem 2.187rem 0rem 3.5rem;
   width: 100%;
@@ -25,6 +27,7 @@
   --bs-gutter-y: 0;
   display: flex;
   flex-wrap: wrap;
+  flex: 1 0 auto;
   margin-top: calc(var(--bs-gutter-y) * -1);
   margin-right: calc(var(--bs-gutter-x) / -2);
   margin-left: calc(var(--bs-gutter-x) / -2);
@@ -39,9 +42,13 @@
   padding-left: calc(var(--bs-gutter-x) / 2);
   margin-top: var(--bs-gutter-y);
 }
+.row:has(.col-lg-12) {
+  flex: 0 0 auto; 
+}
 
 
 .stretch-card {
+  flex: 1;
   display: -webkit-flex;
   display: flex;
   -webkit-align-items: stretch;
@@ -96,6 +103,10 @@
   border: none;
   border: none;
   width: calc(100% - 500px);
+  /*height: 100%;*/ /* Ensure the card takes full height of its container */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .assetcard.card-rounded {
@@ -114,6 +125,12 @@
 
 .assetcard.transparent {
   background: transparent;
+}
+.card-body {
+  padding: 1rem;
+  flex: 1; /* Card body expands to fill card */
+  display: flex;
+  flex-direction: column;
 }
 
 .assetcard .card-body {

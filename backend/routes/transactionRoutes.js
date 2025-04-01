@@ -19,8 +19,9 @@ router.put("/cancelTransaction/:transactionId", transactioncontroller.cancelTran
 
 // 📌 Mettre à jour une transaction
 router.put("/updateTransaction/:transactionId", transactioncontroller.updateTransaction); // Corrigé
-
+router.get("/expenses/:walletId", transactioncontroller.getExpenses);
 // 📌 Transférer de l'argent entre deux wallets
 router.post("/transfer/:senderWalletId/:receiverWalletId", transactioncontroller.transfer);
-
+router.get("/getRevenue/:walletId", transactioncontroller.getRevenue);
+router.get("/expenses/:walletId", transactioncontroller.getExpenses);
 module.exports = router;

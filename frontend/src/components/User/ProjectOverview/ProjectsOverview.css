@@ -1,0 +1,164 @@
+.projects-card {
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+}
+
+.projects-header {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.projects-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.projects-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.projects-content {
+  padding: 1rem;
+}
+
+.projects-list {
+  max-height: 400px; /* Adjust as needed */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Scrollbar styling */
+.projects-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.projects-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.projects-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.projects-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.project-item {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 1rem;
+  background: #fff;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.project-title-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.project-status-icon {
+  font-size: 1.2rem;
+}
+
+.project-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.project-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.project-status.in-progress {
+  background-color: #007bff;
+  color: white;
+}
+
+.project-status.completed {
+  background-color: #28a745;
+  color: white;
+}
+
+.project-status.at-risk {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.project-status.delayed {
+  background-color: #dc3545;
+  color: white;
+}
+
+.project-progress {
+  margin-bottom: 0.75rem;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #007bff;
+  transition: width 0.3s ease-in-out;
+}
+
+.project-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.project-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+}
+
+.detail-value {
+  font-size: 0.9rem;
+  color: #333;
+  margin: 0;
+}
+
+.projects-loading,
+.projects-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}

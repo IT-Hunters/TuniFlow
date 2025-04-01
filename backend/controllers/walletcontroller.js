@@ -263,6 +263,59 @@ const calculateCashFlowHistory = async (req, res) => {
     res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+const calculateProfitMargin = async (req, res) => {
+  try {
+    const { walletId } = req.params;
+    const objectId = new mongoose.Types.ObjectId(walletId);
+
+    // Check if the wallet exists
+    const wallet = await Wallet.findById(walletId);
+    if (!wallet) {
+      return res.status(404).json({ message: "Wallet introuvable" });
+    }
+
+    // Aggregate transactions to get total income and expenses
+    const pipeline = [
+      { $match: { wallet_id: objectId } },
+      {
+        $group: {
+          _id: null,
+          totalIncome: {
+            $sum: { $cond: [{ $eq: ["$type", "income"] }, "$amount", 0] },
+          },
+          totalExpenses: {
+            $sum: { $cond: [{ $eq: ["$type", "expense"] }, "$amount", 0] },
+          },
+        },
+      },
+    ];
+
+    const result = await Transaction.aggregate(pipeline);
+
+    if (!result || result.length === 0) {
+      return res.status(404).json({ message: "Aucune transaction trouvée pour ce wallet" });
+    }
+
+    // Calculate the Net Income
+    const totalIncome = result[0].totalIncome;
+    const totalExpenses = result[0].totalExpenses;
+    const netIncome = totalIncome - totalExpenses;
+
+    // Calculate Profit Margin
+    const profitMargin = totalIncome !== 0 ? (netIncome / totalIncome) * 100 : 0;
+
+    // Return profit margin
+    res.status(200).json({
+      profitMargin: profitMargin.toFixed(2) + '%',
+      totalIncome,
+      totalExpenses,
+      netIncome,
+    });
+  } catch (error) {
+    console.error("Erreur lors du calcul de la marge bénéficiaire :", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
 
 // Exportation des fonctions
 module.exports = {
@@ -275,4 +328,5 @@ module.exports = {
   getCandlestickData,
   calculateCashFlowHistory,
   getTopProjects,
+  calculateProfitMargin,
 };
