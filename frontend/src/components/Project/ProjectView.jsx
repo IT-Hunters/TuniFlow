@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './ProjectView.css'; // Import du fichier CSS séparé
+import './ProjectView.css';
+import CoolSidebar from '../sidebarHome/newSidebar';
+import Navbar from '../navbarHome/NavbarHome';
 
-const API_URL = 'http://localhost:3000/users'; // Remplacez par votre URL backend
+const API_URL = 'http://localhost:3000/users'; // Replace with your backend URL
 
 const ProjectView = () => {
   const [project, setProject] = useState(null);
@@ -21,16 +23,13 @@ const ProjectView = () => {
         }
 
         const response = await axios.get(`${API_URL}/findMyProject`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         setProject(response.data);
       } catch (err) {
         console.error('Error fetching project:', err);
         setError(err.response?.data?.message || 'Failed to load project');
-        
         if (err.response?.status === 401) {
           localStorage.removeItem('token');
           navigate('/login');
@@ -45,20 +44,19 @@ const ProjectView = () => {
 
   if (loading) {
     return (
-      <div className="loading-spinner">
+      <div className="state-container loading">
         <div className="spinner"></div>
+        <p>Loading project...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="error-message">
+      <div className="state-container error">
+        <h3>Oops, Something Went Wrong</h3>
         <p>{error}</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="retry-button"
-        >
+        <button onClick={() => window.location.reload()} className="action-btn retry-btn">
           Retry
         </button>
       </div>
@@ -67,108 +65,96 @@ const ProjectView = () => {
 
   if (!project) {
     return (
-      <div className="no-project-message">
-        <p>No project found for your account.</p>
+      <div className="state-container empty">
+        <h3>No Project Assigned</h3>
+        <p>You are not currently assigned to any project.</p>
       </div>
     );
   }
 
-  // Fonction pour déterminer la classe du badge de statut
-  const getStatusClass = (status) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return 'status-active';
-      case 'inactive':
-        return 'status-inactive';
-      case 'pending':
-        return 'status-pending';
-      default:
-        return '';
-    }
-  };
-
   return (
-    <div className="project-container">
-      <h1 className="project-title">My Project</h1>
-      
-      <div className="project-card">
-        
-        
-        <div className="details-grid">
-         
-          
-          <div className="detail-group">
-            <h3 className="detail-label">Status</h3>
-            <p className="detail-value">
-              <span className={`status-badge ${getStatusClass(project.status)}`}>
-                {project.status}
-              </span>
-            </p>
-          </div>
-          
-          <div className="detail-group">
-            <h3 className="detail-label">Budget</h3>
-            <p className="detail-value">
-              {project.amount ? `$${project.amount.toLocaleString()}` : 'Not specified'}
-            </p>
-          </div>
-          
-          
-          <div className="detail-group">
-            <h3 className="detail-label">Due Date</h3>
-            <p className="detail-value">
-              {project.endDate 
-                ? new Date(project.endDate).toLocaleDateString() 
-                : 'Ongoing'}
-            </p>
-          </div>
-        </div>
+    <div className="container">
+      <CoolSidebar />
+      <div className="main">
+        <Navbar />
+        <div className="project-view-wrapper">
+          <header className="project-header">
+            <h1 className="project-title">
+              {project.name || `Project ${project._id?.slice(-4) || 'Unnamed'}`}
+            </h1>
+          </header>
 
-        {/* Section Team Members */}
-        <div className="team-section">
-          <h3 className="section-title">Team Members</h3>
-          
-          <div className="team-grid">
-            <div className="team-group">
-              <h4 className="team-label">Business Owner</h4>
-              <p className="team-value">
-                {project.businessOwner?.fullname || 'Not assigned'}
-              </p>
-            </div>
-            
-            <div className="team-group">
-              <h4 className="team-label">Accountants</h4>
-              <ul className="team-list">
-                {project.teamMembers?.accountants?.length > 0 ? (
-                  project.teamMembers.accountants.map(acc => (
-                    <li key={acc._id}>{acc.fullname}</li>
-                  ))
-                ) : <li>None assigned</li>}
+          <section className="project-layout">
+            {/* Project Details Card */}
+            <div className="detail-card">
+              <h2 className="card-title">Project Details</h2>
+              <ul className="detail-list">
+                <li className="detail-item">
+                  <span className="label">Status</span>
+                  <span className={`status ${project.status?.toLowerCase() || ''}`}>
+                    {project.status || 'N/A'}
+                  </span>
+                </li>
+                <li className="detail-item">
+                  <span className="label">Budget</span>
+                  <span>
+                    {project.amount ? `$${project.amount.toLocaleString()}` : 'Not specified'}
+                  </span>
+                </li>
+                <li className="detail-item">
+                  <span className="label">Due Date</span>
+                  <span>
+                    {project.endDate
+                      ? new Date(project.endDate).toLocaleDateString()
+                      : 'Ongoing'}
+                  </span>
+                </li>
               </ul>
             </div>
-            
-            <div className="team-group">
-              <h4 className="team-label">Financial Managers</h4>
-              <ul className="team-list">
-                {project.teamMembers?.financialManagers?.length > 0 ? (
-                  project.teamMembers.financialManagers.map(fm => (
-                    <li key={fm._id}>{fm.fullname}</li>
-                  ))
-                ) : <li>None assigned</li>}
-              </ul>
+
+            {/* Team Members Card */}
+            <div className="team-card">
+              <h2 className="card-title">Team Members</h2>
+              <div className="team-grid">
+                <div className="team-item">
+                  <h3 className="team-role">Business Owner</h3>
+                  <p className="team-name">
+                    {project.businessOwner?.fullname || 'Not assigned'}
+                  </p>
+                </div>
+                <div className="team-item">
+                  <h3 className="team-role">Accountants</h3>
+                  {project.teamMembers?.accountants?.length > 0 ? (
+                    project.teamMembers.accountants.map((acc) => (
+                      <p key={acc._id} className="team-name">{acc.fullname}</p>
+                    ))
+                  ) : (
+                    <p className="no-members">None assigned</p>
+                  )}
+                </div>
+                <div className="team-item">
+                  <h3 className="team-role">Financial Managers</h3>
+                  {project.teamMembers?.financialManagers?.length > 0 ? (
+                    project.teamMembers.financialManagers.map((fm) => (
+                      <p key={fm._id} className="team-name">{fm.fullname}</p>
+                    ))
+                  ) : (
+                    <p className="no-members">None assigned</p>
+                  )}
+                </div>
+                <div className="team-item">
+                  <h3 className="team-role">HR Managers</h3>
+                  {project.teamMembers?.rhManagers?.length > 0 ? (
+                    project.teamMembers.rhManagers.map((rh) => (
+                      <p key={rh._id} className="team-name">{acc.fullname}</p>
+                    ))
+                  ) : (
+                    <p className="no-members">None assigned</p>
+                  )}
+                </div>
+              </div>
             </div>
-            
-            <div className="team-group">
-              <h4 className="team-label">HR Managers</h4>
-              <ul className="team-list">
-                {project.teamMembers?.rhManagers?.length > 0 ? (
-                  project.teamMembers.rhManagers.map(rh => (
-                    <li key={rh._id}>{rh.fullname}</li>
-                  ))
-                ) : <li>None assigned</li>}
-              </ul>
-            </div>
-          </div>
+          </section>
         </div>
       </div>
     </div>

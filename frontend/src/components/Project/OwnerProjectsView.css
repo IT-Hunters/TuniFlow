@@ -1,195 +1,274 @@
-/* Base Styles */
-.projects-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-  
-  .projects-header {
-    font-size: 2rem;
-    color: #2d3748;
-    margin-bottom: 2rem;
-    text-align: center;
-  }
-  
-  /* Loading State */
-  .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 50vh;
-  }
-  
-  .loading-spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
-    border-top: 4px solid #3498db;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  /* Error State */
-  .error-container {
-    max-width: 500px;
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background-color: #fee2e2;
-    border: 1px solid #ef4444;
-    border-radius: 8px;
-    text-align: center;
-  }
-  
-  .error-container h3 {
-    color: #b91c1c;
-    margin-bottom: 0.5rem;
-  }
-  
-  .error-container p {
-    color: #57534e;
-    margin-bottom: 1rem;
-  }
-  
-  .retry-button {
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .retry-button:hover {
-    background-color: #dc2626;
-  }
-  
-  /* No Projects State */
-  .no-projects-container {
-    max-width: 500px;
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background-color: #f0fdf4;
-    border: 1px solid #86efac;
-    border-radius: 8px;
-    text-align: center;
-  }
-  
-  .no-projects-container h3 {
-    color: #166534;
-    margin-bottom: 0.5rem;
-  }
-  
-  .no-projects-container p {
-    color: #57534e;
-    margin-bottom: 1rem;
-  }
-  
-  .create-project-button {
-    background-color: #10b981;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .create-project-button:hover {
-    background-color: #059669;
-  }
-  
-  /* Projects Grid */
-  .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-  }
-  
-  .project-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  
-  .project-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  .project-name {
-    font-size: 1.25rem;
-    color: #1e40af;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .project-details {
-    margin-bottom: 1.5rem;
-  }
-  
-  .detail-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-  }
-  
-  .detail-label {
-    font-weight: 500;
-    color: #4b5563;
-  }
-  
-  .detail-value {
-    color: #374151;
-  }
-  
-  /* Status Badges */
-  .status-badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: capitalize;
-  }
-  
-  .status-badge.active {
-    background-color: #dcfce7;
-    color: #166534;
-  }
-  
-  .status-badge.inactive {
-    background-color: #fee2e2;
-    color: #991b1b;
-  }
-  
-  .status-badge.pending {
-    background-color: #fef9c3;
-    color: #854d0e;
-  }
-  
-  /* Buttons */
-  .view-details-button {
-    width: 100%;
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    padding: 0.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .view-details-button:hover {
-    background-color: #2563eb;
-  }
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.projects-wrapper {
+  padding: 2rem;
+  max-width: 1400px; /* Increased to accommodate 3 cards */
+  margin: 0 auto;
+}
+
+/* Header */
+.projects-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.projects-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.projects-header p {
+  font-size: 1.1rem;
+  color: #64748b;
+}
+
+/* State Containers (Loading, Error, Empty) */
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.state-container h3 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.state-container p {
+  font-size: 1.1rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+/* Loading State */
+.state-container.loading {
+  background: #f8fafc;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #e2e8f0;
+  border-top: 5px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.state-container.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.state-container.error h3 {
+  color: #b91c1c;
+}
+
+/* Empty State */
+.state-container.empty {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.state-container.empty h3 {
+  color: #15803d;
+}
+
+/* Action Buttons */
+.action-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-btn.error-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.action-btn.error-btn:hover {
+  background: #dc2626;
+}
+
+.action-btn.create-btn {
+  background: #10b981;
+  color: white;
+}
+
+.action-btn.create-btn:hover {
+  background: #059669;
+}
+
+/* Projects Grid */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Three cards per row */
+  gap: 2rem;
+}
+
+/* Project Card */
+.project-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.project-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #dbeafe;
+  padding-bottom: 0.5rem;
+}
+
+.project-info {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-weight: 500;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.info-item span:not(.status) {
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+
+/* Status Styling */
+.status {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status.pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+/* Details Button */
+.details-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.details-btn:hover {
+  background: linear-gradient(135deg, #2563eb, #1e3a8a);
+  transform: translateY(-2px);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination-btn:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.pagination-btn:not(:disabled):hover {
+  background: #d1d5db;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.page-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.page-btn:hover {
+  background: #d1d5db;
+}
+
+.page-btn.active {
+  background: #3b82f6;
+  color: white;
+}

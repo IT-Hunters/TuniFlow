@@ -1,288 +1,331 @@
-/* Base Styles */
-.project-details-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.project-details-wrapper {
+  max-width: 1600px; /* Increased to reduce side blank space */
+  margin: 0 auto;
+  padding: 1.5rem 2rem; /* Adjusted padding */
+  position: relative;
+}
+
+/* Back Link (Top Left) */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  color: #3b82f6;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem; /* Space below the button */
+}
+
+.back-link:hover {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Header */
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.project-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.action-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+}
+
+.edit-btn:hover {
+  background: linear-gradient(135deg, #2563eb, #1e3a8a);
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
+.delete-btn:hover {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+}
+
+/* State Containers (Loading, Error, Not Found) */
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 800px; /* Limit width for state containers */
+  margin: 0 auto;
+}
+
+.state-container h3 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.state-container p {
+  font-size: 1.1rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+.state-container.loading {
+  background: #f8fafc;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #e2e8f0;
+  border-top: 5px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.state-container.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.state-container.error h3 {
+  color: #b91c1c;
+}
+
+.state-container.not-found {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.state-container.not-found h3 {
+  color: #d97706;
+}
+
+.action-btn.retry-btn {
+  background: #ef4444;
+}
+
+.action-btn.retry-btn:hover {
+  background: #dc2626;
+}
+
+/* Layout */
+.project-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Left: Details, Right: Team */
+  gap: 2rem;
+}
+
+/* Project Details */
+.project-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.detail-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #dbeafe;
+  padding-bottom: 0.5rem;
+}
+
+.detail-list {
+  list-style: none;
+  padding: 0;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 500;
+  color: #4b5563;
+  font-size: 1rem;
+}
+
+.detail-item span:not(.status) {
+  color: #1f2937;
+  font-size: 1rem;
+}
+
+.description {
+  color: #4b5563;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+/* Status */
+.status {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status.pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+/* Team Section */
+.team-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.team-card {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.team-card:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.team-role {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 0.75rem;
+}
+
+.team-name {
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.team-email {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.team-subitem {
+  margin-top: 0.75rem;
+}
+
+.no-members {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .project-layout {
+    grid-template-columns: 1fr; /* Stack on smaller screens */
   }
-  
-  /* Header Section */
-  .header-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .project-details-wrapper {
+    padding: 1rem 1.5rem;
   }
-  
-  .project-title {
-    font-size: 2rem;
-    color: #2d3748;
-    margin: 0;
-  }
-  
-  .action-buttons {
-    display: flex;
-    gap: 1rem;
-  }
-  
-  .edit-button, .delete-button, .back-link {
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-  
-  .edit-button {
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .edit-button:hover {
-    background-color: #2563eb;
-  }
-  
-  .delete-button {
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .delete-button:hover {
-    background-color: #dc2626;
-  }
-  
-  .back-link {
-    display: inline-block;
-    margin-top: 2rem;
-    color: #3b82f6;
-    border: 1px solid #3b82f6;
-  }
-  
-  .back-link:hover {
-    background-color: #eff6ff;
-  }
-  
-  /* Loading State */
-  .loading-container {
-    display: flex;
+
+  .project-header {
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 50vh;
+    align-items: flex-start;
   }
-  
-  .spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
-    border-top: 4px solid #3b82f6;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
+
+  .action-buttons {
+    width: 100%;
+    flex-direction: column;
   }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  /* Error State */
-  .error-container, .not-found-container {
-    max-width: 600px;
-    margin: 2rem auto;
-    padding: 1.5rem;
-    border-radius: 8px;
+
+  .action-btn {
+    width: 100%;
     text-align: center;
   }
-  
-  .error-container {
-    background-color: #fee2e2;
-    border: 1px solid #ef4444;
-  }
-  
-  .not-found-container {
-    background-color: #fffbeb;
-    border: 1px solid #f59e0b;
-  }
-  
-  .error-container h3, .not-found-container h3 {
-    margin-top: 0;
-  }
-  
-  .retry-button {
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 0.5rem;
-  }
-  
-  /* Project Content */
-  .project-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-  
-  .main-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-  }
-  
-  .detail-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-  }
-  
-  .detail-title {
-    font-size: 1.25rem;
-    color: #1e40af;
-    margin-top: 0;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .detail-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-  }
-  
-  .detail-label {
-    font-weight: 500;
-    color: #4b5563;
-  }
-  
-  .detail-value {
-    color: #374151;
-  }
-  
-  .project-description {
-    color: #4b5563;
-    line-height: 1.6;
-  }
-  
-  /* Status Badges */
-  .status-badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: capitalize;
-  }
-  
-  .status-badge.active {
-    background-color: #dcfce7;
-    color: #166534;
-  }
-  
-  .status-badge.inactive {
-    background-color: #fee2e2;
-    color: #991b1b;
-  }
-  
-  .status-badge.pending {
-    background-color: #fef9c3;
-    color: #854d0e;
-  }
-  
-  /* Team Section */
-  .team-section {
-    margin-top: 1rem;
-  }
-  
-  .section-title {
-    font-size: 1.5rem;
-    color: #2d3748;
-    margin-bottom: 1.5rem;
-  }
-  
-  .team-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-  }
-  
-  .team-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-  }
-  
-  .team-title {
-    font-size: 1.1rem;
-    color: #1e40af;
-    margin-top: 0;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .team-member {
-    font-weight: 500;
-    margin: 0.5rem 0 0.25rem;
-    color: #374151;
-  }
-  
-  .team-email {
-    color: #6b7280;
-    font-size: 0.875rem;
-    margin: 0;
-  }
-  
-  .team-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .team-list li {
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #f3f4f6;
-  }
-  
-  .team-list li:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-  
-  .no-member {
-    color: #9ca3af;
-    font-style: italic;
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 768px) {
-    .project-details-container {
-      padding: 1rem;
-    }
-    
-    .header-section {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    
-    .action-buttons {
-      width: 100%;
-      flex-direction: column;
-    }
-    
-    .edit-button, .delete-button {
-      width: 100%;
-      text-align: center;
-    }
-  }
+}
