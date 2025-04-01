@@ -146,7 +146,7 @@ const ProjectView = () => {
                   <h3 className="team-role">HR Managers</h3>
                   {project.teamMembers?.rhManagers?.length > 0 ? (
                     project.teamMembers.rhManagers.map((rh) => (
-                      <p key={rh._id} className="team-name">{acc.fullname}</p>
+                      <p key={rh._id} className="team-name">{rh.fullname}</p>
                     ))
                   ) : (
                     <p className="no-members">None assigned</p>

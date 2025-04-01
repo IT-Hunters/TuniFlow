@@ -44,19 +44,20 @@ const MyProject = () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found. Please log in.');
       const [accountantResponse, financialManagerResponse, rhManagerResponse] = await Promise.all([
-        axios.get(`${API_URL}/getAllAccountants`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/getAllFinancialManagers`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/getAllRH`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_Project}/getAllAccountantsofproject`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_Project}/getAllFinancialManagersOfProject`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_Project}/getAllHRsOfProject`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      setAccountants(accountantResponse.data);
-      setFinancialManagers(financialManagerResponse.data);
-      setRhManagers(rhManagerResponse.data);
+      
+      // Extrait les tableaux des réponses
+      setAccountants(accountantResponse.data.accountants || []);
+      setFinancialManagers(financialManagerResponse.data.financialManagers || []);
+      setRhManagers(rhManagerResponse.data.rhManagers || []); // Supposons que la clé est "rhManagers"
     } catch (err) {
       console.error('Fetch Users Error:', err.response?.data || err.message);
       setError(err.response?.data?.message || 'Failed to fetch users: ' + err.message);
     }
   };
-
   const handleAssignUser = async (userId, userType) => {
     setAssignmentLoading(true);
     setAssignmentError(null);
@@ -243,6 +244,8 @@ const MyProject = () => {
                       </td>
                     </tr>
                   ))}
+                  
+                  
                 </tbody>
               </table>
             </div>

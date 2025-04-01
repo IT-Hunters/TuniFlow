@@ -2,10 +2,13 @@ var express = require('express');
 var router = express.Router();
 const authorizeRole = require('../middleware/autorizedrole');
 const { addProject,assignAccountantToProject,assignFinancialManagerToProject,assignRHManagerToProject,
-    unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById,getMyProject,getbyid
+    unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById,getMyProject,
+    getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject
 } = require("../controllers/projectController");
 const { authenticateJWT } = require('../config/autorisation');
-
+router.get("/getAllAccountantsofproject",authenticateJWT,getAllAccountantsofproject)
+router.get("/getAllHRsOfProject",authenticateJWT,getAllHRsOfProject)
+router.get("/getAllFinancialManagersOfProject",authenticateJWT,getAllFinancialManagersOfProject)
 router.post("/addproject/:businessManagerId", authenticateJWT, async (req, res) => {
     try {
         console.log("Requête reçue :", req.body);

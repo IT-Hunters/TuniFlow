@@ -343,10 +343,92 @@ async function getMyProject(req, res) {
         res.status(500).json({ message: "Server error", error });
     }
 }
+const getAllAccountantsofproject = async (req, res) => {
+    try {
+        // Récupérer l'ID du Business Manager connecté
+        const userId = req.user.userId;
+
+        // Trouver le projet associé
+        const project = await Project.findOne({ businessManager: userId }).populate("accountants");
+
+        console.log("Projet trouvé :", project); // Vérifier si un projet est trouvé
+
+        // Comptables liés au projet
+        const projectAccountants = project ? project.accountants : [];
+
+        console.log("Comptables liés au projet :", projectAccountants);
+
+        // Comptables qui n'ont pas de projet (ajouter null et undefined pour éviter les erreurs)
+        const accountantsWithoutProject = await userModel.find({ 
+            role: "ACCOUNTANT", 
+            $or: [{ project: { $exists: false } }, { project: null }]
+        });
+
+        console.log("Comptables sans projet :", accountantsWithoutProject);
+
+        // Fusionner les deux listes
+        const allAccountants = [...projectAccountants, ...accountantsWithoutProject];
+
+        return res.status(200).json({ accountants: allAccountants });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des comptables :", error);
+        return res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+const getAllHRsOfProject = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Récupérer le projet associé
+        const project = await Project.findOne({ businessManager: userId }).populate("rhManagers");
+
+        const projectHRs = project ? project.rhManagers : [];
+
+        // Récupérer les HRs qui n'ont pas de projet
+        const hrsWithoutProject = await userModel.find({ 
+            role: "HR", 
+            $or: [{ project: { $exists: false } }, { project: null }]
+        });
+
+        // Fusionner les deux listes
+        const rhManagers = [...projectHRs, ...hrsWithoutProject];
+
+        return res.status(200).json({ rhManagers: rhManagers });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des HRs :", error);
+        return res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+const getAllFinancialManagersOfProject = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Récupérer le projet associé
+        const project = await Project.findOne({ businessManager: userId }).populate("financialManagers");
+
+        const projectFinancialManagers = project ? project.financialManagers : [];
+
+        // Récupérer les Financial Managers qui n'ont pas de projet
+        const financialManagersWithoutProject = await userModel.find({ 
+            role: "FINANCIAL_MANAGER", 
+            $or: [{ project: { $exists: false } }, { project: null }]
+        });
+
+        // Fusionner les deux listes
+        const allFinancialManagers = [...projectFinancialManagers, ...financialManagersWithoutProject];
+
+        return res.status(200).json({ financialManagers: allFinancialManagers });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des Financial Managers :", error);
+        return res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+
+  
 
 module.exports = {
     addProject,
-    assignAccountantToProject,
+    assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,
     assignRHManagerToProject,
     assignFinancialManagerToProject,
     unassignRHManagerFromProject,
