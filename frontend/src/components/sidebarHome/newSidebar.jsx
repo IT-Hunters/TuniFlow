@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import {
   FaHome,
   FaTachometerAlt,
-  FaUsers,
   FaBell,
   FaCog,
   FaQuestionCircle,
@@ -14,7 +13,8 @@ import {
   FaComments,
   FaFileInvoice,
   FaPlus,
-  FaProjectDiagram, // Add icon for projects
+  FaProjectDiagram,
+  FaUserFriends,
 } from "react-icons/fa";
 import "./SidebarHome.css";
 import { findMyProfile, logout } from "../../services/UserService";
@@ -24,7 +24,7 @@ const CoolSidebar = () => {
   const [userData, setUserData] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("Dashboard");
-  const [error, setError] = useState(null); // Add state for error handling
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   // Base navigation items
@@ -37,18 +37,24 @@ const CoolSidebar = () => {
     { title: "Help", icon: FaQuestionCircle, href: "#" },
     { title: "Invoice", icon: FaFileInvoice, href: "/invoice" },
     { title: "Add Project", icon: FaPlus, href: "/AddProject" },
-    { title: "My Project", icon: FaProjectDiagram, href: "/MyProject" }, // Add new link for projects
+    { title: "My Project", icon: FaProjectDiagram, href: "/MyProject" },
+    { title: "Manager List", icon: FaUserFriends, href: "/ManagerList" },
+    { title: "ProjectView", icon: FaUserFriends, href: "/ProjectView" },
+    { title: "OwnerProjectsView", icon: FaUserFriends, href: "/OwnerProjectsView" },
   ];
 
   // Filter nav items based on user role
   const navItems = baseNavItems.filter((item) => {
-    if (item.title === "Add Project") {
-      return userData?.userType === "BusinessOwner";
+    if (item.title === "Add Project" || item.title === "Manager List" || item.title === "OwnerProjectsView") {
+      return userData?.userType === "BusinessOwner"; // Visible only for BusinessOwner
     }
-    if (item.title === "My Project") {
-      return userData?.userType === "BusinessManager"; // Only show for Managers
+    if (item.title === "My Project" || item.title === "Invoice") {
+      return userData?.userType === "BusinessManager"; // Visible only for BusinessManager
     }
-    return true;
+    if (item.title === "ProjectView") {
+      return userData?.userType !== "BusinessOwner"; // Visible for all except BusinessOwner
+    }
+    return true; // Other items visible to all
   });
 
   const handleLogout = () => {
@@ -154,4 +160,4 @@ const CoolSidebar = () => {
   );
 };
 
-export default CoolSidebar
+export default CoolSidebar;

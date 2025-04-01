@@ -3,7 +3,7 @@ const Transaction = require("../model/Transaction");
 const Project = require("../model/Project");
 const mongoose = require("mongoose");
 
-// 📌 Obtenir tous les wallets
+// 📌 Get all wallets
 const getWallets = async (req, res) => {
   try {
     const wallets = await Wallet.find()
@@ -15,7 +15,7 @@ const getWallets = async (req, res) => {
   }
 };
 
-// 📌 Obtenir un wallet par ID utilisateur
+// 📌 Get a wallet by user ID
 const getWalletByUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -23,7 +23,7 @@ const getWalletByUser = async (req, res) => {
       .populate("user_id", "fullname email")
       .populate("project", "status due_date");
     if (!wallet) {
-      return res.status(404).json({ message: "Aucun wallet trouvé pour cet utilisateur" });
+      return res.status(404).json({ message: "No wallet found for this user" });
     }
     res.status(200).json(wallet);
   } catch (err) {
@@ -31,7 +31,7 @@ const getWalletByUser = async (req, res) => {
   }
 };
 
-// 📌 Obtenir un wallet par walletId (Nouveau)
+// 📌 Get a wallet by walletId (New)
 const getWalletById = async (req, res) => {
   try {
     const { walletId } = req.params;
@@ -39,7 +39,7 @@ const getWalletById = async (req, res) => {
       .populate("user_id", "fullname email")
       .populate("project", "status due_date");
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet introuvable" });
+      return res.status(404).json({ message: "Wallet not found" });
     }
     res.status(200).json(wallet);
   } catch (err) {
@@ -47,18 +47,18 @@ const getWalletById = async (req, res) => {
   }
 };
 
-// 📌 Ajouter un wallet
+// 📌 Add a wallet
 const addWallet = async (req, res) => {
   try {
     const { user_id, type, projectId } = req.body;
 
     if (!user_id || !type) {
-      return res.status(400).json({ message: "User ID et Type sont requis" });
+      return res.status(400).json({ message: "User ID and Type are required" });
     }
 
     const existingWallet = await Wallet.findOne({ user_id });
     if (existingWallet) {
-      return res.status(400).json({ message: "L'utilisateur a déjà un wallet" });
+      return res.status(400).json({ message: "The user already has a wallet" });
     }
 
     const walletData = { user_id, balance: 0, currency: "TND", type };
@@ -66,10 +66,10 @@ const addWallet = async (req, res) => {
     if (projectId) {
       const project = await Project.findById(projectId);
       if (!project) {
-        return res.status(404).json({ message: "Projet introuvable" });
+        return res.status(404).json({ message: "Project not found" });
       }
       if (project.wallet) {
-        return res.status(400).json({ message: "Ce projet est déjà lié à un wallet" });
+        return res.status(400).json({ message: "This project is already linked to a wallet" });
       }
       walletData.project = projectId;
     }
@@ -81,20 +81,20 @@ const addWallet = async (req, res) => {
       await Project.findByIdAndUpdate(projectId, { wallet: wallet._id });
     }
 
-    res.status(201).json({ message: "Wallet créé avec succès", wallet });
+    res.status(201).json({ message: "Wallet created successfully", wallet });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 📌 Supprimer un wallet
+// 📌 Delete a wallet
 const deleteWallet = async (req, res) => {
   try {
     const { walletId } = req.params;
 
     const wallet = await Wallet.findById(walletId);
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet introuvable" });
+      return res.status(404).json({ message: "Wallet not found" });
     }
 
     if (wallet.project) {
@@ -102,13 +102,13 @@ const deleteWallet = async (req, res) => {
     }
 
     await Wallet.findByIdAndDelete(walletId);
-    res.status(200).json({ message: "Wallet supprimé avec succès" });
+    res.status(200).json({ message: "Wallet deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 📌 Mettre à jour un wallet
+// 📌 Update a wallet
 const updateWallet = async (req, res) => {
   try {
     const { walletId } = req.params;
@@ -116,7 +116,7 @@ const updateWallet = async (req, res) => {
 
     const wallet = await Wallet.findById(walletId);
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet introuvable" });
+      return res.status(404).json({ message: "Wallet not found" });
     }
 
     if (balance !== undefined) wallet.balance = balance;
@@ -131,10 +131,10 @@ const updateWallet = async (req, res) => {
       } else {
         const project = await Project.findById(projectId);
         if (!project) {
-          return res.status(404).json({ message: "Projet introuvable" });
+          return res.status(404).json({ message: "Project not found" });
         }
         if (project.wallet && project.wallet.toString() !== walletId) {
-          return res.status(400).json({ message: "Ce projet est déjà lié à un autre wallet" });
+          return res.status(400).json({ message: "This project is already linked to another wallet" });
         }
         wallet.project = projectId;
         await Project.findByIdAndUpdate(projectId, { wallet: walletId });
@@ -142,13 +142,13 @@ const updateWallet = async (req, res) => {
     }
 
     await wallet.save();
-    res.status(200).json({ message: "Wallet mis à jour avec succès", wallet });
+    res.status(200).json({ message: "Wallet updated successfully", wallet });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 📌 Obtenir les 5 projets avec les plus gros soldes
+// 📌 Get the 5 projects with the highest balances
 const getTopProjects = async (req, res) => {
   try {
     const topProjects = await Project.find()
@@ -162,7 +162,7 @@ const getTopProjects = async (req, res) => {
   }
 };
 
-// 📌 Données pour graphiques en chandelier
+// 📌 Data for candlestick charts
 const getCandlestickData = async (req, res) => {
   const { interval = 1 } = req.query;
   const pipeline = [
@@ -193,7 +193,7 @@ const getCandlestickData = async (req, res) => {
   }
 };
 
-// 📌 Calcul de l'historique des flux de trésorerie
+// 📌 Calculate cash flow history
 const calculateCashFlowHistory = async (req, res) => {
   try {
     const { walletId } = req.params;
@@ -202,7 +202,7 @@ const calculateCashFlowHistory = async (req, res) => {
 
     const wallet = await Wallet.findById(walletId);
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet introuvable" });
+      return res.status(404).json({ message: "Wallet not found" });
     }
 
     const pipeline = [
@@ -254,13 +254,13 @@ const calculateCashFlowHistory = async (req, res) => {
     const cashFlowHistory = await Transaction.aggregate(pipeline);
 
     if (!cashFlowHistory.length) {
-      return res.status(404).json({ message: "Aucune transaction trouvée pour ce wallet" });
+      return res.status(404).json({ message: "No transactions found for this wallet" });
     }
 
     res.status(200).json(cashFlowHistory);
   } catch (error) {
-    console.error("Erreur lors de la récupération de l'historique des flux :", error);
-    res.status(500).json({ message: "Erreur interne du serveur" });
+    console.error("Error retrieving cash flow history:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 const calculateProfitMargin = async (req, res) => {
@@ -317,11 +317,11 @@ const calculateProfitMargin = async (req, res) => {
   }
 };
 
-// Exportation des fonctions
+// Export the functions
 module.exports = {
   getWallets,
   getWalletByUser,
-  getWalletById, // Ajouté ici
+  getWalletById, // Added here
   addWallet,
   deleteWallet,
   updateWallet,

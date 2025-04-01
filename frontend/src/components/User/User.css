@@ -61,7 +61,57 @@ a {
   flex-direction: column;
   background-color: #f5f7fb;
 }
+.content-wrapper {
+  padding: 1.5rem;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+.equal-height-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+  align-items: stretch;
+}
+.grid-margin {
+  margin-bottom: 1.5rem;
+}
+.stretch-card > div {
+  width: 100%;
+}
+.col-lg-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+  padding-right: 15px;
+  padding-left: 15px;
+}
 
+.col-lg-12 {
+  flex: 0 0 100%;
+  max-width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.dashboard-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+}
+@media (max-width: 991px) {
+  .col-lg-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
 /* ----- Navbar ----- */
 .navbar {
   background-color: #081c37;
@@ -71,6 +121,7 @@ a {
   align-items: center;
   justify-content: space-between;
 }
+
 .navbar .welcome-text {
   font-size: 1rem;
   font-weight: 500;
@@ -435,63 +486,66 @@ table tbody tr:last-child td {
 .status.refunded {
   background-color: #dc3545; /* red */
 }
-/* Ensure rows with side-by-side cards have equal heights */
-.equal-height-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch; /* Makes cards stretch to match the tallest sibling */
+.recent-invoices table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
 }
 
-/* Ensure columns stretch to fill the row height */
-.equal-height-row .col-lg-6 {
-  display: flex;
-  flex-direction: column;
+.recent-invoices th, .recent-invoices td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
-/* Make cards stretch to fill their column */
-.equal-height-row .stretch-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.recent-invoices th {
+  background-color: #f5f5f5;
+  font-weight: bold;
 }
 
-/* Ensure card-body takes up available space */
-.equal-height-row .assetcard {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-.equal-height-row {
-  flex: 1; /* Allow these rows to take available space */
-  align-items: stretch; /* Ensure cards stretch to match tallest sibling */
-}
-.scrollable-card {
-  overflow-y: auto; /* Enable scrolling if content exceeds height */
-}
-.equal-height-row .col-lg-6 .assetcard {
-  min-height: 0; /* Allow shrinking if content is less */
+.recent-invoices .status {
+  padding: 5px 10px;
+  border-radius: 12px;
+  color: white;
+  font-size: 12px;
 }
 
-
-
-.equal-height-row .card-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.recent-invoices .status.paid {
+  background-color: #4caf50;
 }
 
-/* Optional: Set a max height for Projects Overview to prevent excessive growth */
-.equal-height-row .card-body > *:last-child {
-  flex: 1;
-  overflow-y: auto; /* Add scroll if content exceeds height */
+.recent-invoices .status.pending {
+  background-color: #ff9800;
 }
 
-/* Adjust padding and margins for consistency */
-.grid-margin {
-  margin-bottom: 1.5rem;
+.recent-invoices .status.cancelled {
+  background-color: #f44336;
 }
 
-/* Ensure card titles don’t shrink */
-.card-title {
-  flex-shrink: 0;
+.accept-button {
+  padding: 5px 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.accept-button:hover {
+  background-color: #218838;
+}
+
+.accept-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+.error {
+  color: #f44336;
+}
+
+.transaction-list {
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

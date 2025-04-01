@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
-import userImg from "../assets/user.png";
 import { FaWallet, FaBell } from "react-icons/fa";
 import "./NavbarHome.css";
 
@@ -156,10 +155,10 @@ const Navbar = ({ notifications: externalNotifications }) => {
         </div>
         {/* Menu profil */}
         <div className="profile-menu" onClick={() => setMenuOpen(!menuOpen)}>
-          <img src={userData?.picture || userImg} alt="User Profile" className="profile-img" />
+          <img src={userData?.picture } alt="User Profile" className="profile-img" />
           <div className={`dropdown-menu ${menuOpen ? "active" : ""}`}>
             <div className="profile-info">
-              <img src={userData?.picture || userImg} alt="User" className="dropdown-img" />
+              <img src={userData?.picture } alt="User" className="dropdown-img" />
               <div>
                 <p className="user-name">{userData?.fullname}</p>
                 <p className="user-email">{userData?.email}</p>

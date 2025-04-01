@@ -11,7 +11,9 @@ import AdminUsers from "./components/Admin/AdminUsers";
 import User  from "./components/User/User";
 import  Chat  from "./components/Chat/chat";
 import ChatAdmin  from "./components/ChatAdmin/chatAdmin";
-
+import ProjectView from './components/Project/ProjectView';
+import ProjectDetails from './components/Project/ProjectDetails';
+import OwnerProjectsView from './components/Project/OwnerProjectsView';
 import CreateInvoice from './components/Invoice/CreateInvoice'; 
 import SendInvoice from './components/Invoice/SendInvoice'; 
 import Wallet from "./components/Wallet/Wallet";
@@ -22,7 +24,12 @@ import Withdraw from "./components/tessst/Withdraw";
 import AddProject from "./components/Project/AddProject";
 import MyProject from "./components/Project/MyProject";
 import ObjectiveManagement from "./components/Objectif/ObjectifManagement";
-
+import AddObjective from "./components/Objectif/AddObjectif";
+import EditObjective from "./components/Objectif/EditObjectif";
+import ObjectifDetails from "./components/Objectif/ObjectifDetails";
+import CreateManager from "./components/Project/Createmanager";
+import ManagerList from "./components/Project/ManagerList";
+import AddUser from "./components/Project/AddUser";
 function App() {         
   return (
     <Router>
@@ -49,7 +56,15 @@ function App() {
         <Route path="/AddProject" element={<AddProject />} />
         <Route path="/MyProject" element={<MyProject />} />
         <Route path="/ObjectiveManagement" element={<ObjectiveManagement />} />
-
+        <Route path="/AddObjective" element={<AddObjective />} />
+        <Route path="/EditObjective" element={<EditObjective/>} />
+        <Route path="/ObjectifDetails" element={<ObjectifDetails />} />
+        <Route path="/CreateManager" element={<CreateManager />} />
+        <Route path="/ManagerList" element={<ManagerList />} />
+        <Route path="/AddUser" element={<AddUser />} />
+        <Route path="/projectview" element={<ProjectView  />} />
+        <Route path="/OwnerProjectsView" element={<OwnerProjectsView  />} />
+        <Route path="/projects/:id" element={<ProjectDetails />} />
       </Routes>
     </Router>
   );

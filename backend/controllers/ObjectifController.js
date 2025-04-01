@@ -1,11 +1,21 @@
 const Project = require("../model/Project");
 const Objectif = require("../model/Objectif");
 const mongoose = require("mongoose");
+
+const getObjectifTypes = async (req, res) => {
+    try {
+        const types = Objectif.schema.path('objectivetype').enumValues; // Retrieve the enum values
+        res.status(200).json({ success: true, data: types });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error retrieving objective types', error: error.message });
+    }
+};
+
 const createObjectif = async (req, res) => {
     try {
         const userId = req.user.userId;
 
-        // Récupérer le projet associé à l'utilisateur connecté
+        // Retrieve the project associated with the logged-in user
         const project = await Project.findOne({
             $or: [
                 { businessManager: userId },
@@ -14,10 +24,10 @@ const createObjectif = async (req, res) => {
         });
 
         if (!project) {
-            return res.status(404).json({ message: "Projet non trouvé pour cet utilisateur" });
+            return res.status(404).json({ success: false, message: "Project not found for this user" });
         }
 
-        // Récupérer les données de l'objectif depuis le corps de la requête
+        // Retrieve objective data from the request body
         const {
             name,
             description,
@@ -30,7 +40,61 @@ const createObjectif = async (req, res) => {
             isStatic,
         } = req.body;
 
-        // Créer un nouvel objectif
+        // Validation errors object
+        const errors = {};
+
+        // Validate required fields
+        if (!name || name.trim() === "") {
+            errors.name = "Objective name is required.";
+        }
+        if (!description || description.trim() === "") {
+            errors.description = "Objective description is required.";
+        }
+        if (!target_amount || target_amount <= 0) {
+            errors.target_amount = "Target amount must be a positive number.";
+        }
+        if (!minbudget || minbudget < 0) {
+            errors.minbudget = "Minimum budget must be a non-negative number.";
+        }
+        if (!maxbudget || maxbudget <= 0) {
+            errors.maxbudget = "Maximum budget must be a positive number.";
+        }
+        if (minbudget > maxbudget) {
+            errors.minbudget = errors.minbudget || [];
+            errors.maxbudget = errors.maxbudget || [];
+            errors.minbudget = "Minimum budget cannot exceed maximum budget.";
+            errors.maxbudget = "Minimum budget cannot exceed maximum budget.";
+        }
+        if (!datedebut) {
+            errors.datedebut = "Start date is required.";
+        }
+        if (!datefin) {
+            errors.datefin = "End date is required.";
+        }
+        if (new Date(datedebut) >= new Date(datefin)) {
+            errors.datedebut = errors.datedebut || [];
+            errors.datefin = errors.datefin || [];
+            errors.datedebut = "End date must be after start date.";
+            errors.datefin = "End date must be after start date.";
+        }
+        if (!objectivetype) {
+            errors.objectivetype = "Objective type is required.";
+        }
+        // Validate objectivetype against enum values
+        const validTypes = Objectif.schema.path('objectivetype').enumValues;
+        if (!validTypes.includes(objectivetype)) {
+            errors.objectivetype = `Objective type must be one of: ${validTypes.join(", ")}.`;
+        }
+        if (typeof isStatic !== "boolean") {
+            errors.isStatic = "isStatic must be a boolean value.";
+        }
+
+        // If there are validation errors, return them
+        if (Object.keys(errors).length > 0) {
+            return res.status(400).json({ success: false, errors });
+        }
+
+        // Create a new objective
         const nouvelObjectif = new Objectif({
             name,
             description,
@@ -39,29 +103,27 @@ const createObjectif = async (req, res) => {
             maxbudget,
             datedebut,
             datefin,
-            status: "Pending", // Valeur par défaut
+            status: "Pending", // Default value
             objectivetype,
             isStatic,
-            project: project._id, // Associer l'objectif au projet
+            project: project._id, // Associate the objective with the project
         });
 
-        // Sauvegarder l'objectif
+        // Save the objective
         await nouvelObjectif.save();
 
-        // Ajouter l'objectif à la liste des objectifs du projet
+        // Add the objective to the project's list of objectives
         project.objectifs.push(nouvelObjectif._id);
-        project.status = project.status || "Pending"; // Valeur par défaut pour le projet
+        project.status = project.status || "Pending"; // Default value for the project
         await project.save();
 
-        // Réponse réussie
-        res.status(201).json({ message: "Objectif créé avec succès", objectif: nouvelObjectif });
+        // Successful response
+        res.status(201).json({ success: true, message: "Objective created successfully", objectif: nouvelObjectif });
     } catch (error) {
-        console.error("Erreur lors de la création de l'objectif :", error);
-        res.status(500).json({ message: "Erreur interne du serveur" });
+        console.error("Error creating objective:", error);
+        res.status(500).json({ success: false, message: "Internal server error", error: error.message });
     }
 };
-
-
 
 const findObjectifs = async (req, res) => {
     try {
@@ -77,121 +139,166 @@ const findObjectifs = async (req, res) => {
         }).populate('objectifs');
 
         if (!project) {
-            return res.status(404).json({ message: "Projet non trouvé pour cet utilisateur" });
+            return res.status(404).json({ message: "Project not found for this user" });
         }
 
         res.status(200).json({ objectifs: project.objectifs });
     } catch (error) {
-        console.error("Erreur lors de la récupération des objectifs :", error);
-        res.status(500).json({ message: "Erreur interne du serveur" });
+        console.error("Error retrieving objectives:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
-
 
 const markObjectifAsCompleted = async (req, res) => {
     try {
-        const { objectifId } = req.params; // Récupérer l'ID de l'objectif depuis les paramètres de l'URL
+        const { objectifId } = req.params; // Retrieve the objective ID from URL parameters
 
-        // Trouver et mettre à jour l'objectif
+        // Find and update the objective
         const objectif = await Objectif.findByIdAndUpdate(
             objectifId,
             { status: "Completed" },
-            { new: true } // Retourner l'objectif mis à jour
+            { new: true } // Return the updated objective
         );
 
         if (!objectif) {
-            return res.status(404).json({ message: "Objectif non trouvé" });
+            return res.status(404).json({ message: "Objective not found" });
         }
 
-        // Réponse réussie
-        res.status(200).json({ message: "Objectif marqué comme 'Completed'", objectif });
+        // Successful response
+        res.status(200).json({ message: "Objective marked as 'Completed'", objectif });
     } catch (error) {
-        console.error("Erreur lors de la mise à jour de l'objectif :", error);
-        res.status(500).json({ message: "Erreur interne du serveur" });
+        console.error("Error updating objective:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
-
 const markObjectifAsFailed = async (req, res) => {
     try {
-        const { objectifId } = req.params; // Récupérer l'ID de l'objectif depuis les paramètres de l'URL
+        const { objectifId } = req.params; // Retrieve the objective ID from URL parameters
 
-        // Trouver et mettre à jour l'objectif
+        // Find and update the objective
         const objectif = await Objectif.findByIdAndUpdate(
             objectifId,
             { status: "Failed" },
-            { new: true } // Retourner l'objectif mis à jour
+            { new: true } // Return the updated objective
         );
 
         if (!objectif) {
-            return res.status(404).json({ message: "Objectif non trouvé" });
+            return res.status(404).json({ message: "Objective not found" });
         }
 
-        // Réponse réussie
-        res.status(200).json({ message: "Objectif marqué comme 'Failed'", objectif });
+        // Successful response
+        res.status(200).json({ message: "Objective marked as 'Failed'", objectif });
     } catch (error) {
-        console.error("Erreur lors de la mise à jour de l'objectif :", error);
-        res.status(500).json({ message: "Erreur interne du serveur" });
+        console.error("Error updating objective:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
 const deleteObjectifById = async (req, res) => {
     try {
-        const { objectifId } = req.params; // Récupérer l'ID de l'objectif depuis les paramètres de l'URL
+        const { objectifId } = req.params; // Retrieve the objective ID from URL parameters
 
-        // Supprimer l'objectif par son ID
+        // Delete the objective by its ID
         const objectif = await Objectif.findByIdAndDelete(objectifId);
 
         if (!objectif) {
-            return res.status(404).json({ message: "Objectif non trouvé" });
+            return res.status(404).json({ message: "Objective not found" });
         }
 
-        // Réponse réussie
-        res.status(200).json({ message: "Objectif supprimé avec succès" });
+        // Successful response
+        res.status(200).json({ message: "Objective deleted successfully" });
     } catch (error) {
-        console.error("Erreur lors de la suppression de l'objectif :", error);
-        res.status(500).json({ message: "Erreur interne du serveur" });
+        console.error("Error deleting objective:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
 const updateObjectifById = async (req, res) => {
     try {
-        const { objectifId } = req.params; // Récupérer l'ID de l'objectif depuis les paramètres de l'URL
-        const updateData = req.body; // Les données de mise à jour envoyées dans le corps de la requête
+        const { objectifId } = req.params; // Retrieve the objective ID from URL parameters
+        const updateData = req.body; // Update data sent in the request body
 
-        // Mettre à jour l'objectif par son ID
+        // Validation errors object
+        const errors = {};
+
+        // Validate provided fields
+        if (updateData.name && updateData.name.trim() === "") {
+            errors.name = "Objective name cannot be empty.";
+        }
+        if (updateData.description && updateData.description.trim() === "") {
+            errors.description = "Objective description cannot be empty.";
+        }
+        if (updateData.target_amount !== undefined && updateData.target_amount <= 0) {
+            errors.target_amount = "Target amount must be a positive number.";
+        }
+        if (updateData.minbudget !== undefined && updateData.minbudget < 0) {
+            errors.minbudget = "Minimum budget must be a non-negative number.";
+        }
+        if (updateData.maxbudget !== undefined && updateData.maxbudget <= 0) {
+            errors.maxbudget = "Maximum budget must be a positive number.";
+        }
+        if (updateData.minbudget !== undefined && updateData.maxbudget !== undefined && updateData.minbudget > updateData.maxbudget) {
+            errors.minbudget = errors.minbudget || [];
+            errors.maxbudget = errors.maxbudget || [];
+            errors.minbudget = "Minimum budget cannot exceed maximum budget.";
+            errors.maxbudget = "Minimum budget cannot exceed maximum budget.";
+        }
+        if (updateData.datedebut && updateData.datefin && new Date(updateData.datedebut) >= new Date(updateData.datefin)) {
+            errors.datedebut = errors.datedebut || [];
+            errors.datefin = errors.datefin || [];
+            errors.datedebut = "End date must be after start date.";
+            errors.datefin = "End date must be after start date.";
+        }
+        if (updateData.objectivetype) {
+            const validTypes = Objectif.schema.path('objectivetype').enumValues;
+            if (!validTypes.includes(updateData.objectivetype)) {
+                errors.objectivetype = `Objective type must be one of: ${validTypes.join(", ")}.`;
+            }
+        }
+        if (updateData.isStatic !== undefined && typeof updateData.isStatic !== "boolean") {
+            errors.isStatic = "isStatic must be a boolean value.";
+        }
+
+        // If there are validation errors, return them
+        if (Object.keys(errors).length > 0) {
+            return res.status(400).json({ success: false, errors });
+        }
+
+        // Update the objective by its ID
         const objectif = await Objectif.findByIdAndUpdate(objectifId, updateData, {
-            new: true, // Retourner l'objectif mis à jour
-            runValidators: true, // Valider les données avant de les enregistrer
+            new: true, // Return the updated objective
+            runValidators: true, // Validate the data before saving
         });
 
         if (!objectif) {
-            return res.status(404).json({ message: "Objectif non trouvé" });
+            return res.status(404).json({ success: false, message: "Objective not found" });
         }
 
-        // Réponse réussie avec l'objectif mis à jour
-        res.status(200).json({ objectif });
+        // Successful response with the updated objective
+        res.status(200).json({ success: true, objectif });
     } catch (error) {
-        console.error("Erreur lors de la mise à jour de l'objectif :", error);
-        res.status(500).json({ message: "Erreur interne du serveur" });
+        console.error("Error updating objective:", error);
+        res.status(500).json({ success: false, message: "Internal server error", error: error.message });
     }
 };
+
 const getAllObjectifsByProjectId = async (req, res) => {
     try {
-        const { projectId } = req.params; // Récupérer l'ID du projet depuis les paramètres de l'URL
+        const { projectId } = req.params; // Retrieve the project ID from URL parameters
 
-        // Trouver le projet par son ID et peupler les objectifs
+        // Find the project by its ID and populate the objectives
         const project = await Project.findById(projectId).populate("objectifs");
 
         if (!project) {
-            return res.status(404).json({ message: "Projet non trouvé" });
+            return res.status(404).json({ message: "Project not found" });
         }
 
-        // Retourner tous les objectifs associés au projet
+        // Return all objectives associated with the project
         res.status(200).json({ objectifs: project.objectifs });
     } catch (error) {
-        console.error("Erreur lors de la récupération des objectifs :", error);
-        res.status(500).json({ message: "Erreur interne du serveur" });
+        console.error("Error retrieving objectives:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
@@ -202,26 +309,26 @@ async function updateProgress(req, res) {
     try {
         const objectif = await Objectif.findById(objectifId);
         if (!objectif) {
-            return res.status(404).json({ error: "Objectif not found" });
+            return res.status(404).json({ error: "Objective not found" });
         }
 
-        objectif.progress = progress;  // Met à jour la progression de l'objectif
+        objectif.progress = progress;  // Update the objective's progress
         objectif.status = progress === 100 ? "Completed" : objectif.status;
-        objectif.status = progress !== 100 ? "Pending" : objectif.status;  // Modifie le statut en "Completed" si la progression est 100%
+        objectif.status = progress !== 100 ? "Pending" : objectif.status;  // Change status to "Completed" if progress is 100%
         await objectif.save();
 
-        // Mettez à jour la progression globale du projet
+        // Update the overall project progress
         const project = await Project.findOne({ objectifs: objectifId });
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
 
-        // Utilisation d'un loop `for` pour attendre les promesses
+        // Use a for loop to await promises
         let totalProgress = 0;
         for (const objectifId of project.objectifs) {
             const obj = await Objectif.findById(objectifId);
             if (obj) {
-                totalProgress += obj.progress;  // Ajoute la progression de l'objectif si trouvé
+                totalProgress += obj.progress;  // Add the objective's progress if found
             }
         }
 
@@ -238,37 +345,39 @@ async function updateProgress(req, res) {
 }
 
 async function generateObjectiveReport(req, res) {
-    const { projectId } = req.params; // Récupère le projectId depuis les paramètres de l'URL
-  
+    const { projectId } = req.params; // Retrieve the projectId from URL parameters
+
     try {
-      // Recherche du projet spécifique avec l'ID donné
-      const project = await Project.findById(projectId).populate('objectifs');
-  
-      if (!project) {
-        return res.status(404).json({ error: "Project not found" });
-      }
-  
-      // Création d'un map avec le nom de l'objectif comme clé et un objet avec son statut et sa progression comme valeur
-      const objectifs = {};
-      project.objectifs.forEach(obj => {
-        objectifs[obj.name] = {
-              status: obj.status,
-              progress: obj.progress
-          };
-      });
-      return res.status(200).json({ objectifs });
+        // Find the specific project with the given ID
+        const project = await Project.findById(projectId).populate('objectifs');
+
+        if (!project) {
+            return res.status(404).json({ error: "Project not found" });
+        }
+
+        // Create a map with the objective name as the key and an object with its status and progress as the value
+        const objectifs = {};
+        project.objectifs.forEach(obj => {
+            objectifs[obj.name] = {
+                status: obj.status,
+                progress: obj.progress
+            };
+        });
+        return res.status(200).json({ objectifs });
     } catch (err) {
-      return res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: err.message });
     }
-  }
-  
-  
-  
-  
+}
 
 module.exports = {
-    createObjectif,getAllObjectifsByProjectId,
-    findObjectifs,updateProgress,
+    createObjectif,
+    getAllObjectifsByProjectId,
+    findObjectifs,
+    updateProgress,
+    getObjectifTypes,
     markObjectifAsCompleted,
-    markObjectifAsFailed,deleteObjectifById,updateObjectifById,generateObjectiveReport
+    markObjectifAsFailed,
+    deleteObjectifById,
+    updateObjectifById,
+    generateObjectiveReport
 };

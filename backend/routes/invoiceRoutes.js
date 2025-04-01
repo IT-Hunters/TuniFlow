@@ -1,11 +1,33 @@
 const express = require('express');
 const router = express.Router();
-const InvoiceController = require('../controllers/InvoiceController');
+const invoiceController = require('../controllers/InvoiceController');
+const { authenticateJWT } = require('../config/autorisation'); // Utilisez le bon chemin
+const authorizeRole = require('../middleware/autorizedrole');
 
-
-router.post('/', InvoiceController.createInvoice);
-
-router.post("/send/:invoiceId", InvoiceController.sendInvoice);
-
+router.post('/create', 
+  authenticateJWT, 
+  authorizeRole(["BUSINESS_MANAGER"]), 
+  invoiceController.createInvoice
+);
+router.post('/send/:invoiceId', 
+  authenticateJWT, 
+  authorizeRole(["BUSINESS_MANAGER"]), 
+  invoiceController.sendInvoice
+);
+router.put('/:invoiceId/accept', 
+  authenticateJWT, 
+  authorizeRole(["BUSINESS_OWNER"]), 
+  invoiceController.acceptInvoice
+);
+router.get('/my-invoices', 
+  authenticateJWT, 
+  authorizeRole(["BUSINESS_OWNER"]), 
+  invoiceController.getMyInvoices
+);
+router.get('/business-owners', 
+  authenticateJWT, 
+  authorizeRole(["BUSINESS_MANAGER"]), 
+  invoiceController.getBusinessOwners
+);
 
 module.exports = router;

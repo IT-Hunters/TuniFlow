@@ -1,0 +1,331 @@
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.project-details-wrapper {
+  max-width: 1600px; /* Increased to reduce side blank space */
+  margin: 0 auto;
+  padding: 1.5rem 2rem; /* Adjusted padding */
+  position: relative;
+}
+
+/* Back Link (Top Left) */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  color: #3b82f6;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem; /* Space below the button */
+}
+
+.back-link:hover {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Header */
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.project-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.action-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+}
+
+.edit-btn:hover {
+  background: linear-gradient(135deg, #2563eb, #1e3a8a);
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
+.delete-btn:hover {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+}
+
+/* State Containers (Loading, Error, Not Found) */
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 800px; /* Limit width for state containers */
+  margin: 0 auto;
+}
+
+.state-container h3 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.state-container p {
+  font-size: 1.1rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+.state-container.loading {
+  background: #f8fafc;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #e2e8f0;
+  border-top: 5px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.state-container.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.state-container.error h3 {
+  color: #b91c1c;
+}
+
+.state-container.not-found {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.state-container.not-found h3 {
+  color: #d97706;
+}
+
+.action-btn.retry-btn {
+  background: #ef4444;
+}
+
+.action-btn.retry-btn:hover {
+  background: #dc2626;
+}
+
+/* Layout */
+.project-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Left: Details, Right: Team */
+  gap: 2rem;
+}
+
+/* Project Details */
+.project-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.detail-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #dbeafe;
+  padding-bottom: 0.5rem;
+}
+
+.detail-list {
+  list-style: none;
+  padding: 0;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 500;
+  color: #4b5563;
+  font-size: 1rem;
+}
+
+.detail-item span:not(.status) {
+  color: #1f2937;
+  font-size: 1rem;
+}
+
+.description {
+  color: #4b5563;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+/* Status */
+.status {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status.pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+/* Team Section */
+.team-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.team-card {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.team-card:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.team-role {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 0.75rem;
+}
+
+.team-name {
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.team-email {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.team-subitem {
+  margin-top: 0.75rem;
+}
+
+.no-members {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .project-layout {
+    grid-template-columns: 1fr; /* Stack on smaller screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .project-details-wrapper {
+    padding: 1rem 1.5rem;
+  }
+
+  .project-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .action-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
