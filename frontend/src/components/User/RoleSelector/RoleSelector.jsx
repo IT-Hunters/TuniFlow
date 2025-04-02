@@ -7,11 +7,16 @@ export default function RoleSelector({ selectedRole, setSelectedRole }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const roles = [
-    { value: "all", label: "All Departments" },
-    { value: "finance", label: "Finance" },
-    { value: "hr", label: "Human Resources" },
-    { value: "accounting", label: "Accounting" },
-    { value: "it", label: "IT" },
+    { value: "all", label: "All Objectives" },
+    { value: "BUDGET", label: "Budget" },
+    { value: "COST_REDUCTION", label: "Cost Reduction" },
+    { value: "REVENUE_GROWTH", label: "Revenue Growth" },
+    { value: "PROFIT_MARGIN", label: "Profit Margin" },
+    { value: "CASH_FLOW", label: "Cash Flow" },
+    { value: "INVESTMENT", label: "Investment" },
+    { value: "DEBT_MANAGEMENT", label: "Debt Management" },
+    { value: "EXPENSE_CONTROL", label: "Expense Control" },
+    { value: "TAX_OPTIMIZATION", label: "Tax Optimization" },
   ];
 
   const handleSelect = (value) => {

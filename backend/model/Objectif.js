@@ -13,9 +13,9 @@ const objectifSchema = new Schema({
     status: {
         type: String,
         required: true,
-        enum: ["Pending", "Completed", "Failed"], // Énumération pour le statut
+        enum: ["InProgress", "Completed", "Failed"], // Énumération pour le statut
         default: "Pending", // Valeur par défaut
-    },
+    },  
     objectivetype: {
         type: String,
         required: true,
@@ -29,7 +29,7 @@ const objectifSchema = new Schema({
             "DEBT_MANAGEMENT",
             "EXPENSE_CONTROL",
             "TAX_OPTIMIZATION",
-        ], // Énumération pour le type d'objectif
+        ], 
     },
     isStatic: { type: Boolean, required: true }, // Indique si l'objectif est statique
 }, {

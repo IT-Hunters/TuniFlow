@@ -334,3 +334,25 @@ exports.getExpenses = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+exports.getTransactionByWalletId = async (req, res) => {
+  try {
+    const { walletId } = req.params;
+
+    const transaction = await Transaction.find({
+      wallet_id: walletId
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ 
+        message: "Transaction not found for this wallet" 
+      });
+    }
+
+    res.status(200).json({
+      message: "Transaction retrieved successfully",
+      data: transaction
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
