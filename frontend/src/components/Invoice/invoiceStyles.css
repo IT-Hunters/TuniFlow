@@ -1,118 +1,365 @@
 /* Conteneur global de la page */
 .create-invoice-page {
-    display: flex;
-    min-height: 100vh;
-    background-color: #f4f4f4;
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Contenu principal à droite de la sidebar - ajusté pour coller à la sidebar */
+.create-invoice-main {
+  flex: 1;
+  padding: 0; /* Suppression du padding latéral pour coller à la sidebar */
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Style de la Navbar agrandie */
+.create-invoice-main .navbar-home {
+  height: 80px; /* Hauteur agrandie de la navbar */
+  padding: 0 30px;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+
+.main-content {
+  padding: 30px;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.invoice-container {
+  width: 700px; 
+  max-width: 90%;
+  margin: 40px auto;
+  padding: 50px; 
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.invoice-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Titre du formulaire - AGRANDI */
+.invoice-header {
+  font-size: 32px; /* Taille augmentée */
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  margin-bottom: 40px; /* Marge augmentée */
+  position: relative;
+  padding-bottom: 20px; /* Padding augmenté */
+}
+
+.invoice-header:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px; /* Largeur augmentée */
+  height: 4px; /* Hauteur augmentée */
+  background-color: #0ea5e9;
+  border-radius: 3px;
+}
+
+/* Information sur le destinataire - AGRANDI */
+.invoice-container p {
+  text-align: center;
+  margin-bottom: 30px; /* Marge augmentée */
+  font-size: 18px; /* Taille de police augmentée */
+  color: #64748b;
+  font-weight: 500;
+  background-color: #f1f5f9;
+  padding: 16px; /* Padding augmenté */
+  border-radius: 8px;
+}
+
+/* Animation dots pour chargement */
+.loading-recipient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loading-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #94a3b8;
+  border-radius: 50%;
+  animation: dotPulse 1.4s infinite ease-in-out;
+}
+
+.loading-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.6;
   }
-  
-  /* Contenu principal à droite de la sidebar */
-  .create-invoice-main {
-    flex: 1;
-    padding: 20px;
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
   }
-  
-  /* Conteneur du formulaire */
+}
+
+/* Messages d'erreur et de succès */
+.error-message {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 16px; /* Padding augmenté */
+  border-radius: 8px;
+  margin-bottom: 25px; /* Marge augmentée */
+  font-size: 16px; /* Taille augmentée */
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.success-message {
+  background-color: #dcfce7;
+  color: #15803d;
+  padding: 16px; /* Padding augmenté */
+  border-radius: 8px;
+  margin-bottom: 25px; /* Marge augmentée */
+  font-size: 16px; /* Taille augmentée */
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Formulaire - AGRANDI */
+.invoice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Espacement augmenté entre les champs */
+}
+
+/* Conteneurs pour les inputs */
+.input-group {
+  position: relative;
+}
+
+/* Étiquettes des champs */
+.input-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #475569;
+  font-size: 16px;
+}
+
+/* Champs de saisie (input et select) - AGRANDI */
+.invoice-input {
+  width: 100%;
+  padding: 18px 22px; /* Padding augmenté */
+  font-size: 18px; /* Taille de police augmentée */
+  color: #334155;
+  background-color: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px; /* Rayon augmenté */
+  transition: all 0.3s ease;
+}
+
+/* Style au focus pour les champs */
+.invoice-input:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+  background-color: #fff;
+}
+
+/* Placeholder */
+.invoice-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/* Style spécifique pour input type date */
+.invoice-input[type="date"] {
+  color: #334155;
+  cursor: pointer;
+}
+
+/* Style spécifique pour le select */
+.invoice-input[type="select"] {
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%2394a3b8" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  padding-right: 50px;
+}
+
+/* Bouton de soumission - AGRANDI */
+.invoice-button {
+  padding: 20px 28px; /* Padding augmenté */
+  margin-top: 15px;
+  font-size: 18px; /* Taille de police augmentée */
+  font-weight: 600;
+  color: #fff;
+  background-color: #0ea5e9;
+  border: none;
+  border-radius: 12px; /* Rayon augmenté */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+/* Effet hover sur le bouton */
+.invoice-button:hover:not(:disabled) {
+  background-color: #0284c7;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(14, 165, 233, 0.25);
+}
+
+/* Effet clic sur le bouton */
+.invoice-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+}
+
+/* Animation pour le bouton - effet ripple */
+.invoice-button:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.invoice-button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+/* Bouton désactivé */
+.invoice-button:disabled {
+  background-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Animation de chargement */
+.loading {
+  display: inline-block;
+  width: 22px; /* Taille augmentée */
+  height: 22px; /* Taille augmentée */
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 12px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+
   .invoice-container {
-    max-width: 600px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    padding: 25px;
   }
-  
-  /* Titre du formulaire */
+
   .invoice-header {
     font-size: 24px;
-    font-weight: 600;
-    color: #333;
-    text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
   }
-  
-  /* Formulaire */
-  .invoice-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  /* Champs de saisie (input et select) */
+
   .invoice-input {
-    width: 100%;
-    padding: 12px 15px;
+    padding: 14px 18px;
     font-size: 16px;
-    color: #555;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    transition: border-color 0.3s, box-shadow 0.3s;
   }
   
-  /* Style au focus pour les champs */
-  .invoice-input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-  }
-  
-  /* Placeholder */
-  .invoice-input::placeholder {
-    color: #999;
-  }
-  
-  /* Style spécifique pour le select */
-  .invoice-input[type="select"] {
-    appearance: none;
-    background-image: url('data:image/svg+xml;utf8,<svg fill="%23555" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    padding-right: 35px;
-  }
-  
-  /* Bouton de soumission */
   .invoice-button {
-    padding: 12px 20px;
+    padding: 16px 22px;
     font-size: 16px;
-    font-weight: 600;
-    color: #fff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
   }
-  
-  /* Effet hover sur le bouton */
-  .invoice-button:hover:not(:disabled) {
-    background-color: #0056b3;
-    transform: translateY(-2px);
+}
+
+/* Animation pour les éléments qui apparaissent */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  /* Bouton désactivé */
-  .invoice-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    transform: none;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .create-invoice-main {
-      padding: 10px;
-    }
-  
-    .invoice-container {
-      margin: 20px auto;
-      padding: 20px;
-    }
-  
-    .invoice-header {
-      font-size: 20px;
-    }
-  
-    .invoice-input,
-    .invoice-button {
-      font-size: 14px;
-    }
-  }
+}
+
+.invoice-container {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* Ajustements pour le sidebar et navbar */
+/* Assurez-vous que le sidebar n'a pas de marge */
+.cool-sidebar {
+  margin: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+/* Ajustement pour que la navbar soit en pleine largeur et collée à la sidebar */
+.navbar-home {
+  width: 100%;
+  margin: 0;
+  padding-left: 30px;
+  padding-right: 30px;
+  height: 80px; /* Hauteur agrandie */
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}

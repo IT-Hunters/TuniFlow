@@ -549,3 +549,31 @@ table tbody tr:last-child td {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+.qr-scanner {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.qr-scanner h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.equal-height-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.equal-height-row .stretch-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-section {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}

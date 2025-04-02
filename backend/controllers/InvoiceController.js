@@ -7,7 +7,7 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs"); // Import unique et standard de fs
 const path = require("path");
 const { v4: uuidv4 } = require('uuid');
-
+const QRCode = require("qrcode");
 // Vérifiez que fs.createWriteStream est disponible
 console.log('fs.createWriteStream available:', typeof fs.createWriteStream === 'function');
 
@@ -94,6 +94,7 @@ exports.sendInvoice = async (req, res) => {
   try {
     const { invoiceId } = req.params;
 
+    // Récupérer les détails de la facture
     const invoice = await Bill.findById(invoiceId)
       .populate("creator_id", "fullname email")
       .populate("recipient_id", "fullname email")
@@ -103,14 +104,28 @@ exports.sendInvoice = async (req, res) => {
       return res.status(403).json({ message: "You are not authorized to send this invoice" });
     }
 
+    // Générer le PDF de la facture
     const pdfPath = await generateInvoicePDF(invoice);
-
     if (!fs.existsSync(pdfPath)) {
-      console.error('PDF file not found:', pdfPath);
+      console.error("PDF file not found:", pdfPath);
       return res.status(500).json({ message: "Error: PDF file was not generated correctly" });
     }
-    console.log('PDF file found:', pdfPath);
+    console.log("PDF file found:", pdfPath);
 
+    // Générer le QR Code
+    const qrCodeData = `http://localhost:3000/invoices/${invoiceId}/accept`; // Lien pour accepter la facture
+    const qrCodePath = path.join(__dirname, "../invoices", `qr_${invoiceId}.png`);
+    await QRCode.toFile(qrCodePath, qrCodeData, {
+      errorCorrectionLevel: "H",
+      width: 200,
+    });
+    if (!fs.existsSync(qrCodePath)) {
+      console.error("QR code file not found:", qrCodePath);
+      return res.status(500).json({ message: "Error: QR code was not generated correctly" });
+    }
+    console.log("QR code generated at:", qrCodePath);
+
+    // Configurer l'email avec Nodemailer
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
@@ -140,9 +155,11 @@ exports.sendInvoice = async (req, res) => {
             </tr>
             <tr>
               <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Category</td>
-              <td style="padding: 10px; border: 1px solid #ddd;">${invoice.category || 'N/A'}</td>
+              <td style="padding: 10px; border: 1px solid #ddd;">${invoice.category || "N/A"}</td>
             </tr>
           </table>
+          <p style="color: #555;">Scan the QR code below to accept and pay this invoice:</p>
+          <img src="cid:qr_code" alt="QR Code" style="display: block; margin: 20px auto; width: 200px;"/>
           <p style="color: #555;">Please find the invoice PDF attached.</p>
           <p style="color: #555;">Best regards,<br>TuniFlow Team</p>
           <div style="text-align: center; margin-top: 20px;">
@@ -150,13 +167,16 @@ exports.sendInvoice = async (req, res) => {
           </div>
         </div>
       `,
-      attachments: [{ filename: `invoice_${invoice._id}.pdf`, path: pdfPath }]
+      attachments: [
+        { filename: `invoice_${invoice._id}.pdf`, path: pdfPath },
+        { filename: `qr_${invoice._id}.png`, path: qrCodePath, cid: "qr_code" } // CID pour intégrer l'image dans le HTML
+      ]
     };
 
     await transporter.sendMail(mailOptions);
-    console.log('Email successfully sent to:', invoice.recipient_id.email);
+    console.log("Email successfully sent to:", invoice.recipient_id.email);
 
-    res.status(200).json({ message: "Invoice successfully sent to the Business Owner!" });
+    res.status(200).json({ message: "Invoice successfully sent to the Business Owner with QR code!" });
   } catch (error) {
     console.error("Error sending invoice:", error.message);
     res.status(500).json({ message: "Error while sending the invoice", error: error.message });
