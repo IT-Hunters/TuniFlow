@@ -9,9 +9,10 @@ const jwt = require("jsonwebtoken");
 const FinancialManager = require("../model/FinancialManager");
 const BusinessOwner = require("../model/BusinessOwner");
 const Accountant = require("../model/Accountant");
+const taxe=require("../model/TaxeModels/Taxes")
 const { getBusinessOwnerFromToken } = require("./auth");
 const RH = require("../model/RH");
-
+const assets_actif=require("../model/AssetActif/AssetActif")
 const Project = require("../model/Project");
 const BusinessManager = require("../model/BusinessManager");
 
@@ -121,10 +122,24 @@ async function assignAccountantToProject(req, res) {
 }
 async function getbyid(req, res) {
     try {
-        const data = await Project.findById(req.params.id);
+        const data = await Project.findById(req.params.id)
+            .populate('businessManager', 'fullname email') // Peuple le businessManager avec seulement fullname et email
+            .populate('accountants', 'fullname email')    // Peuple les accountants
+            .populate('financialManagers', 'fullname email') // Peuple les financialManagers
+            .populate('businessOwner', 'fullname email')    // Peuple le businessOwner
+            .populate('rhManagers', 'fullname email')      // Peuple les rhManagers
+            .populate('taxes')                             // Peuple toutes les taxes
+            .populate('assets_actif')                      // Peuple tous les assets_actif
+            .exec();
+
+        if (!data) {
+            return res.status(404).send({ message: "Project not found" });
+        }
+
         res.send(data);
     } catch (err) {
-        res.send(err);
+        console.error("Error fetching project:", err);
+        res.status(500).send({ message: "Server error", error: err.message });
     }
 }
 async function assignFinancialManagerToProject(req, res) {
@@ -444,32 +459,66 @@ const updateproject = async (req, res) => {
   
   const deleteProjectById = async (req, res) => {
     try {
-        const { id: projectId } = req.params; // Correction ici ✅
+        const { id: projectId } = req.params;
 
-        // Vérifier si le projet existe
+        // 1. Vérifier l'existence du projet
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).json({ message: "Projet non trouvé" });
         }
 
-        // Désaffecter les utilisateurs liés
-        await BusinessManager.updateOne({ _id: project.businessManager }, { $unset: { project: "" } });
-        await Accountant.updateMany({ _id: { $in: project.accountants } }, { $pull: { projects: projectId } });
-        await FinancialManager.updateMany({ _id: { $in: project.financialManagers } }, { $pull: { projects: projectId } });
-        await BusinessOwner.updateOne({ _id: project.businessOwner }, { $unset: { project: "" } });
-        await RH.updateMany({ _id: { $in: project.rhManagers } }, { $pull: { projects: projectId } });
+        // 2. Désaffectation des utilisateurs (en parallèle)
+        await Promise.all([
+            // Désaffectation des managers
+            BusinessManager.updateOne({ _id: project.businessManager }, { $unset: { project: "" } }),
+            BusinessOwner.updateOne({ _id: project.businessOwner }, { $unset: { project: "" } }),
+            
+            // Retrait des références dans les tableaux
+            Accountant.updateMany({ _id: { $in: project.accountants } }, { $pull: { projects: projectId } }),
+            FinancialManager.updateMany({ _id: { $in: project.financialManagers } }, { $pull: { projects: projectId } }),
+            RH.updateMany({ _id: { $in: project.rhManagers } }, { $pull: { projects: projectId } })
+        ]);
 
-        // Supprimer le projet
+        // 3. Nettoyage des taxes (deux options au choix)
+        // OPTION A: Désassociation
+        await taxe.updateMany({ projet: projectId }, { $unset: { projet: "" } });
+        
+        // OPTION B: Suppression (décommentez si nécessaire)
+        // await Taxes.deleteMany({ projet: projectId });
+
+        // 4. Gestion des assets_actif (deux options)
+        // OPTION A: Désassociation
+        await assets_actif.updateMany({ _id: { $in: project.assets_actif } }, { $unset: { projet_id: "" } });
+        
+        // OPTION B: Suppression (décommentez si nécessaire)
+        // await AssetActif.deleteMany({ _id: { $in: project.assets_actif } });
+
+        // 5. Suppression finale du projet
         await Project.findByIdAndDelete(projectId);
 
-        res.status(200).json({ message: "Projet supprimé avec succès et utilisateurs désaffectés" });
+        res.status(200).json({ 
+            success: true,
+            message: "Projet supprimé avec nettoyage complet des références",
+            details: {
+                project: projectId,
+                taxes_processed: true,
+                assets_processed: true,
+                users_updated: true
+            }
+        });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Erreur lors de la suppression du projet" });
+        console.error("[ERREUR] Suppression projet:", error);
+        res.status(500).json({
+            success: false,
+            message: "Échec de la suppression du projet",
+            error: process.env.NODE_ENV === 'development' ? {
+                message: error.message,
+                stack: error.stack
+            } : undefined
+        });
     }
 };
-
 module.exports = {
     addProject,
     assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,

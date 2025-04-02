@@ -109,6 +109,46 @@ const ProjectView = () => {
                       : 'Ongoing'}
                   </span>
                 </li>
+                <li className="detail-item">
+  <span className="label">Taxes</span>
+  {project.taxes?.length > 0 ? (
+    <ul>
+      {project.taxes.map((tax) => (
+        <li key={tax._id}>
+          <span>Nom :</span> {tax.nom_taxe} <br />
+          <strong>Taux :</strong> {tax.taux}% <br />
+          <strong>Description :</strong> {tax.description} <br />
+          <strong>Date d'effet :</strong> {new Date(tax.date_effet).toLocaleDateString()} <br />
+          <strong>Catégorie :</strong> {tax.categorie} <br />
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <span>Aucune taxe assignée</span>
+  )}
+</li>
+<li className="detail-item">
+  <span className="label">Assets Actifs</span>
+  {project.assets_actif?.length > 0 ? (
+    <ul>
+      {project.assets_actif.map((asset) => (
+        <li key={asset._id}>
+          <strong>{asset.name}</strong> - {asset.total_value}$
+          <br />
+          <span>Type: {asset.type_actif}</span>
+          <br />
+          <span>Acquisition: {new Date(asset.date_acquisition).toLocaleDateString()}</span>
+          <br />
+          <span>Catégorie: {asset.type_corporel}</span>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <span>Aucun actif assigné</span>
+  )}
+</li>
+
+
               </ul>
             </div>
 
