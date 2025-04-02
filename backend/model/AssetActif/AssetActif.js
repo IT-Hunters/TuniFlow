@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const AutoIncrement = require('mongoose-sequence')(mongoose);
 const AssetActifSchema = new mongoose.Schema({
-    id: { type: Number, unique: true },
+    
     name: { type: String, required: true },
     total_value: { type: Number, required: true },
     date_acquisition: { type: Date, required: true },

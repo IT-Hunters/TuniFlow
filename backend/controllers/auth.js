@@ -622,7 +622,9 @@ async function findMyProject(req, res) {
                     { path: 'businessOwner', select: 'fullname email' },
                     { path: 'accountants', select: 'fullname email' },
                     { path: 'financialManagers', select: 'fullname email' },
-                    { path: 'rhManagers', select: 'fullname email' }
+                    { path: 'rhManagers', select: 'fullname email' },
+                    { path: 'taxes' }, // Ajouter la population des taxes
+                    { path: 'assets_actif' }
                 ]
             });
 
@@ -648,7 +650,10 @@ async function findMyProject(req, res) {
                 accountants: manager.project.accountants,
                 financialManagers: manager.project.financialManagers,
                 rhManagers: manager.project.rhManagers
-            }
+            },
+        
+            taxes: manager.project.taxes,
+            assets_actif: manager.project.assets_actif
         };
 
         res.status(200).json(projectData);

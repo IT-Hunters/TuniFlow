@@ -5,7 +5,7 @@ import './ProjectDetails.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 
-const API_URL = 'http://localhost:3000/project/getbyid'; // Your backend URL
+const API_URL = 'http://localhost:3000/project/getbyid';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -56,6 +56,15 @@ const ProjectDetails = () => {
         setError('Failed to delete project');
       }
     }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   if (loading) {
@@ -133,26 +142,96 @@ const ProjectDetails = () => {
                   </li>
                   <li className="detail-item">
                     <span className="label">Start Date</span>
-                    <span>
-                      {new Date(project.startDate || project.createdAt).toLocaleDateString()}
-                    </span>
+                    <span>{formatDate(project.createdAt)}</span>
                   </li>
                   <li className="detail-item">
                     <span className="label">End Date</span>
-                    <span>
-                      {project.due_date
-                        ? new Date(project.due_date).toLocaleDateString()
-                        : 'Ongoing'}
-                    </span>
+                    <span>{formatDate(project.due_date) || 'Ongoing'}</span>
                   </li>
                 </ul>
               </div>
+
               <div className="detail-card">
                 <h2 className="card-title">Description</h2>
                 <p className="description">
                   {project.description || 'No description provided.'}
                 </p>
               </div>
+
+              {/* Taxes Section */}
+              <div className="detail-card">
+                <h2 className="card-title">Taxes</h2>
+                {project.taxes?.length > 0 ? (
+                  <div className="grid-container">
+                    {project.taxes.map(tax => (
+                      <div key={tax._id} className="info-card">
+                        <h3>{tax.nom_taxe}</h3>
+                        <div className="info-details">
+                          <p><strong>Category:</strong> {tax.categorie}</p>
+                          <p><strong>Rate:</strong> ${tax.taux}</p>
+                          <p><strong>Effective Date:</strong> {formatDate(tax.date_effet)}</p>
+                          <p><strong>Description:</strong> {tax.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-data">No taxes assigned</p>
+                )}
+              </div>
+
+              {/* Assets Section */}
+              <div className="detail-card">
+                <h2 className="card-title">Active Assets</h2>
+                {project.assets_actif?.length > 0 ? (
+                  <div className="grid-container">
+                    {project.assets_actif.map(asset => (
+                      <div key={asset._id} className="info-card">
+                        <h3>{asset.name}</h3>
+                        <div className="info-details">
+                          <p><strong>Type:</strong> {asset.type_actif}</p>
+                          <p><strong>Value:</strong> ${asset.total_value}</p>
+                          <p><strong>Acquisition Date:</strong> {formatDate(asset.date_acquisition)}</p>
+                          <p><strong>Corporeal Type:</strong> {asset.type_corporel}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-data">No active assets</p>
+                )}
+              </div>
+
+              {/* Obligations Fiscales Section */}
+              {project.obligations_fiscales?.length > 0 && (
+                <div className="detail-card">
+                  <h2 className="card-title">Fiscal Obligations</h2>
+                  <div className="grid-container">
+                    {project.obligations_fiscales.map(obligation => (
+                      <div key={obligation._id} className="info-card">
+                        <h3>{obligation.name || `Obligation ${obligation._id.slice(-4)}`}</h3>
+                        {/* Add more obligation details here if available */}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Employees Section */}
+              {project.employees?.length > 0 && (
+                <div className="detail-card">
+                  <h2 className="card-title">Employees</h2>
+                  <div className="grid-container">
+                    {project.employees.map(employee => (
+                      <div key={employee._id} className="info-card">
+                        <h3>{employee.fullname}</h3>
+                        <p>{employee.email}</p>
+                        {/* Add more employee details here if available */}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* Right Column: Team Members */}
@@ -197,6 +276,19 @@ const ProjectDetails = () => {
                       <div key={fm._id} className="team-subitem">
                         <p className="team-name">{fm.fullname}</p>
                         <p className="team-email">{fm.email}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="no-members">None assigned</p>
+                  )}
+                </div>
+                <div className="team-card">
+                  <h3 className="team-role">RH Managers</h3>
+                  {project.rhManagers?.length > 0 ? (
+                    project.rhManagers.map((rh) => (
+                      <div key={rh._id} className="team-subitem">
+                        <p className="team-name">{rh.fullname}</p>
+                        <p className="team-email">{rh.email}</p>
                       </div>
                     ))
                   ) : (

@@ -9,9 +9,10 @@ const jwt = require("jsonwebtoken");
 const FinancialManager = require("../model/FinancialManager");
 const BusinessOwner = require("../model/BusinessOwner");
 const Accountant = require("../model/Accountant");
+const taxe=require("../model/TaxeModels/Taxes")
 const { getBusinessOwnerFromToken } = require("./auth");
 const RH = require("../model/RH");
-
+const assets_actif=require("../model/AssetActif/AssetActif")
 const Project = require("../model/Project");
 const BusinessManager = require("../model/BusinessManager");
 
@@ -123,10 +124,24 @@ async function assignAccountantToProject(req, res) {
 }
 async function getbyid(req, res) {
     try {
-        const data = await Project.findById(req.params.id);
+        const data = await Project.findById(req.params.id)
+            .populate('businessManager', 'fullname email') // Peuple le businessManager avec seulement fullname et email
+            .populate('accountants', 'fullname email')    // Peuple les accountants
+            .populate('financialManagers', 'fullname email') // Peuple les financialManagers
+            .populate('businessOwner', 'fullname email')    // Peuple le businessOwner
+            .populate('rhManagers', 'fullname email')      // Peuple les rhManagers
+            .populate('taxes')                             // Peuple toutes les taxes
+            .populate('assets_actif')                      // Peuple tous les assets_actif
+            .exec();
+
+        if (!data) {
+            return res.status(404).send({ message: "Project not found" });
+        }
+
         res.send(data);
     } catch (err) {
-        res.send(err);
+        console.error("Error fetching project:", err);
+        res.status(500).send({ message: "Server error", error: err.message });
     }
 }
 async function assignFinancialManagerToProject(req, res) {
@@ -345,13 +360,173 @@ async function getMyProject(req, res) {
         res.status(500).json({ message: "Server error", error });
     }
 }
+const getAllAccountantsofproject = async (req, res) => {
+    try {
+        // Récupérer l'ID du Business Manager connecté
+        const userId = req.user.userId;
 
+        // Trouver le projet associé
+        const project = await Project.findOne({ businessManager: userId }).populate("accountants");
+
+        console.log("Projet trouvé :", project); // Vérifier si un projet est trouvé
+
+        // Comptables liés au projet
+        const projectAccountants = project ? project.accountants : [];
+
+        console.log("Comptables liés au projet :", projectAccountants);
+
+        // Comptables qui n'ont pas de projet (ajouter null et undefined pour éviter les erreurs)
+        const accountantsWithoutProject = await userModel.find({ 
+            role: "ACCOUNTANT", 
+            $or: [{ project: { $exists: false } }, { project: null }]
+        });
+
+        console.log("Comptables sans projet :", accountantsWithoutProject);
+
+        // Fusionner les deux listes
+        const allAccountants = [...projectAccountants, ...accountantsWithoutProject];
+
+        return res.status(200).json({ accountants: allAccountants });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des comptables :", error);
+        return res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+const getAllHRsOfProject = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Récupérer le projet associé
+        const project = await Project.findOne({ businessManager: userId }).populate("rhManagers");
+
+        const projectHRs = project ? project.rhManagers : [];
+
+        // Récupérer les HRs qui n'ont pas de projet
+        const hrsWithoutProject = await userModel.find({ 
+            role: "HR", 
+            $or: [{ project: { $exists: false } }, { project: null }]
+        });
+
+        // Fusionner les deux listes
+        const rhManagers = [...projectHRs, ...hrsWithoutProject];
+
+        return res.status(200).json({ rhManagers: rhManagers });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des HRs :", error);
+        return res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+const getAllFinancialManagersOfProject = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Récupérer le projet associé
+        const project = await Project.findOne({ businessManager: userId }).populate("financialManagers");
+
+        const projectFinancialManagers = project ? project.financialManagers : [];
+
+        // Récupérer les Financial Managers qui n'ont pas de projet
+        const financialManagersWithoutProject = await userModel.find({ 
+            role: "FINANCIAL_MANAGER", 
+            $or: [{ project: { $exists: false } }, { project: null }]
+        });
+
+        // Fusionner les deux listes
+        const allFinancialManagers = [...projectFinancialManagers, ...financialManagersWithoutProject];
+
+        return res.status(200).json({ financialManagers: allFinancialManagers });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des Financial Managers :", error);
+        return res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+const updateproject = async (req, res) => {
+    const projectID = req.params.id;
+    // Récupérer les nouveaux champs du contact à partir du body de la requête
+  
+    try {
+      // Recherche du contact à modifier et mise à jour
+      const updatedproject = await Project.findByIdAndUpdate(projectID, req.body, { new: true });
+  
+      if (!updatedproject) {
+        return res.status(404).json({ message: 'pays non trouvé' });
+      }
+  
+      res.status(200).json({ message: 'project mis à jour avec succès', project: updatedproject });
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour du project:', err);
+      res.status(500).json({ message: 'Erreur interne', error: err });
+    }
+  };
+  
+  const deleteProjectById = async (req, res) => {
+    try {
+        const { id: projectId } = req.params;
+
+        // 1. Vérifier l'existence du projet
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Projet non trouvé" });
+        }
+
+        // 2. Désaffectation des utilisateurs (en parallèle)
+        await Promise.all([
+            // Désaffectation des managers
+            BusinessManager.updateOne({ _id: project.businessManager }, { $unset: { project: "" } }),
+            BusinessOwner.updateOne({ _id: project.businessOwner }, { $unset: { project: "" } }),
+            
+            // Retrait des références dans les tableaux
+            Accountant.updateMany({ _id: { $in: project.accountants } }, { $pull: { projects: projectId } }),
+            FinancialManager.updateMany({ _id: { $in: project.financialManagers } }, { $pull: { projects: projectId } }),
+            RH.updateMany({ _id: { $in: project.rhManagers } }, { $pull: { projects: projectId } })
+        ]);
+
+        // 3. Nettoyage des taxes (deux options au choix)
+        // OPTION A: Désassociation
+        await taxe.updateMany({ projet: projectId }, { $unset: { projet: "" } });
+        
+        // OPTION B: Suppression (décommentez si nécessaire)
+        // await Taxes.deleteMany({ projet: projectId });
+
+        // 4. Gestion des assets_actif (deux options)
+        // OPTION A: Désassociation
+        await assets_actif.updateMany({ _id: { $in: project.assets_actif } }, { $unset: { projet_id: "" } });
+        
+        // OPTION B: Suppression (décommentez si nécessaire)
+        // await AssetActif.deleteMany({ _id: { $in: project.assets_actif } });
+
+        // 5. Suppression finale du projet
+        await Project.findByIdAndDelete(projectId);
+
+        res.status(200).json({ 
+            success: true,
+            message: "Projet supprimé avec nettoyage complet des références",
+            details: {
+                project: projectId,
+                taxes_processed: true,
+                assets_processed: true,
+                users_updated: true
+            }
+        });
+
+    } catch (error) {
+        console.error("[ERREUR] Suppression projet:", error);
+        res.status(500).json({
+            success: false,
+            message: "Échec de la suppression du projet",
+            error: process.env.NODE_ENV === 'development' ? {
+                message: error.message,
+                stack: error.stack
+            } : undefined
+        });
+    }
+};
 module.exports = {
     addProject,
-    assignAccountantToProject,
-    assignRHManagerToProject,
+    assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,
+    assignRHManagerToProject,updateproject,
     assignFinancialManagerToProject,
-    unassignRHManagerFromProject,
+    unassignRHManagerFromProject,deleteProjectById,
     unassignFinancialManagerFromProject,
     unassignAccountantFromProject,
     getProjectById,

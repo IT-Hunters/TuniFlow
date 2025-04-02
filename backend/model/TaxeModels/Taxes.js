@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const TaxesSchema = new mongoose.Schema({
-    id: { type: Number, required: true, unique: true },
+    
     nom_taxe: { type: String, required: true },
     taux: { type: Number, required: true },
     description: { type: String },
