@@ -6,7 +6,7 @@ import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 
 const API_URL = 'http://localhost:3000/project/getbyid';
-
+const GENERATE_REPORT_URL = 'http://localhost:3000/project/generate-report';
 const ProjectDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -57,7 +57,24 @@ const ProjectDetails = () => {
       }
     }
   };
+  const handleGenerateReport = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${GENERATE_REPORT_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob', // Pour indiquer que la réponse est un fichier (PDF)
+      });
 
+      // Créer un lien temporaire pour télécharger le fichier
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(response.data);
+      link.download = `project-${id}-report.pdf`; // Nom du fichier à télécharger
+      link.click();
+    } catch (err) {
+      console.error('Error generating report:', err);
+      alert('Failed to generate report');
+    }
+  };
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -118,6 +135,9 @@ const ProjectDetails = () => {
               </Link>
               <button onClick={handleDelete} className="action-btn delete-btn">
                 Delete Project
+              </button>
+              <button onClick={handleGenerateReport} className="action-btn generate-report-btn">
+                Generate Report
               </button>
             </div>
           </header>
