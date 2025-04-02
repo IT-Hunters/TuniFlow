@@ -15,7 +15,8 @@ const RH = require("../model/RH");
 const assets_actif=require("../model/AssetActif/AssetActif")
 const Project = require("../model/Project");
 const BusinessManager = require("../model/BusinessManager");
-
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
 async function addProject(businessManagerId, projectData) {
     try {
         console.log("Starting addProject function");
@@ -519,10 +520,165 @@ const updateproject = async (req, res) => {
         });
     }
 };
+const generateProjectReport = async (res) => {
+    try {
+        // Vérifie si le dossier "reports" existe, sinon le créer
+        const reportsDir = "./reports";
+        if (!fs.existsSync(reportsDir)) {
+            fs.mkdirSync(reportsDir);
+        }
+
+        const projects = await Project.find()
+            
+            .populate("businessManager", "fullname")
+            .populate("businessOwner", "fullname")
+            .populate("employees", "name")
+            .populate("financialManagers", "fullname")
+            .populate("accountants", "fullname")
+            .populate("rhManagers", "fullname");
+
+        const doc = new PDFDocument();
+        const fileName = `project-report-${Date.now()}.pdf`;
+        const filePath = `${reportsDir}/${fileName}`;
+        const stream = fs.createWriteStream(filePath);
+
+        doc.pipe(stream);
+        doc.fontSize(18).text("Rapport des Projets", { align: "center" });
+        doc.moveDown(2);
+
+        projects.forEach((project, index) => {
+            doc.fontSize(14).text(`Projet #${index + 1}`);
+            doc.fontSize(12).text(`- Statut : ${project.status}`);
+            doc.text(`- Montant : ${project.amount || "N/A"} €`);
+            doc.text(`- Date d'échéance : ${project.due_date.toDateString()}`);
+            doc.text(`- Manager : ${project.businessManager?.fullname || "Non Assigné"}`);
+            doc.text(`- Owner : ${project.businessOwner?.fullname || "Non Assigné"}`);
+            doc.text(`- Financial Managers : ${project.financialManagers.map(fm => fm.fullname).join(", ") || "Aucun financier"}`);
+            doc.text(`- Accountants : ${project.accountants.map(acc => acc.fullname).join(", ") || "Aucun financier"}`);
+            doc.text(`- RH Managers : ${project.rhManagers.map(rh => rh.fullname).join(", ") || "Aucun financier"}`);
+            doc.text(`- Employés : ${project.employees.map(e => e.name).join(", ") || "Aucun employé"}`);
+            doc.moveDown(1);
+        });
+
+        doc.end();
+
+        stream.on("finish", () => {
+            res.download(filePath);
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la génération du rapport", error });
+    }
+};
+const generateProjectReportbyid = async (req, res) => {
+    try {
+        const { projectId } = req.params; // Récupérer l'ID du projet depuis l'URL
+
+        // Vérifie si le dossier "reports" existe, sinon le créer
+        const reportsDir = "./reports";
+        if (!fs.existsSync(reportsDir)) {
+            fs.mkdirSync(reportsDir);
+        }
+
+        // Récupérer le projet en base de données
+        const project = await Project.findById(projectId)
+            .populate("businessManager", "fullname")
+            .populate("businessOwner", "fullname")
+            .populate("employees", "name")
+            .populate("financialManagers", "fullname")
+            .populate("accountants", "fullname")
+            .populate("rhManagers", "fullname")
+            .populate("assets_actif", "name");
+
+        if (!project) {
+            return res.status(404).json({ message: "Projet non trouvé" });
+        }
+
+        const doc = new PDFDocument();
+        const fileName = `project-${projectId}-report-${Date.now()}.pdf`;
+        const filePath = `${reportsDir}/${fileName}`;
+        const stream = fs.createWriteStream(filePath);
+
+        doc.pipe(stream);
+        doc.fontSize(18).text(`Rapport du Projet : ${projectId}`, { align: "center" });
+        doc.moveDown(2);
+
+        doc.fontSize(14).text("Détails du Projet");
+        doc.fontSize(12).text(`- Statut : ${project.status}`);
+        doc.text(`- Montant : ${project.amount || "N/A"} €`);
+        doc.text(`- Date d'échéance : ${project.due_date.toDateString()}`);
+        doc.text(`- Manager : ${project.businessManager?.fullname || "Non Assigné"}`);
+        doc.text(`- Owner : ${project.businessOwner?.fullname || "Non Assigné"}`);
+        doc.text(`- Financial Managers : ${project.financialManagers.map(fm => fm.fullname).join(", ") || "Aucun financier"}`);
+        doc.text(`- Accountants : ${project.accountants.map(acc => acc.fullname).join(", ") || "Aucun financier"}`);
+        doc.text(`- RH Managers : ${project.rhManagers.map(rh => rh.fullname).join(", ") || "Aucun financier"}`);
+        doc.text(`- Assets Actif : ${project.assets_actif.map(ass => ass.name).join(", ") || "Aucun financier"}`);
+        doc.text(`- Employés : ${project.employees.map(e => e.name).join(", ") || "Aucun employé"}`);
+        doc.moveDown(1);
+
+        doc.end();
+
+        stream.on("finish", () => {
+            res.download(filePath);
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la génération du rapport", error });
+    }
+};
+const generateProjectsReportowner = async (req, res) => {
+    try {
+        const userId = req.user.userId; // L'ID de l'utilisateur extrait du token après authentification
+
+        // Trouver l'utilisateur et ses projets associés
+        const user = await userModel.findById(userId).populate('projects');
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!user.projects || user.projects.length === 0) {
+            return res.status(404).json({ message: 'No projects found for this user' });
+        }
+
+        // Créer un document PDF
+        const doc = new PDFDocument();
+
+        // Créer un flux pour la réponse
+        const stream = res.writeHead(200, {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename="projects_report.pdf"',
+        });
+
+        // Pipe le document vers la réponse HTTP (envoie directement au client)
+        doc.pipe(stream);
+
+        // Ajouter un titre au rapport
+        doc.fontSize(18).text('Rapport des Projets', { align: 'center' });
+
+        // Ajouter des informations sur chaque projet
+        user.projects.forEach((project, index) => {
+            doc.addPage();
+            doc.fontSize(14).text(`Projet ${index + 1}: ${project.name || 'Nom du projet non défini'}`, { underline: true });
+            doc.moveDown();
+            doc.fontSize(12).text(`Statut : ${project.status || 'Non spécifié'}`);
+            doc.text(`Budget : $${project.amount ? project.amount.toLocaleString() : 'Non spécifié'}`);
+            doc.text(`Date de fin : ${project.endDate ? new Date(project.endDate).toLocaleDateString() : 'En cours'}`);
+            doc.text(`ID du projet : ${project._id}`);
+            doc.moveDown(2); // Ajoute de l'espace entre les projets
+        });
+
+        // Finaliser et envoyer le PDF
+        doc.end();
+    } catch (error) {
+        console.error("Error generating report:", error);
+        res.status(500).json({ message: 'Server error while generating the report' });
+    }
+};
 module.exports = {
     addProject,
     assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,
-    assignRHManagerToProject,updateproject,
+    assignRHManagerToProject,updateproject,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner,
     assignFinancialManagerToProject,
     unassignRHManagerFromProject,deleteProjectById,
     unassignFinancialManagerFromProject,
