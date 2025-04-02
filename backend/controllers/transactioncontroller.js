@@ -217,11 +217,7 @@ exports.transfer = async (req, res) => {
       wallet_id: senderWalletId,
       amount: amount,
       type: "expense",
-<<<<<<< HEAD
       balanceAfterTransaction: newSenderBalance,
-=======
-      balanceAfterTransaction: newSenderBalance, // Fixed here
->>>>>>> 493d820ae0c413f72290395c2ac8134e5d9e87a4
     });
 
     // Create the deposit transaction for the receiver
@@ -336,5 +332,27 @@ exports.getExpenses = async (req, res) => {
   } catch (error) {
     console.error("Error calculating expenses:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+exports.getTransactionByWalletId = async (req, res) => {
+  try {
+    const { walletId } = req.params;
+
+    const transaction = await Transaction.find({
+      wallet_id: walletId
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ 
+        message: "Transaction not found for this wallet" 
+      });
+    }
+
+    res.status(200).json({
+      message: "Transaction retrieved successfully",
+      data: transaction
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

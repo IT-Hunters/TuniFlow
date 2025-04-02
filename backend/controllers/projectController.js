@@ -42,7 +42,8 @@ async function addProject(businessManagerId, projectData) {
             throw new Error("This BusinessManager already has an assigned project");
         }
         console.log("BusinessManager has no assigned project");
-
+        const wallet = new Wallet();
+        await wallet.save();
         // ✅ Create a new project
         const project = new Project({
             amount: projectData.amount,
@@ -53,6 +54,7 @@ async function addProject(businessManagerId, projectData) {
             accountants: projectData.accountants,
             financialManagers: projectData.financialManagers,
             rhManagers: projectData.rhManagers,
+            wallet: wallet
         });
         console.log("Project created:", project);
 

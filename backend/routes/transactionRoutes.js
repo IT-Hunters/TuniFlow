@@ -12,13 +12,14 @@ router.post("/withdraw/:walletId", transactioncontroller.withdraw);
 // 📌 Obtenir le solde d'un wallet
 router.get("/balance/:walletId", transactioncontroller.getBalance);
 
-router.get("/getTransactions/:walletId", transactioncontroller.getTransactions); // Corrigé
+router.get("/getTransactions/:walletId", transactioncontroller.getTransactions); 
+router.get("/getTransactionByWalletId/:walletId", transactioncontroller.getTransactionByWalletId);
 
 // 📌 Annuler une transaction
-router.put("/cancelTransaction/:transactionId", transactioncontroller.cancelTransaction); // Corrigé
+router.put("/cancelTransaction/:transactionId", transactioncontroller.cancelTransaction); 
 
 // 📌 Mettre à jour une transaction
-router.put("/updateTransaction/:transactionId", transactioncontroller.updateTransaction); // Corrigé
+router.put("/updateTransaction/:transactionId", transactioncontroller.updateTransaction);
 router.get("/expenses/:walletId", transactioncontroller.getExpenses);
 // 📌 Transférer de l'argent entre deux wallets
 router.post("/transfer/:senderWalletId/:receiverWalletId", transactioncontroller.transfer);

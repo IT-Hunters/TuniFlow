@@ -1,4 +1,3 @@
-// User.jsx
 import { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import {
@@ -25,13 +24,19 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 export default function User() {
   const [selectedRole, setSelectedRole] = useState("all");
-
+  const walletId = "67d15c34ea844b95d23a1788"; 
+  const projectId = "67e8cad500e54584114910e8";
   return (
     <div className="container">
       <CoolSidebar />
       <div className="main">
         <Navbar />
-        <Dashboard selectedRole={selectedRole} setSelectedRole={setSelectedRole} />
+        <Dashboard 
+          selectedRole={selectedRole} 
+          setSelectedRole={setSelectedRole} 
+          walletId={walletId} 
+          projectId={projectId}
+        />
       </div>
     </div>
   );
@@ -45,7 +50,7 @@ export function TransactionList({ walletId }) {
   useEffect(() => {
     const fetchTransactions = async () => {
       if (!walletId) return;
-      walletId = "67d15c34ea844b95d23a1788";
+
       setLoading(true);
       const now = new Date();
       const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
@@ -71,7 +76,7 @@ export function TransactionList({ walletId }) {
     };
 
     fetchTransactions();
-  }, [walletId]);
+  }, [walletId]); // Keep walletId in the dependency array
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="error">{error}</p>;
@@ -95,7 +100,7 @@ export function TransactionList({ walletId }) {
   );
 }
 
-function Dashboard({ selectedRole, setSelectedRole }) {
+function Dashboard({ selectedRole, setSelectedRole, walletId,projectId }) { // Accept walletId as a prop
   return (
     <div className="main-panel">
       <div className="content-wrapper">
@@ -109,12 +114,12 @@ function Dashboard({ selectedRole, setSelectedRole }) {
         {/* Row 2: TransactionChart + ProjectsOverview */}
         <div className="row equal-height-row">
           <div className="col-lg-6 grid-margin stretch-card">
-            <TransactionChart />
+            <TransactionChart walletId={walletId} /> {/* Pass walletId */}
           </div>
           <div className="col-lg-6 grid-margin stretch-card">
             <div className="dashboard-section">
               <RoleSelector selectedRole={selectedRole} setSelectedRole={setSelectedRole} />
-              <ProjectsOverview selectedRole={selectedRole} />
+              <ProjectsOverview selectedRole={selectedRole} projectId={projectId} />
             </div>
           </div>
         </div>
