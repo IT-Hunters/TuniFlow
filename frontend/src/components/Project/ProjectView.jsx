@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './ProjectView.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 
-const API_URL = 'http://localhost:3000/users'; // Replace with your backend URL
+const API_URL = 'http://localhost:3000/users';
 
 const ProjectView = () => {
   const [project, setProject] = useState(null);
@@ -26,10 +26,14 @@ const ProjectView = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        if (!response.data.id) {
+          throw new Error("Le projet retourné n'a pas d'ID");
+        }
+
         setProject(response.data);
       } catch (err) {
-        console.error('Error fetching project:', err);
-        setError(err.response?.data?.message || 'Failed to load project');
+        console.error('Erreur lors de la récupération du projet:', err);
+        setError(err.response?.data?.message || err.message || 'Échec du chargement du projet');
         if (err.response?.status === 401) {
           localStorage.removeItem('token');
           navigate('/login');
@@ -42,11 +46,58 @@ const ProjectView = () => {
     fetchProject();
   }, [navigate]);
 
+  const generateReport = async (projectId) => {
+    if (!projectId) {
+      alert("Impossible de générer le rapport : ID du projet manquant");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const response = await axios.get(
+        `http://localhost:3000/project/generate-report/${projectId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob',
+        }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `rapport-projet-${projectId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (err) {
+      console.error("Erreur lors de la génération du rapport:", err);
+      alert(`Erreur lors de la génération du rapport: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   if (loading) {
     return (
       <div className="state-container loading">
         <div className="spinner"></div>
-        <p>Loading project...</p>
+        <p>Chargement du projet...</p>
       </div>
     );
   }
@@ -54,10 +105,10 @@ const ProjectView = () => {
   if (error) {
     return (
       <div className="state-container error">
-        <h3>Oops, Something Went Wrong</h3>
+        <h3>Oups, quelque chose s'est mal passé</h3>
         <p>{error}</p>
         <button onClick={() => window.location.reload()} className="action-btn retry-btn">
-          Retry
+          Réessayer
         </button>
       </div>
     );
@@ -66,8 +117,8 @@ const ProjectView = () => {
   if (!project) {
     return (
       <div className="state-container empty">
-        <h3>No Project Assigned</h3>
-        <p>You are not currently assigned to any project.</p>
+        <h3>Aucun projet assigné</h3>
+        <p>Vous n'êtes actuellement assigné à aucun projet.</p>
       </div>
     );
   }
@@ -77,124 +128,155 @@ const ProjectView = () => {
       <CoolSidebar />
       <div className="main">
         <Navbar />
-        <div className="project-view-wrapper">
+        <div className="project-details-wrapper">
           <header className="project-header">
             <h1 className="project-title">
-              {project.name || `Project ${project._id?.slice(-4) || 'Unnamed'}`}
+              {project.name || `Projet ${project.id?.slice(-4) || 'Sans nom'}`}
             </h1>
+            <div className="action-buttons">
+  <button 
+    onClick={() => generateReport(project.id)} 
+    className="action-btn generate-report-btn"
+    style={{ backgroundColor: '#4CAF50', color: 'white' }}
+  >
+    Générer Rapport
+  </button>
+</div>
           </header>
 
-          <section className="project-layout">
-            {/* Project Details Card */}
-            <div className="detail-card">
-              <h2 className="card-title">Project Details</h2>
-              <ul className="detail-list">
-                <li className="detail-item">
-                  <span className="label">Status</span>
-                  <span className={`status ${project.status?.toLowerCase() || ''}`}>
-                    {project.status || 'N/A'}
-                  </span>
-                </li>
-                <li className="detail-item">
-                  <span className="label">Budget</span>
-                  <span>
-                    {project.amount ? `$${project.amount.toLocaleString()}` : 'Not specified'}
-                  </span>
-                </li>
-                <li className="detail-item">
-                  <span className="label">Due Date</span>
-                  <span>
-                    {project.endDate
-                      ? new Date(project.endDate).toLocaleDateString()
-                      : 'Ongoing'}
-                  </span>
-                </li>
-                <li className="detail-item">
-  <span className="label">Taxes</span>
-  {project.taxes?.length > 0 ? (
-    <ul>
-      {project.taxes.map((tax) => (
-        <li key={tax._id}>
-          <span>Nom :</span> {tax.nom_taxe} <br />
-          <strong>Taux :</strong> {tax.taux}% <br />
-          <strong>Description :</strong> {tax.description} <br />
-          <strong>Date d'effet :</strong> {new Date(tax.date_effet).toLocaleDateString()} <br />
-          <strong>Catégorie :</strong> {tax.categorie} <br />
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <span>Aucune taxe assignée</span>
-  )}
-</li>
-<li className="detail-item">
-  <span className="label">Assets Actifs</span>
-  {project.assets_actif?.length > 0 ? (
-    <ul>
-      {project.assets_actif.map((asset) => (
-        <li key={asset._id}>
-          <strong>{asset.name}</strong> - {asset.total_value}$
-          <br />
-          <span>Type: {asset.type_actif}</span>
-          <br />
-          <span>Acquisition: {new Date(asset.date_acquisition).toLocaleDateString()}</span>
-          <br />
-          <span>Catégorie: {asset.type_corporel}</span>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <span>Aucun actif assigné</span>
-  )}
-</li>
+          <div className="project-layout">
+            {/* Colonne de gauche : Détails du projet */}
+            <section className="project-details">
+              <div className="detail-card">
+                <h2 className="card-title">Informations du Projet</h2>
+                <ul className="detail-list">
+                  <li className="detail-item">
+                    <span className="label">Statut</span>
+                    <span className={`status ${project.status?.toLowerCase()}`}>
+                      {project.status}
+                    </span>
+                  </li>
+                  <li className="detail-item">
+                    <span className="label">Date de début</span>
+                    <span>{formatDate(project.startDate)}</span>
+                  </li>
+                  <li className="detail-item">
+                    <span className="label">Date de fin</span>
+                    <span>{formatDate(project.endDate) || 'En cours'}</span>
+                  </li>
+                </ul>
+              </div>
 
+              <div className="detail-card">
+                <h2 className="card-title">Description</h2>
+                <p className="description">
+                  {project.description || 'Aucune description fournie.'}
+                </p>
+              </div>
 
-              </ul>
-            </div>
+              {/* Section Taxes */}
+              <div className="detail-card">
+                <h2 className="card-title">Taxes</h2>
+                {project.taxes?.length > 0 ? (
+                  <div className="grid-container">
+                    {project.taxes.map(tax => (
+                      <div key={tax._id} className="info-card">
+                        <h3>{tax.nom_taxe}</h3>
+                        <div className="info-details">
+                          <p><strong>Catégorie:</strong> {tax.categorie}</p>
+                          <p><strong>Taux:</strong> {tax.taux}%</p>
+                          <p><strong>Date d'effet:</strong> {formatDate(tax.date_effet)}</p>
+                          <p><strong>Description:</strong> {tax.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-data">Aucune taxe assignée</p>
+                )}
+              </div>
 
-            {/* Team Members Card */}
-            <div className="team-card">
-              <h2 className="card-title">Team Members</h2>
-              <div className="team-grid">
-                <div className="team-item">
-                  <h3 className="team-role">Business Owner</h3>
+              {/* Section Actifs */}
+              <div className="detail-card">
+                <h2 className="card-title">Actifs</h2>
+                {project.assets_actif?.length > 0 ? (
+                  <div className="grid-container">
+                    {project.assets_actif.map(asset => (
+                      <div key={asset._id} className="info-card">
+                        <h3>{asset.name}</h3>
+                        <div className="info-details">
+                          <p><strong>Type:</strong> {asset.type_actif}</p>
+                          <p><strong>Valeur:</strong> {asset.total_value}$</p>
+                          <p><strong>Date d'acquisition:</strong> {formatDate(asset.date_acquisition)}</p>
+                          <p><strong>Type corporel:</strong> {asset.type_corporel}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-data">Aucun actif enregistré</p>
+                )}
+              </div>
+            </section>
+
+            {/* Colonne de droite : Membres de l'équipe */}
+            <aside className="team-section">
+              <h2 className="section-title">Équipe du Projet</h2>
+              <div className="team-list">
+                <div className="team-card">
+                  <h3 className="team-role">Propriétaire</h3>
                   <p className="team-name">
-                    {project.businessOwner?.fullname || 'Not assigned'}
+                    {project.businessOwner?.fullname || 'Non assigné'}
+                  </p>
+                  <p className="team-email">
+                    {project.businessOwner?.email || '-'}
                   </p>
                 </div>
-                <div className="team-item">
-                  <h3 className="team-role">Accountants</h3>
+                
+                <div className="team-card">
+                  <h3 className="team-role">Comptables</h3>
                   {project.teamMembers?.accountants?.length > 0 ? (
                     project.teamMembers.accountants.map((acc) => (
-                      <p key={acc._id} className="team-name">{acc.fullname}</p>
+                      <div key={acc._id} className="team-subitem">
+                        <p className="team-name">{acc.fullname}</p>
+                        <p className="team-email">{acc.email}</p>
+                      </div>
                     ))
                   ) : (
-                    <p className="no-members">None assigned</p>
+                    <p className="no-members">Aucun comptable assigné</p>
                   )}
                 </div>
-                <div className="team-item">
-                  <h3 className="team-role">Financial Managers</h3>
+
+                <div className="team-card">
+                  <h3 className="team-role">Responsables Financiers</h3>
                   {project.teamMembers?.financialManagers?.length > 0 ? (
                     project.teamMembers.financialManagers.map((fm) => (
-                      <p key={fm._id} className="team-name">{fm.fullname}</p>
+                      <div key={fm._id} className="team-subitem">
+                        <p className="team-name">{fm.fullname}</p>
+                        <p className="team-email">{fm.email}</p>
+                      </div>
                     ))
                   ) : (
-                    <p className="no-members">None assigned</p>
+                    <p className="no-members">Aucun responsable financier assigné</p>
                   )}
                 </div>
-                <div className="team-item">
-                  <h3 className="team-role">HR Managers</h3>
+
+                <div className="team-card">
+                  <h3 className="team-role">Responsables RH</h3>
                   {project.teamMembers?.rhManagers?.length > 0 ? (
                     project.teamMembers.rhManagers.map((rh) => (
-                      <p key={rh._id} className="team-name">{rh.fullname}</p>
+                      <div key={rh._id} className="team-subitem">
+                        <p className="team-name">{rh.fullname}</p>
+                        <p className="team-email">{rh.email}</p>
+                      </div>
                     ))
                   ) : (
-                    <p className="no-members">None assigned</p>
+                    <p className="no-members">Aucun responsable RH assigné</p>
                   )}
                 </div>
               </div>
-            </div>
-          </section>
+            </aside>
+          </div>
         </div>
       </div>
     </div>

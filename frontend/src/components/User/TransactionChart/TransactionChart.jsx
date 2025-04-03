@@ -2,42 +2,149 @@
 
 import { useEffect, useState, useRef } from "react";
 import "./TransactionChart.css";
+import { getTransactionById } from "../../../services/TransactionService";
 
-export default function TransactionChart() {
+export default function TransactionChart({ walletId }) {
   const [activeTab, setActiveTab] = useState("weekly");
   const [chartData, setChartData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const chartRef = useRef(null);
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    const fetchChartData = () => {
-      // Simulating different data for different tabs
-      let labels = [];
-      let values = [];
-
-      if (activeTab === "weekly") {
-        labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-        values = [4500, 3800, 6000, 2700, 5500, 7000, 8500];
-      } else if (activeTab === "monthly") {
-        labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
-        values = [21000, 18000, 24000, 19000];
-      } else {
-        labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        values = [48000, 38000, 42000, 46000, 53000, 59000, 63000, 58000, 56000, 67000, 62000, 73000];
+    const fetchChartData = async () => {
+      if (!walletId) {
+        setError("No wallet ID provided");
+        setLoading(false);
+        return;
       }
 
-      setChartData({ labels, values });
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await getTransactionById(walletId);
+        console.log("Transaction data:", data);
+        if (!data || !data.data || !Array.isArray(data.data)) {
+          throw new Error("Invalid transaction data received");
+        }
+
+        const transactions = data.data;
+        let labels = [];
+        let values = []; // Net values (revenue - expenses)
+        let revenueValues = []; // Track revenue separately
+        let expenseValues = []; // Track expenses separately
+
+        const today = new Date();
+
+        switch (activeTab) {
+          case "weekly": {
+            labels = Array.from({ length: 7 }, (_, i) => {
+              const date = new Date(today);
+              date.setDate(today.getDate() - (6 - i));
+              return date.toLocaleDateString("en-US", { weekday: "short" });
+            });
+
+            values = Array(7).fill(0);
+            revenueValues = Array(7).fill(0);
+            expenseValues = Array(7).fill(0);
+
+            transactions.forEach((tx) => {
+              const txDate = new Date(tx.date);
+              const dayDiff = Math.floor((today - txDate) / (1000 * 60 * 60 * 24));
+              if (dayDiff >= 0 && dayDiff < 7) {
+                const index = 6 - dayDiff;
+                if (tx.type === "income") {
+                  revenueValues[index] += tx.amount || 0;
+                  values[index] += tx.amount || 0;
+                } else if (tx.type === "expense") {
+                  expenseValues[index] += tx.amount || 0;
+                  values[index] -= tx.amount || 0;
+                }
+              }
+            });
+            break;
+          }
+
+          case "monthly": {
+            labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+            values = Array(4).fill(0);
+            revenueValues = Array(4).fill(0);
+            expenseValues = Array(4).fill(0);
+
+            transactions.forEach((tx) => {
+              const txDate = new Date(tx.date);
+              const daysDiff = Math.floor((today - txDate) / (1000 * 60 * 60 * 24));
+              const weekIndex = Math.floor(daysDiff / 7);
+              if (weekIndex >= 0 && weekIndex < 4) {
+                const index = 3 - weekIndex;
+                if (tx.type === "income") {
+                  revenueValues[index] += tx.amount || 0;
+                  values[index] += tx.amount || 0;
+                } else if (tx.type === "expense") {
+                  expenseValues[index] += tx.amount || 0;
+                  values[index] -= tx.amount || 0;
+                }
+              }
+            });
+            break;
+          }
+
+          case "yearly": {
+            labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            values = Array(12).fill(0);
+            revenueValues = Array(12).fill(0);
+            expenseValues = Array(12).fill(0);
+
+            transactions.forEach((tx) => {
+              const txDate = new Date(tx.date);
+              const monthDiff = (today.getFullYear() - txDate.getFullYear()) * 12 + 
+                              (today.getMonth() - txDate.getMonth());
+              if (monthDiff >= 0 && monthDiff < 12) {
+                const index = 11 - monthDiff;
+                if (tx.type === "income") {
+                  revenueValues[index] += tx.amount || 0;
+                  values[index] += tx.amount || 0;
+                } else if (tx.type === "expense") {
+                  expenseValues[index] += tx.amount || 0;
+                  values[index] -= tx.amount || 0;
+                }
+              }
+            });
+            break;
+          }
+        }
+
+        const hasData = values.some(v => v !== 0);
+        if (hasData) {
+          setChartData({
+            labels,
+            values,
+            revenueValues,
+            expenseValues,
+            maxValue: Math.max(...values, 1),
+            minValue: Math.min(...values, 0),
+          });
+        } else {
+          setChartData(null);
+        }
+      } catch (err) {
+        setError("Failed to load transaction data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchChartData();
-  }, [activeTab]);
+  }, [activeTab, walletId]);
 
   return (
     <div className="chart-card">
       <div className="chart-header">
         <div>
           <h2 className="chart-title">Revenue Overview</h2>
-          <p className="chart-description">Track your company's financial performance over time</p>
+          <p className="chart-description">Track your wallet's net financial performance over time</p>
         </div>
         <div className="chart-tabs">
           <button
@@ -61,14 +168,34 @@ export default function TransactionChart() {
         </div>
       </div>
       <div className="chart-content">
-        {chartData ? (
+        {loading ? (
+          <div className="chart-loading">
+            <p>Loading chart data...</p>
+          </div>
+        ) : error ? (
+          <div className="chart-error">
+            <p>{error}</p>
+          </div>
+        ) : chartData ? (
           <div className="chart-container" ref={chartRef}>
             <div className="chart-bars">
               {chartData.labels.map((label, index) => {
-                const height = (chartData.values[index] / Math.max(...chartData.values)) * 250;
+                const value = chartData.values[index];
+                const revenue = chartData.revenueValues[index];
+                const expense = chartData.expenseValues[index];
+                const maxAbsValue = Math.max(chartData.maxValue, Math.abs(chartData.minValue));
+                const height = Math.abs(value) / maxAbsValue * 250;
+                const isNegative = value < 0;
                 return (
                   <div key={label} className="chart-bar-container">
-                    <div className="chart-bar" style={{ height: `${height}px` }}></div>
+                    <div 
+                      className={`chart-bar ${isNegative ? "negative-bar" : "positive-bar"}`}
+                      style={{ 
+                        height: `${height}px`,
+                        transform: isNegative ? "translateY(100%)" : "none",
+                      }}
+                      title={`Revenue: $${revenue.toLocaleString()}\nExpenses: $${expense.toLocaleString()}\nNet: $${value.toLocaleString()}`}
+                    ></div>
                     <div className="chart-label">{label}</div>
                   </div>
                 );
@@ -76,8 +203,8 @@ export default function TransactionChart() {
             </div>
           </div>
         ) : (
-          <div className="chart-loading">
-            <p>Loading chart data...</p>
+          <div className="chart-empty">
+            <p>No data available</p>
           </div>
         )}
       </div>

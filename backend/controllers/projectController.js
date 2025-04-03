@@ -15,7 +15,8 @@ const RH = require("../model/RH");
 const assets_actif=require("../model/AssetActif/AssetActif")
 const Project = require("../model/Project");
 const BusinessManager = require("../model/BusinessManager");
-
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
 async function addProject(businessManagerId, projectData) {
     try {
         console.log("Starting addProject function");
@@ -43,7 +44,8 @@ async function addProject(businessManagerId, projectData) {
             throw new Error("This BusinessManager already has an assigned project");
         }
         console.log("BusinessManager has no assigned project");
-
+        const wallet = new Wallet();
+        await wallet.save();
         // ✅ Create a new project
         const project = new Project({
             amount: projectData.amount,
@@ -54,6 +56,7 @@ async function addProject(businessManagerId, projectData) {
             accountants: projectData.accountants,
             financialManagers: projectData.financialManagers,
             rhManagers: projectData.rhManagers,
+            wallet: wallet
         });
         console.log("Project created:", project);
 
@@ -519,10 +522,393 @@ const updateproject = async (req, res) => {
         });
     }
 };
+const generateProjectReport = async (res) => {
+    try {
+        // Vérifie si le dossier "reports" existe, sinon le créer
+        const reportsDir = "./reports";
+        if (!fs.existsSync(reportsDir)) {
+            fs.mkdirSync(reportsDir);
+        }
+
+        const projects = await Project.find()
+            
+            .populate("businessManager", "fullname")
+            .populate("businessOwner", "fullname")
+            .populate("employees", "name")
+            .populate("financialManagers", "fullname")
+            .populate("accountants", "fullname")
+            .populate("rhManagers", "fullname");
+
+        const doc = new PDFDocument();
+        const fileName = `project-report-${Date.now()}.pdf`;
+        const filePath = `${reportsDir}/${fileName}`;
+        const stream = fs.createWriteStream(filePath);
+
+        doc.pipe(stream);
+        doc.fontSize(18).text("Rapport des Projets", { align: "center" });
+        doc.moveDown(2);
+
+        projects.forEach((project, index) => {
+            doc.fontSize(14).text(`Projet #${index + 1}`);
+            doc.fontSize(12).text(`- Statut : ${project.status}`);
+            doc.text(`- Montant : ${project.amount || "N/A"} €`);
+            doc.text(`- Date d'échéance : ${project.due_date.toDateString()}`);
+            doc.text(`- Manager : ${project.businessManager?.fullname || "Non Assigné"}`);
+            doc.text(`- Owner : ${project.businessOwner?.fullname || "Non Assigné"}`);
+            doc.text(`- Financial Managers : ${project.financialManagers.map(fm => fm.fullname).join(", ") || "Aucun financier"}`);
+            doc.text(`- Accountants : ${project.accountants.map(acc => acc.fullname).join(", ") || "Aucun account"}`);
+            doc.text(`- RH Managers : ${project.rhManagers.map(rh => rh.fullname).join(", ") || "Aucun rh manager"}`);
+            doc.text(`- Employés : ${project.employees.map(e => e.name).join(", ") || "Aucun employé"}`);
+            doc.moveDown(1);
+        });
+
+        doc.end();
+
+        stream.on("finish", () => {
+            res.download(filePath);
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la génération du rapport", error });
+    }
+};
+const generateProjectReportbyid = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+
+        // Récupérer le projet avec toutes les données nécessaires
+        const project = await Project.findById(projectId)
+            .populate("businessManager", "fullname lastname email")
+            .populate("businessOwner", "fullname lastname email")
+            .populate("employees", "name email")
+            .populate("financialManagers", "fullname lastname email")
+            .populate("accountants", "fullname lastname email")
+            .populate("rhManagers", "fullname lastname email")
+            .populate("assets_actif", "name total_value date_acquisition type_actif")
+            .populate("taxes", "nom_taxe taux description categorie date_effet");
+
+        if (!project) {
+            return res.status(404).json({ message: "Projet non trouvé" });
+        }
+
+        const doc = new PDFDocument({ margin: 50 });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="rapport_projet_${projectId}.pdf"`);
+        doc.pipe(res);
+
+        // Styles
+        const styles = {
+            title: { fontSize: 16, align: 'center', font: 'Helvetica-Bold' },
+            sectionTitle: { fontSize: 14, font: 'Helvetica-Bold' },
+            tableHeader: { fontSize: 12, font: 'Helvetica-Bold', fillColor: '#f0f0f0' },
+            tableCell: { fontSize: 12, font: 'Helvetica' },
+            teamMember: { fontSize: 12, font: 'Helvetica', indent: 20 }
+        };
+
+        // Fonction pour dessiner un tableau
+        const drawTable = (headers, rows, columnWidths, startY) => {
+            const rowHeight = 20;
+            let x = 50;
+
+            // En-têtes
+            headers.forEach((header, i) => {
+                doc.rect(x, startY, columnWidths[i], rowHeight)
+                   .fillAndStroke(styles.tableHeader.fillColor, '#333');
+                doc.fillColor('#000')
+                   .text(header, x + 5, startY + 5, { width: columnWidths[i] - 10 });
+                x += columnWidths[i];
+            });
+
+            // Données
+            rows.forEach((row, rowIndex) => {
+                x = 50;
+                row.forEach((cell, colIndex) => {
+                    doc.rect(x, startY + (rowIndex + 1) * rowHeight, columnWidths[colIndex], rowHeight)
+                       .stroke('#ddd');
+                    doc.text(cell, x + 5, startY + (rowIndex + 1) * rowHeight + 5, { 
+                        width: columnWidths[colIndex] - 10,
+                        ...styles.tableCell
+                    });
+                    x += columnWidths[colIndex];
+                });
+            });
+
+            return startY + (rows.length + 1) * rowHeight + 10;
+        };
+
+        // Titre principal
+        doc.text(`Rapport détaillé du projet: ${project.name || project._id}`, styles.title);
+        doc.moveDown(2);
+
+        // Section Informations de base
+        doc.text('Informations Générales', styles.sectionTitle);
+        doc.moveDown(0.5);
+        
+        const baseInfo = [
+            `ID: ${project._id}`,
+            `Statut: ${project.status || 'Non spécifié'}`,
+            `Budget: ${project.amount ? `${project.amount} €` : 'Non spécifié'}`,
+            `Date d'échéance: ${project.due_date ? new Date(project.due_date).toLocaleDateString('fr-FR') : 'N/A'}`
+        ];
+        
+        baseInfo.forEach(info => doc.text(info, styles.tableCell));
+        doc.moveDown(1);
+
+        // Section Équipe
+        doc.text('Équipe du Projet', styles.sectionTitle);
+        doc.moveDown(0.5);
+        
+        doc.text(`Propriétaire: ${project.businessOwner?.fullname || 'Non assigné'} ${project.businessOwner?.lastname || ''} (${project.businessOwner?.email || 'N/A'})`, styles.teamMember);
+        doc.text(`Manager: ${project.businessManager?.fullname || 'Non assigné'} ${project.businessManager?.lastname || ''} (${project.businessManager?.email || 'N/A'})`, styles.teamMember);
+        
+        // Comptables
+        doc.text('Comptables:', { ...styles.teamMember, font: 'Helvetica-Bold' });
+        project.accountants?.length > 0 
+            ? project.accountants.forEach(acc => 
+                doc.text(`- ${acc.fullname} ${acc.lastname || ''} (${acc.email || 'N/A'})`, styles.teamMember))
+            : doc.text('- Aucun comptable assigné', styles.teamMember);
+        
+        // Responsables Financiers
+        doc.text('Responsables Financiers:', { ...styles.teamMember, font: 'Helvetica-Bold' });
+        project.financialManagers?.length > 0 
+            ? project.financialManagers.forEach(fm => 
+                doc.text(`- ${fm.fullname} ${fm.lastname || ''} (${fm.email || 'N/A'})`, styles.teamMember))
+            : doc.text('- Aucun responsable financier', styles.teamMember);
+        
+        // Responsables RH
+        doc.text('Responsables RH:', { ...styles.teamMember, font: 'Helvetica-Bold' });
+        project.rhManagers?.length > 0 
+            ? project.rhManagers.forEach(rh => 
+                doc.text(`- ${rh.fullname} ${rh.lastname || ''} (${rh.email || 'N/A'})`, styles.teamMember))
+            : doc.text('- Aucun responsable RH', styles.teamMember);
+        
+        doc.moveDown(1.5);
+
+        // Assets Actif
+        doc.text('Assets Actif', styles.sectionTitle);
+        doc.moveDown(0.5);
+
+        if (project.assets_actif?.length > 0) {
+            const assetHeaders = ['Nom', 'Valeur', 'Date Acquisition', 'Type'];
+            const assetWidths = [180, 80, 100, 120];
+            const assetRows = project.assets_actif.map(asset => [
+                asset.name || 'N/A',
+                asset.total_value ? `${asset.total_value} €` : 'N/A',
+                asset.date_acquisition ? new Date(asset.date_acquisition).toLocaleDateString('fr-FR') : 'N/A',
+                asset.type_actif || 'N/A'
+            ]);
+
+            doc.y = drawTable(assetHeaders, assetRows, assetWidths, doc.y);
+        } else {
+            doc.text('Aucun asset actif', styles.tableCell);
+        }
+        doc.moveDown(1.5);
+
+        // Taxes
+        doc.text('Taxes', styles.sectionTitle);
+        doc.moveDown(0.5);
+
+        if (project.taxes?.length > 0) {
+            const taxHeaders = ['Nom Taxe', 'Taux', 'Catégorie', 'Date Effet', 'Description'];
+            const taxWidths = [100, 50, 100, 80, 170]; // Ajustement pour bien afficher la description
+            const taxRows = project.taxes.map(tax => [
+                tax.nom_taxe || 'N/A',
+                tax.taux ? `${tax.taux}%` : 'N/A',
+                tax.categorie || 'N/A',
+                tax.date_effet ? new Date(tax.date_effet).toLocaleDateString('fr-FR') : 'N/A',
+                tax.description || 'Aucune description'
+            ]);
+
+            doc.y = drawTable(taxHeaders, taxRows, taxWidths, doc.y);
+        } else {
+            doc.text('Aucune taxe associée', styles.tableCell);
+        }
+
+        doc.end();
+    } catch (error) {
+        console.error("Erreur génération rapport:", error);
+        res.status(500).json({ 
+            message: "Erreur lors de la génération du rapport",
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+};
+const generateProjectsReportowner = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Peuplement complet des données
+        const user = await userModel.findById(userId).populate({
+            path: 'projects',
+            populate: [
+                { path: 'taxes', select: 'nom_taxe taux description categorie date_effet' },
+                { path: 'assets_actif', select: 'name total_value date_acquisition type_actif' },
+                { path: 'businessOwner', select: 'fullname email' },
+                { path: 'businessManager', select: 'fullname email' },
+                { path: 'accountants', select: 'fullname email' },
+                { path: 'financialManagers', select: 'fullname email' },
+                { path: 'rhManagers', select: 'fullname email' }
+            ]
+        });
+
+        if (!user?.projects?.length) {
+            return res.status(404).json({ message: 'Aucun projet trouvé' });
+        }
+
+        const doc = new PDFDocument({ margin: 50 });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename="rapport_complet.pdf"');
+        doc.pipe(res);
+
+        // Styles
+        const styles = {
+            title: { fontSize: 16, align: 'center', font: 'Helvetica-Bold' },
+            sectionTitle: { fontSize: 14, font: 'Helvetica-Bold' },
+            tableHeader: { fontSize: 12, font: 'Helvetica-Bold', fillColor: '#f0f0f0' },
+            tableCell: { fontSize: 12, font: 'Helvetica' },
+            teamMember: { fontSize: 12, font: 'Helvetica', indent: 20 }
+        };
+
+        // Fonction pour dessiner un tableau
+        const drawTable = (headers, rows, columnWidths, startY) => {
+            const rowHeight = 20;
+            let x = 50;
+
+            // En-têtes
+            headers.forEach((header, i) => {
+                doc.rect(x, startY, columnWidths[i], rowHeight)
+                   .fillAndStroke(styles.tableHeader.fillColor, '#333');
+                doc.fillColor('#000')
+                   .text(header, x + 5, startY + 5, { width: columnWidths[i] - 10 });
+                x += columnWidths[i];
+            });
+
+            // Données
+            rows.forEach((row, rowIndex) => {
+                x = 50;
+                row.forEach((cell, colIndex) => {
+                    doc.rect(x, startY + (rowIndex + 1) * rowHeight, columnWidths[colIndex], rowHeight)
+                       .stroke('#ddd');
+                    doc.text(cell, x + 5, startY + (rowIndex + 1) * rowHeight + 5, { 
+                        width: columnWidths[colIndex] - 10,
+                        ...styles.tableCell
+                    });
+                    x += columnWidths[colIndex];
+                });
+            });
+
+            return startY + (rows.length + 1) * rowHeight + 10;
+        };
+
+        user.projects.forEach((project, index) => {
+            if (index > 0) doc.addPage();
+
+            // Titre
+            doc.text(`Rapport détaillé du projet: ${project.name || project._id}`, styles.title);
+            doc.moveDown(2);
+
+            // Section Informations de base
+            doc.text('Informations Générales', styles.sectionTitle);
+            doc.moveDown(0.5);
+            
+            const baseInfo = [
+                `ID: ${project._id}`,
+                `Statut: ${project.status || 'Non spécifié'}`,
+                `Budget: ${project.amount ? `${project.amount} €` : 'Non spécifié'}`,
+                `Date de début: ${project.startDate ? new Date(project.startDate).toLocaleDateString('fr-FR') : 'N/A'}`,
+                `Date de fin: ${project.endDate ? new Date(project.endDate).toLocaleDateString('fr-FR') : 'En cours'}`
+            ];
+            
+            baseInfo.forEach(info => doc.text(info, styles.tableCell));
+            doc.moveDown(1);
+
+            // Section Équipe
+            doc.text('Équipe du Projet', styles.sectionTitle);
+            doc.moveDown(0.5);
+            
+            doc.text(`Propriétaire: ${project.businessOwner?.fullname || 'Non assigné'} (${project.businessOwner?.email || 'N/A'})`, styles.teamMember);
+            doc.text(`Manager: ${project.businessManager?.fullname || 'Non assigné'} (${project.businessManager?.email || 'N/A'})`, styles.teamMember);
+            
+            // Comptables
+            doc.text('Comptables:', { ...styles.teamMember, font: 'Helvetica-Bold' });
+            project.accountants?.length > 0 
+                ? project.accountants.forEach(acc => 
+                    doc.text(`- ${acc.fullname} (${acc.email})`, styles.teamMember))
+                : doc.text('- Aucun comptable assigné', styles.teamMember);
+            
+            // Responsables Financiers
+            doc.text('Responsables Financiers:', { ...styles.teamMember, font: 'Helvetica-Bold' });
+            project.financialManagers?.length > 0 
+                ? project.financialManagers.forEach(fm => 
+                    doc.text(`- ${fm.fullname} (${fm.email})`, styles.teamMember))
+                : doc.text('- Aucun responsable financier', styles.teamMember);
+            
+            // Responsables RH
+            doc.text('Responsables RH:', { ...styles.teamMember, font: 'Helvetica-Bold' });
+            project.rhManagers?.length > 0 
+                ? project.rhManagers.forEach(rh => 
+                    doc.text(`- ${rh.fullname} (${rh.email})`, styles.teamMember))
+                : doc.text('- Aucun responsable RH', styles.teamMember);
+            
+            doc.moveDown(1.5);
+
+            // Assets Actif - Tableau amélioré
+            doc.text('Assets Actif', styles.sectionTitle);
+            doc.moveDown(0.5);
+
+            if (project.assets_actif?.length > 0) {
+                const assetHeaders = ['Nom', 'Valeur', 'Date Acquisition', 'Type'];
+                const assetWidths = [180, 80, 100, 120];
+                const assetRows = project.assets_actif.map(asset => [
+                    asset.name || 'N/A',
+                    asset.total_value ? `${asset.total_value} €` : 'N/A',
+                    asset.date_acquisition ? new Date(asset.date_acquisition).toLocaleDateString('fr-FR') : 'N/A',
+                    asset.type_actif || 'N/A'
+                ]);
+
+                doc.y = drawTable(assetHeaders, assetRows, assetWidths, doc.y);
+            } else {
+                doc.text('Aucun asset actif', styles.tableCell);
+            }
+            doc.moveDown(1.5);
+
+            // Taxes - Tableau amélioré
+            
+            doc.text('Taxes', { fontSize: 14, font: 'Helvetica-Bold' });
+            doc.moveDown(0.5);
+
+            if (project.taxes?.length > 0) {
+                const taxHeaders = ['Nom Taxe', 'Taux', 'Catégorie', 'Date Effet', 'Description'];
+                const taxWidths = [100, 50, 100, 80, 200]; // Ajustement des largeurs
+                const taxRows = project.taxes.map(tax => [
+                    tax.nom_taxe || 'N/A',
+                    tax.taux ? `${tax.taux}%` : 'N/A',
+                    tax.categorie || 'N/A',
+                    tax.date_effet ? new Date(tax.date_effet).toLocaleDateString('fr-FR') : 'N/A',
+                    tax.description || 'Aucune description'
+                ]);
+
+                doc.y = drawTable(taxHeaders, taxRows, taxWidths, doc.y);
+            } else {
+                doc.text('Aucune taxe associée', { fontSize: 12, font: 'Helvetica' });
+            }
+        });
+
+        doc.end();
+    } catch (error) {
+        console.error("Erreur génération rapport:", error);
+        res.status(500).json({ 
+            message: 'Erreur lors de la génération du rapport',
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+};
 module.exports = {
     addProject,
     assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,
-    assignRHManagerToProject,updateproject,
+    assignRHManagerToProject,updateproject,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner,
     assignFinancialManagerToProject,
     unassignRHManagerFromProject,deleteProjectById,
     unassignFinancialManagerFromProject,

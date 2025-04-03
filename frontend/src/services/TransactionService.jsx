@@ -62,3 +62,49 @@ export const getExpenseData = async (walletId) => {
     };
   }
 };
+export const getTransactions = async (walletId, startDate, endDate) => {
+  try {
+    const response = await fetch(`${API_URL}/getTransactions/${walletId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        "Cache-Control": "no-cache",
+      },
+      params: {
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString(),
+      },
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    return [];
+  }
+};
+export const getTransactionById = async (walletId) => {
+  try {
+      const response = await fetch(`${API_URL}/getTransactionByWalletId/${walletId}`, {
+          method: "GET",
+          headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+              "Cache-Control": "no-cache",
+          },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+          throw new Error(data.message || "Failed to fetch transaction");
+      }
+
+      return data;
+  } catch (error) {
+      console.error("Error fetching transaction by ID:", error);
+      return {
+          message: error.message,
+          data: null
+      };
+  }
+};

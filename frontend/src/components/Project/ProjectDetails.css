@@ -329,3 +329,22 @@
     text-align: center;
   }
 }
+.generate-report-btn {
+  background-color: #4CAF50; /* Vert classique */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-weight: 500;
+}
+
+.generate-report-btn:hover {
+  background-color: #45a049; /* Vert plus foncé au survol */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.generate-report-btn:active {
+  background-color: #3d8b40; /* Effet "clic" */
+}

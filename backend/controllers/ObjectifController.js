@@ -13,7 +13,7 @@ const getObjectifTypes = async (req, res) => {
 
 const createObjectif = async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const {userId} = req.body;
 
         // Retrieve the project associated with the logged-in user
         const project = await Project.findOne({
@@ -368,7 +368,156 @@ async function generateObjectiveReport(req, res) {
         return res.status(500).json({ error: err.message });
     }
 }
+async function getProjectsOverview(req, res) {
+    try {
+      const { role } = req.query; 
+      const { projectSearch } = req.params;
+      // Build the base query for objectifs
+      let objectifQuery = {};
+      if (role && role.toLowerCase() !== "all") {
+        objectifQuery.objectivetype = role.toUpperCase(); 
+      }
 
+      // If projectSearch is provided, find a single project
+      let objectifs = [];
+      let projectWallet = null; // To store the project's wallet data
+      console.log("projectSearch:", projectSearch);
+      if (projectSearch) {
+        // Build project query (assuming projectSearch is the project name)
+
+        // Find one project, populate its objectifs and wallet
+        const project = await Project.findById(projectSearch).populate("objectifs").populate("wallet");
+        if (!project) {
+          return res.status(200).json({
+            success: true,
+            message: "No project found matching the search criteria",
+            data: [],
+            completedToday: []
+          });
+        }
+
+        // Extract objectifs from the found project and filter by role if specified
+        objectifs = (project.objectifs || [])
+          .filter(obj => !role || obj.objectivetype === role.toUpperCase());
+
+        // Store the project's wallet for use in progress calculation
+        projectWallet = project.wallet;
+        console.log("WA3LLRT " + projectWallet);
+      } else {
+        // If no project search, fetch all objectifs directly
+        objectifs = await Objectif.find(objectifQuery).lean();
+        // Note: Without a project, wallet data won't be available unless linked elsewhere
+      }
+
+      if (!objectifs.length) {
+        return res.status(200).json({
+          success: true,
+          message: "No objectives found for the selected criteria",
+          data: [],
+          completedToday: []
+        });
+      }
+  
+      // Current date (April 1, 2025) in YYYY-MM-DD format
+      const today = new Date("2025-04-01").toISOString().split("T")[0];
+
+      // Map MongoDB objectifs to frontend-compatible structure
+      const projectsList = [];
+      const completedToday = [];
+
+      objectifs.forEach((objectif) => {
+        // Calculate progress based on project's wallet balance relative to minbudget and maxbudget
+        let progress = 0;
+        const balance = projectWallet.balance || 0; 
+        const maxBudget = objectif.maxbudget || Infinity;
+        const minBudget = objectif.minbudget || 0;
+
+        if (maxBudget > minBudget) {
+            // Calculate progress as a percentage within the range
+            const rawProgress = (balance  /  minBudget) * 100;
+            progress = Math.min(Math.max(Math.round(rawProgress), 0), 100);
+          } else {
+            // If maxBudget is 0 or invalid, progress remains 0
+            progress = 0;
+          }
+        console.log("Objectif:", objectif.name);
+        console.log("Balance:", balance);
+        console.log("minBudget:", minBudget, "maxBudget:", maxBudget);
+        console.log("Condition 1 (balance && maxBudget > minBudget):", balance && maxBudget > minBudget);
+        console.log("Condition 2 (balance >= maxBudget):", balance >= maxBudget);
+        console.log("Progress calculated:", progress);
+
+        // Map status to frontend-compatible terms
+        let status;
+        switch (objectif.status?.toLowerCase()) {
+          case "inprogress":
+            status = "InProgress";
+            break;
+          case "completed":
+            status = "Completed";
+            break;
+          case "failed":
+            status = "Failed"; 
+            break;
+          default:
+            status = "InProgress"; // Default if status is undefined
+        }
+
+        // Add budget status check with close/at risk conditions
+        let budgetStatus = "WithinBudget";
+        if (balance) {
+          const percentOfMax = (balance / maxBudget) * 100;
+          const percentFromMin = maxBudget === minBudget ? 0 : ((balance - minBudget) / (maxBudget - minBudget)) * 100;
+
+          if (balance > maxBudget) {
+            budgetStatus = "OverBudget";
+          } else if (balance < minBudget) {
+            budgetStatus = "UnderBudget";
+          } else if (percentOfMax >= 90) {
+            budgetStatus = "CloseToLimit";
+          } else if (percentFromMin <= 10 && minBudget > 0) {
+            budgetStatus = "AtRisk";
+          }
+        }
+
+        const projectData = {
+          id: objectif._id.toString(),
+          name: objectif.name,
+          status: status,
+          budgetStatus: budgetStatus,
+          progress: progress,
+          maxBudget:maxBudget,
+          minBudget:minBudget,
+          department: objectif.objectivetype,
+          dueDate: objectif.datefin.toISOString().split("T")[0],
+          budget: objectif.maxbudget,
+          spent: balance, // Use project's wallet balance as spent
+        };
+
+        // Check if completed today
+        const dueDateStr = objectif.updatedAt.toISOString().split("T")[0];
+        if (status === "Completed" && dueDateStr === today) {
+          completedToday.push(projectData);
+        } else {
+          projectsList.push(projectData);
+        }
+      });
+  
+      res.status(200).json({
+        success: true,
+        message: "Objectives retrieved successfully",
+        data: projectsList,
+        completedToday: completedToday
+      });
+    } catch (error) {
+      console.error("Error fetching project objectives:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch objectives",
+        error: error.message,
+      });
+    }
+  };
 module.exports = {
     createObjectif,
     getAllObjectifsByProjectId,
@@ -379,5 +528,6 @@ module.exports = {
     markObjectifAsFailed,
     deleteObjectifById,
     updateObjectifById,
-    generateObjectiveReport
+    generateObjectiveReport,
+    getProjectsOverview
 };

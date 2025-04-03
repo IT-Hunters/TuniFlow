@@ -54,6 +54,36 @@ const OwnerProjectsView = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top on page change
   };
 
+
+  const handleGenerateReport = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+  
+      // Appel à l'API backend pour générer un rapport PDF
+      const response = await axios.get(`${API_URL}/project/generatereportowner`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob', // Pour récupérer le fichier PDF sous forme de blob
+      });
+  
+      // Créer un lien pour télécharger le PDF
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'projects_report.pdf'); // Nom du fichier PDF
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error generating report:', err);
+      setError('Failed to generate the report');
+    }
+  };
+  
+
   if (loading) {
     return (
       <div className="state-container loading">
@@ -95,6 +125,14 @@ const OwnerProjectsView = () => {
         <div className="projects-wrapper">
           <header className="projects-header">
             <h1>My Projects</h1>
+            <button
+  onClick={handleGenerateReport}
+  className="generate-report-btn"
+>
+  <span className="btn-icon">📊</span>
+  <span className="btn-text">Générer un rapport</span>
+</button>
+
             <p>Manage and track your ongoing projects</p>
           </header>
           <div className="projects-grid">

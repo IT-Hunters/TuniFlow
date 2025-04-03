@@ -3,7 +3,8 @@ var router = express.Router();
 const authorizeRole = require('../middleware/autorizedrole');
 const { addProject,assignAccountantToProject,assignFinancialManagerToProject,assignRHManagerToProject,
     unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById,getMyProject,
-    getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,updateproject,deleteProjectById
+    getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,updateproject,
+    deleteProjectById,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner
 } = require("../controllers/projectController");
 const { authenticateJWT } = require('../config/autorisation');
 router.get("/getAllAccountantsofproject",authenticateJWT,getAllAccountantsofproject)
@@ -31,6 +32,11 @@ router.post("/addproject/:businessManagerId", authenticateJWT, async (req, res) 
         res.status(500).json({ message: error.message });
     }
 });
+router.get("/generate-report", async (req, res) => {
+    await generateProjectReport(res);
+});
+router.get('/generatereportowner', authenticateJWT, generateProjectsReportowner);
+router.get("/generate-report/:projectId", generateProjectReportbyid);
 router.post("/assignAccountantToProject/:accountantId", authenticateJWT, assignAccountantToProject);
 router.post("/assignFinancialManagerToProject/:financialManagerId", authenticateJWT, assignFinancialManagerToProject);
 router.post("/assignRHManagerToProject/:rhId", authenticateJWT, assignRHManagerToProject);
