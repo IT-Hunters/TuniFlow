@@ -10,19 +10,24 @@ const storage = multer.diskStorage({
 });
 
 const filter = (file, cb) => {
-    const fileType = /png|jpg|jpeg|pdf/; // Ajouter "pdf" aux types de fichiers acceptés
-    const extname = fileType.test(path.extname(file.originalname).toLowerCase());
+    const allowedExtensions = /png|jpg|jpeg|pdf|jfif/;
+    const ext = path.extname(file.originalname).toLowerCase();
+    const extname = allowedExtensions.test(ext);
+    
+    // Accepter si l'extension est autorisée
     if (extname) {
-        cb(null, true);
+        return cb(null, true);
     } else {
+        console.error(`Invalid file: ${file.originalname} with mime type: ${file.mimetype}`);
         return cb(new Error("Invalid mime type"));
     }
 };
 
+
 const multerImage = multer({
     storage: storage,
     limits: {
-        fileSize: 1000000, // Limite de taille du fichier (1MB)
+          fileSize: 5 * 1024 * 1024, // Limite de taille du fichier (1MB)
     },
     fileFilter: function(req, file, cb) {
         filter(file, cb);
