@@ -94,7 +94,6 @@ exports.sendInvoice = async (req, res) => {
   try {
     const { invoiceId } = req.params;
 
-    // Récupérer les détails de la facture
     const invoice = await Bill.findById(invoiceId)
       .populate("creator_id", "fullname email")
       .populate("recipient_id", "fullname email")
@@ -104,7 +103,6 @@ exports.sendInvoice = async (req, res) => {
       return res.status(403).json({ message: "You are not authorized to send this invoice" });
     }
 
-    // Générer le PDF de la facture
     const pdfPath = await generateInvoicePDF(invoice);
     if (!fs.existsSync(pdfPath)) {
       console.error("PDF file not found:", pdfPath);
@@ -112,8 +110,7 @@ exports.sendInvoice = async (req, res) => {
     }
     console.log("PDF file found:", pdfPath);
 
-    // Générer le QR Code
-    const qrCodeData = `http://localhost:3000/invoices/${invoiceId}/accept`; // Lien pour accepter la facture
+    const qrCodeData = `http://localhost:3000/invoices/${invoiceId}/accept`;
     const qrCodePath = path.join(__dirname, "../invoices", `qr_${invoiceId}.png`);
     await QRCode.toFile(qrCodePath, qrCodeData, {
       errorCorrectionLevel: "H",
@@ -125,7 +122,6 @@ exports.sendInvoice = async (req, res) => {
     }
     console.log("QR code generated at:", qrCodePath);
 
-    // Configurer l'email avec Nodemailer
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
@@ -169,7 +165,7 @@ exports.sendInvoice = async (req, res) => {
       `,
       attachments: [
         { filename: `invoice_${invoice._id}.pdf`, path: pdfPath },
-        { filename: `qr_${invoice._id}.png`, path: qrCodePath, cid: "qr_code" } // CID pour intégrer l'image dans le HTML
+        { filename: `qr_${invoice._id}.png`, path: qrCodePath, cid: "qr_code" }
       ]
     };
 

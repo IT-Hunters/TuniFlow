@@ -19,6 +19,7 @@ import TeamActivity from "./TeamActivities/TeamActivity";
 import RoleSelector from "./RoleSelector/RoleSelector";
 import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
+import QRScanner from "../Invoice/QRScanner";
 import "./User.css";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -133,6 +134,14 @@ function Dashboard({ selectedRole, setSelectedRole }) {
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card">
             <RecentInvoices />
+          </div>
+        </div>
+        {/* Row 5: QRScanner */}
+        <div className="row">
+          <div className="col-lg-12 grid-margin stretch-card">
+            <div className="dashboard-section">
+              <QRScanner />
+            </div>
           </div>
         </div>
       </div>

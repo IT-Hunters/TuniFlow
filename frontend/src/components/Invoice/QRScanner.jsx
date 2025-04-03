@@ -1,39 +1,38 @@
-// QRScanner.jsx
-import React, { useState } from "react";
-import { QrReader } from "react-qr-reader";
+// src/components/Invoice/QRScanner.jsx
+import React, { useEffect, useRef, useState } from "react";
+import { BrowserQRCodeReader } from "@zxing/library";
 import axios from "axios";
 
 const QRScanner = () => {
+  const videoRef = useRef(null);
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
 
-  const handleScan = async (data) => {
-    if (data) {
-      setResult(data);
-      try {
-        const token = localStorage.getItem("token");
-        await axios.put(data, {}, { headers: { Authorization: `Bearer ${token}` } });
-        alert("Invoice accepted successfully!");
-      } catch (err) {
-        setError("Error accepting invoice: " + (err.response?.data?.message || err.message));
+  useEffect(() => {
+    const codeReader = new BrowserQRCodeReader();
+    codeReader.decodeFromVideoDevice(null, videoRef.current, async (result, err) => {
+      if (result) {
+        setResult(result.text);
+        try {
+          const token = localStorage.getItem("token");
+          await axios.put(result.text, {}, { headers: { Authorization: `Bearer ${token}` } });
+          alert("Invoice accepted successfully!");
+        } catch (err) {
+          setError("Error accepting invoice: " + (err.response?.data?.message || err.message));
+        }
       }
-    }
-  };
+      if (err && !(err instanceof NotFoundException)) {
+        setError("Error scanning QR code: " + err.message);
+      }
+    });
 
-  const handleError = (err) => {
-    setError("Error scanning QR code: " + err.message);
-    console.error(err);
-  };
+    return () => codeReader.reset(); // Nettoyer lors du démontage
+  }, []);
 
   return (
     <div className="qr-scanner" style={{ padding: "20px" }}>
       <h2>Scan QR Code to Pay</h2>
-      <QrReader
-        delay={300}
-        onError={handleError}
-        onScan={handleScan}
-        style={{ width: "100%", maxWidth: "400px" }}
-      />
+      <video ref={videoRef} style={{ width: "100%", maxWidth: "400px" }} />
       <p>Scanned Result: {result}</p>
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
