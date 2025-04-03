@@ -191,8 +191,12 @@ exports.acceptInvoice = async (req, res) => {
     if (invoice.recipient_id._id.toString() !== userId) {
       return res.status(403).json({ message: "You are not authorized to accept this invoice" });
     }
-    if (invoice.status !== "PENDING") {
-      return res.status(400).json({ message: "This invoice can no longer be accepted" });
+    
+    if (invoice.status === "CANCELLED") {
+      return res.status(400).json({ message: "This invoice can no longer be accepted because is cancelled" });
+    }
+    if (invoice.status === "PAID") {
+      return res.status(400).json({ message: "Invoice is already paid" });
     }
 
     invoice.status = "PAID";
