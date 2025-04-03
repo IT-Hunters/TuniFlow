@@ -17,69 +17,78 @@ const Project = require("../model/Project");
 const BusinessManager = require("../model/BusinessManager");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
+const Wallet =require("../model/wallet")
+// Assurez-vous que le chemin est correct
+
+
 async function addProject(businessManagerId, projectData) {
     try {
         console.log("Starting addProject function");
 
-        // Retrieve the token from the request headers
+        // Récupérer le token
         const token = projectData.token;
         if (!token) {
             throw new Error("Token missing");
         }
         console.log("Token retrieved:", token);
 
-        // Retrieve the BusinessOwner from the token
+        // Récupérer le BusinessOwner à partir du token
         const businessOwner = await getBusinessOwnerFromToken(token);
         console.log("BusinessOwner retrieved:", businessOwner);
 
-        // 🔎 Find the BusinessManager by ID
+        // Trouver le BusinessManager par ID
         const manager = await BusinessManager.findById(businessManagerId);
         if (!manager) {
             throw new Error("BusinessManager not found");
         }
         console.log("BusinessManager retrieved:", manager);
 
-        // 🚨 Check if the BusinessManager already has a project
+        // Vérifier si le BusinessManager a déjà un projet
         if (manager.project) {
             throw new Error("This BusinessManager already has an assigned project");
         }
         console.log("BusinessManager has no assigned project");
-        const wallet = new Wallet();
+
+        // ✅ Créer un Wallet
+        const wallet = new Wallet({ type: "default", user_id: businessOwner._id });
         await wallet.save();
-        // ✅ Create a new project
+        console.log("Wallet created:", wallet);
+
+        // ✅ Créer un nouveau projet
         const project = new Project({
-            amount: projectData.amount,
             status: projectData.status,
             due_date: projectData.due_date,
-            businessManager: manager._id, // Associate the project with the BusinessManager
-            businessOwner: businessOwner._id, // Associate the project with the BusinessOwner
+            businessManager: manager._id,
+            businessOwner: businessOwner._id,
             accountants: projectData.accountants,
             financialManagers: projectData.financialManagers,
             rhManagers: projectData.rhManagers,
-            wallet: wallet
+            wallet: wallet._id, // Associer le portefeuille au projet
         });
         console.log("Project created:", project);
 
-        await project.save(); // Save the project
+        await project.save();
         console.log("Project saved");
 
-        // 🔗 Associate the project with the BusinessManager
+        // Associer le projet au BusinessManager
         manager.project = project._id;
         await manager.save();
         console.log("Project associated with BusinessManager");
 
-        // 🔗 Add the project to the BusinessOwner's project list
+        // Ajouter le projet à la liste du BusinessOwner
         businessOwner.projects.push(project._id);
         await businessOwner.save();
         console.log("Project added to BusinessOwner's project list");
 
-        // Return the result
         return { message: "Project created and linked to BusinessManager", project };
     } catch (error) {
         console.error("Error in addProject:", error.message);
-        throw error; // The error will be handled in the controller
+        throw error;
     }
 }
+
+
+
 
 async function assignAccountantToProject(req, res) {
     try {
