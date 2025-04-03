@@ -129,7 +129,8 @@ const OwnerProjectsView = () => {
   onClick={handleGenerateReport}
   className="generate-report-btn"
 >
-  Générer un rapport
+  <span className="btn-icon">📊</span>
+  <span className="btn-text">Générer un rapport</span>
 </button>
 
             <p>Manage and track your ongoing projects</p>

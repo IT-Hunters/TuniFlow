@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './ProjectView.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
@@ -84,6 +84,15 @@ const ProjectView = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   if (loading) {
     return (
       <div className="state-container loading">
@@ -119,85 +128,118 @@ const ProjectView = () => {
       <CoolSidebar />
       <div className="main">
         <Navbar />
-        <div className="project-view-wrapper">
+        <div className="project-details-wrapper">
           <header className="project-header">
             <h1 className="project-title">
               {project.name || `Projet ${project.id?.slice(-4) || 'Sans nom'}`}
             </h1>
-            <p className="project-description">{project.description}</p>
+            <div className="action-buttons">
+  <button 
+    onClick={() => generateReport(project.id)} 
+    className="action-btn generate-report-btn"
+    style={{ backgroundColor: '#4CAF50', color: 'white' }}
+  >
+    Générer Rapport
+  </button>
+</div>
           </header>
 
-          <section className="project-layout">
-            <div className="detail-card">
-              <button
-                className="action-btn generate-btn"
-                onClick={() => generateReport(project.id)}
-                disabled={!project.id}
-              >
-                Générer Rapport
-              </button>
+          <div className="project-layout">
+            {/* Colonne de gauche : Détails du projet */}
+            <section className="project-details">
+              <div className="detail-card">
+                <h2 className="card-title">Informations du Projet</h2>
+                <ul className="detail-list">
+                  <li className="detail-item">
+                    <span className="label">Statut</span>
+                    <span className={`status ${project.status?.toLowerCase()}`}>
+                      {project.status}
+                    </span>
+                  </li>
+                  <li className="detail-item">
+                    <span className="label">Date de début</span>
+                    <span>{formatDate(project.startDate)}</span>
+                  </li>
+                  <li className="detail-item">
+                    <span className="label">Date de fin</span>
+                    <span>{formatDate(project.endDate) || 'En cours'}</span>
+                  </li>
+                </ul>
+              </div>
 
-              <h2 className="card-title">Détails du Projet</h2>
-              <ul className="detail-list">
-                <li className="detail-item">
-                  <span className="label">Statut</span>
-                  <span className={`status ${project.status?.toLowerCase()}`}>
-                    {project.status}
-                  </span>
-                </li>
-                <li className="detail-item">
-                  <span className="label">Date de début</span>
-                  <span>
-                    {new Date(project.startDate).toLocaleDateString()}
-                  </span>
-                </li>
-                <li className="detail-item">
-                  <span className="label">Date de fin</span>
-                  <span>
-                    {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'Non spécifiée'}
-                  </span>
-                </li>
-                
-                <li className="detail-item">
-                  <span className="label">Actifs</span>
-                  {project.assets_actif?.length > 0 ? (
-                    <ul className="assets-list">
-                      {project.assets_actif.map((asset) => (
-                        <li key={asset._id}>
-                          <strong>{asset.name}</strong> - {asset.total_value}$
-                          <div className="asset-details">
-                            <span>Type: {asset.type_actif}</span>
-                            <span>Acquis le: {new Date(asset.date_acquisition).toLocaleDateString()}</span>
-                            <span>Catégorie: {asset.type_corporel}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <span>Aucun actif enregistré</span>
-                  )}
-                </li>
-              </ul>
-            </div>
+              <div className="detail-card">
+                <h2 className="card-title">Description</h2>
+                <p className="description">
+                  {project.description || 'Aucune description fournie.'}
+                </p>
+              </div>
 
-            <div className="team-card">
-              <h2 className="card-title">Équipe du Projet</h2>
-              <div className="team-grid">
-                <div className="team-section">
-                  <h3 className="team-role">Propriétaire</h3>
-                  <div className="team-member">
-                    <p className="member-name">{project.businessOwner?.fullname}</p>
-                    <p className="member-email">{project.businessOwner?.email}</p>
+              {/* Section Taxes */}
+              <div className="detail-card">
+                <h2 className="card-title">Taxes</h2>
+                {project.taxes?.length > 0 ? (
+                  <div className="grid-container">
+                    {project.taxes.map(tax => (
+                      <div key={tax._id} className="info-card">
+                        <h3>{tax.nom_taxe}</h3>
+                        <div className="info-details">
+                          <p><strong>Catégorie:</strong> {tax.categorie}</p>
+                          <p><strong>Taux:</strong> {tax.taux}%</p>
+                          <p><strong>Date d'effet:</strong> {formatDate(tax.date_effet)}</p>
+                          <p><strong>Description:</strong> {tax.description}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <p className="no-data">Aucune taxe assignée</p>
+                )}
+              </div>
 
-                <div className="team-section">
+              {/* Section Actifs */}
+              <div className="detail-card">
+                <h2 className="card-title">Actifs</h2>
+                {project.assets_actif?.length > 0 ? (
+                  <div className="grid-container">
+                    {project.assets_actif.map(asset => (
+                      <div key={asset._id} className="info-card">
+                        <h3>{asset.name}</h3>
+                        <div className="info-details">
+                          <p><strong>Type:</strong> {asset.type_actif}</p>
+                          <p><strong>Valeur:</strong> {asset.total_value}$</p>
+                          <p><strong>Date d'acquisition:</strong> {formatDate(asset.date_acquisition)}</p>
+                          <p><strong>Type corporel:</strong> {asset.type_corporel}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-data">Aucun actif enregistré</p>
+                )}
+              </div>
+            </section>
+
+            {/* Colonne de droite : Membres de l'équipe */}
+            <aside className="team-section">
+              <h2 className="section-title">Équipe du Projet</h2>
+              <div className="team-list">
+                <div className="team-card">
+                  <h3 className="team-role">Propriétaire</h3>
+                  <p className="team-name">
+                    {project.businessOwner?.fullname || 'Non assigné'}
+                  </p>
+                  <p className="team-email">
+                    {project.businessOwner?.email || '-'}
+                  </p>
+                </div>
+                
+                <div className="team-card">
                   <h3 className="team-role">Comptables</h3>
                   {project.teamMembers?.accountants?.length > 0 ? (
                     project.teamMembers.accountants.map((acc) => (
-                      <div key={acc._id} className="team-member">
-                        <p className="member-name">{acc.fullname}</p>
-                        <p className="member-email">{acc.email}</p>
+                      <div key={acc._id} className="team-subitem">
+                        <p className="team-name">{acc.fullname}</p>
+                        <p className="team-email">{acc.email}</p>
                       </div>
                     ))
                   ) : (
@@ -205,13 +247,13 @@ const ProjectView = () => {
                   )}
                 </div>
 
-                <div className="team-section">
+                <div className="team-card">
                   <h3 className="team-role">Responsables Financiers</h3>
                   {project.teamMembers?.financialManagers?.length > 0 ? (
                     project.teamMembers.financialManagers.map((fm) => (
-                      <div key={fm._id} className="team-member">
-                        <p className="member-name">{fm.fullname}</p>
-                        <p className="member-email">{fm.email}</p>
+                      <div key={fm._id} className="team-subitem">
+                        <p className="team-name">{fm.fullname}</p>
+                        <p className="team-email">{fm.email}</p>
                       </div>
                     ))
                   ) : (
@@ -219,13 +261,13 @@ const ProjectView = () => {
                   )}
                 </div>
 
-                <div className="team-section">
+                <div className="team-card">
                   <h3 className="team-role">Responsables RH</h3>
                   {project.teamMembers?.rhManagers?.length > 0 ? (
                     project.teamMembers.rhManagers.map((rh) => (
-                      <div key={rh._id} className="team-member">
-                        <p className="member-name">{rh.fullname}</p>
-                        <p className="member-email">{rh.email}</p>
+                      <div key={rh._id} className="team-subitem">
+                        <p className="team-name">{rh.fullname}</p>
+                        <p className="team-email">{rh.email}</p>
                       </div>
                     ))
                   ) : (
@@ -233,8 +275,8 @@ const ProjectView = () => {
                   )}
                 </div>
               </div>
-            </div>
-          </section>
+            </aside>
+          </div>
         </div>
       </div>
     </div>

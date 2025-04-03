@@ -238,3 +238,22 @@
     font-size: 1.75rem;
   }
 }
+.generate-report-btn {
+  background-color: #4CAF50; /* Vert classique */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.generate-report-btn:hover {
+  background-color: #45a049; /* Vert légèrement plus foncé au survol */
+}
+
+/* Si vous voulez aussi styliser les autres boutons */
+.action-btn {
+  margin-left: 10px;
+  font-weight: bold;
+}

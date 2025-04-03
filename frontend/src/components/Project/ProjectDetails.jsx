@@ -136,9 +136,20 @@ const ProjectDetails = () => {
               <button onClick={handleDelete} className="action-btn delete-btn">
                 Delete Project
               </button>
-              <button onClick={handleGenerateReport} className="action-btn generate-report-btn">
-                Generate Report
-              </button>
+              <button 
+  onClick={handleGenerateReport} 
+  className="action-btn "
+  style={{ 
+    backgroundColor: '#4CAF50', 
+    color: 'white',
+    border: 'none',
+    padding: '10px 20px',
+    borderRadius: '10px',
+    cursor: 'pointer',
+  }}
+>
+  Generate Report
+</button>
             </div>
           </header>
 
