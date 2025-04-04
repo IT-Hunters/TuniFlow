@@ -148,7 +148,14 @@ const findObjectifs = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
+async function getbyid(req, res) {
+    try {
+        const data = await Objectif.findById(req.params.id);
+        res.send(data);
+    } catch (err) {
+        res.send(err);
+    }
+}
 const markObjectifAsCompleted = async (req, res) => {
     try {
         const { objectifId } = req.params; // Retrieve the objective ID from URL parameters
@@ -524,7 +531,7 @@ module.exports = {
     findObjectifs,
     updateProgress,
     getObjectifTypes,
-    markObjectifAsCompleted,
+    markObjectifAsCompleted,getbyid,
     markObjectifAsFailed,
     deleteObjectifById,
     updateObjectifById,

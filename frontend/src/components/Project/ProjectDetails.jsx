@@ -13,6 +13,7 @@ const ProjectDetails = () => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fullObjectives, setFullObjectives] = useState([]);
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
@@ -42,7 +43,28 @@ const ProjectDetails = () => {
 
     fetchProjectDetails();
   }, [id, navigate]);
+  useEffect(() => {
+    const fetchFullObjectives = async () => {
+      if (!project?.objectifs || project.objectifs.length === 0) return;
   
+      try {
+        const token = localStorage.getItem('token');
+        const requests = project.objectifs.map(id => 
+          axios.get(`http://localhost:3000/objectif/getbyid/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        );
+        
+        const responses = await Promise.all(requests);
+        setFullObjectives(responses.map(res => res.data));
+      } catch (error) {
+        console.error("Error fetching objectives details:", error);
+        // Vous pouvez aussi gérer cette erreur dans l'UI si besoin
+      }
+    };
+  
+    fetchFullObjectives();
+  }, [project?.objectifs]); 
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this project?')) {
@@ -216,34 +238,48 @@ const ProjectDetails = () => {
  {/* Objectives Section */}
 <div className="detail-card">
   <h2 className="card-title">Objectives</h2>
-  {project.objectifs?.length > 0 ? (
+  {fullObjectives.length > 0 ? (
     <div className="grid-container">
-      {project.objectifs.map(objectif => (
+      {fullObjectives.map(objectif => (
         <div key={objectif._id} className="info-card">
-          <h3>{objectif.name}</h3>
+          <h3>{objectif.name || "Unnamed Objective"}</h3>
           <div className="info-details">
-            <p><strong>Description:</strong> {objectif.description}</p>
-            <p><strong>Target Amount:</strong> ${objectif.target_amount}</p>
-            <p><strong>Min Budget:</strong> ${objectif.minbudget}</p>
-            <p><strong>Max Budget:</strong> ${objectif.maxbudget}</p>
-            <p><strong>Start Date:</strong> {formatDate(objectif.datedebut)}</p>
-            <p><strong>End Date:</strong> {formatDate(objectif.datefin)}</p>
-            <p><strong>Progress:</strong> {objectif.progress}%</p>
+            <p><strong>Description:</strong> {objectif.description || "No description"}</p>
+            <p><strong>Target Amount:</strong> ${objectif.target_amount?.toLocaleString() || "0"}</p>
+            <p><strong>Budget Range:</strong> 
+              ${objectif.minbudget?.toLocaleString() || "0"} - ${objectif.maxbudget?.toLocaleString() || "0"}
+            </p>
+            <p><strong>Period:</strong> 
+              {formatDate(objectif.datedebut) || "N/A"} to {formatDate(objectif.datefin) || "N/A"}
+            </p>
+            
+            {/* Progress Bar */}
+            <div className="progress-container">
+              <label><strong>Progress:</strong> {objectif.progress || 0}%</label>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill"
+                  style={{ width: `${objectif.progress || 0}%` }}
+                ></div>
+              </div>
+            </div>
+            
             <p><strong>Status:</strong> 
-              <span className={`status ${objectif.status?.toLowerCase() || ''}`}>
-                {objectif.status || 'No status'}
+              <span className={`status ${(objectif.status || "").toLowerCase()}`}>
+                {objectif.status || "Not specified"}
               </span>
             </p>
-            <p><strong>Type:</strong> {objectif.objectivetype}</p>
+            <p><strong>Type:</strong> {objectif.objectivetype || "Not specified"}</p>
           </div>
         </div>
       ))}
     </div>
+  ) : project.objectifs?.length > 0 ? (
+    <p className="no-data">Loading objectives...</p>
   ) : (
     <p className="no-data">No objectives defined</p>
   )}
 </div>
-
               {/* Assets Section */}
               <div className="detail-card">
                 <h2 className="card-title">Active Assets</h2>
