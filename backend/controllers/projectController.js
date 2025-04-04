@@ -347,15 +347,22 @@ async function unassignRHManagerFromProject(req, res) {
     }
 }
 
-async function getProjectById(req, res) {
+// Dans votre controller (backend)
+const getProjectById = async (req, res) => {
     try {
-        const project = await Project.findById(req.params.id);
-        if (!project) return res.status(404).json({ message: 'Project not found' });
-        res.status(200).json(project);
+      const project = await Project.findById(req.params.id)
+        .populate('objectifs') // Peuple les objectifs complets
+        .exec();
+      
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+  
+      res.status(200).json(project);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
     }
-}
+  };
 
 async function getMyProject(req, res) {
     try {

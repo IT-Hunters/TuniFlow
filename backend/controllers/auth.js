@@ -657,7 +657,8 @@ async function findMyProject(req, res) {
                     { path: 'financialManagers', select: 'fullname email' },
                     { path: 'rhManagers', select: 'fullname email' },
                     { path: 'taxes' }, // Ajouter la population des taxes
-                    { path: 'assets_actif' }
+                    { path: 'assets_actif' },
+                    { path: 'objectifs' }
                 ]
             });
 
@@ -686,7 +687,8 @@ async function findMyProject(req, res) {
             },
         
             taxes: manager.project.taxes,
-            assets_actif: manager.project.assets_actif
+            assets_actif: manager.project.assets_actif,
+            objectifs: manager.project.objectifs 
         };
 
         res.status(200).json(projectData);

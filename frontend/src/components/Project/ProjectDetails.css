@@ -348,3 +348,17 @@
 .generate-report-btn:active {
   background-color: #3d8b40; /* Effet "clic" */
 }
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.spinner.small {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  margin-bottom: 10px;
+}

@@ -14,7 +14,7 @@ const objectifSchema = new Schema({
         type: String,
         required: true,
         enum: ["InProgress", "Completed", "Failed"], // Énumération pour le statut
-        default: "Pending", // Valeur par défaut
+        default: "InProgress", // Valeur par défaut
     },  
     objectivetype: {
         type: String,

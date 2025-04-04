@@ -174,6 +174,64 @@ const ProjectView = () => {
                 </p>
               </div>
 
+               {/* Section Objectifs */}
+<div className="detail-card">
+  <h2 className="card-title">Objectifs</h2>
+  {project.objectifs?.length > 0 ? (
+    <div className="objectifs-container">
+      {project.objectifs.map(objectif => (
+        <div key={objectif._id} className="objectif-card">
+          <div className="objectif-header">
+            <h3>{objectif.name}</h3>
+            <span>Status:</span>
+            <span className={`status-badge ${objectif.status.toLowerCase()}`}>
+              
+            </span>
+          </div>
+          
+          <p className="objectif-description">{objectif.description}</p>
+          
+          <div className="objectif-progress">
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ width: `${objectif.progress}%` }}
+              ></div>
+            </div>
+            <span>Progress:</span>
+            <span className="progress-text">{objectif.progress}%</span>
+          </div>
+          
+          <div className="objectif-details">
+            <div className="detail-row">
+              <span>Montant cible:</span>
+              <strong>{objectif.target_amount.toLocaleString()} $</strong>
+            </div>
+            <div className="detail-row">
+              <span>Budget:</span>
+              <strong>
+                {objectif.minbudget.toLocaleString()} $ - {objectif.maxbudget.toLocaleString()} $
+              </strong>
+            </div>
+            <div className="detail-row">
+              <span>Période:</span>
+              <strong>
+                {formatDate(objectif.datedebut)} au {formatDate(objectif.datefin)}
+              </strong>
+            </div>
+            <div className="detail-row">
+              <span>Type:</span>
+              <strong>{objectif.objectivetype}</strong>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="no-data">Aucun objectif défini</p>
+  )}
+</div>
+
               {/* Section Taxes */}
               <div className="detail-card">
                 <h2 className="card-title">Taxes</h2>
