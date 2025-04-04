@@ -1,3 +1,4 @@
+// src/components/CreateInvoice.jsx
 import React, { useState, useEffect } from 'react';
 import CoolSidebar from "../sidebarHome/newSidebar"; 
 import Navbar from "../navbarHome/NavbarHome"; 
@@ -14,6 +15,17 @@ const CreateInvoice = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [isCustomCategory, setIsCustomCategory] = useState(false); // État pour gérer si "Other" est sélectionné
+
+  // Liste des catégories prédéfinies
+  const categoryOptions = [
+    "Consulting",
+    "Services",
+    "Products",
+    "Freelance",
+    "Maintenance",
+    "Other"
+  ];
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -37,7 +49,18 @@ const CreateInvoice = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setInvoiceData({ ...invoiceData, [name]: value });
+    if (name === "category") {
+      // Si l'utilisateur sélectionne "Other", afficher le champ texte
+      if (value === "Other") {
+        setIsCustomCategory(true);
+        setInvoiceData({ ...invoiceData, category: '' }); // Réinitialiser la catégorie
+      } else {
+        setIsCustomCategory(false);
+        setInvoiceData({ ...invoiceData, category: value });
+      }
+    } else {
+      setInvoiceData({ ...invoiceData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -59,6 +82,7 @@ const CreateInvoice = () => {
 
       setSuccess(true);
       setInvoiceData({ amount: '', due_date: '', category: '' });
+      setIsCustomCategory(false); // Réinitialiser l'état de la catégorie personnalisée
       
       // Réinitialiser le statut de succès après 3 secondes
       setTimeout(() => setSuccess(false), 3000);
@@ -133,16 +157,38 @@ const CreateInvoice = () => {
               
               <div className="input-group">
                 <label className="input-label" htmlFor="category">Category</label>
-                <input 
+                <select
                   id="category"
-                  type="text" 
-                  name="category" 
-                  className="invoice-input" 
-                  placeholder="Enter invoice category (e.g. Consulting, Services)" 
-                  value={invoiceData.category}
-                  onChange={handleChange} 
-                /> 
+                  name="category"
+                  className="invoice-input"
+                  value={isCustomCategory ? "Other" : invoiceData.category}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="" disabled>Select a category</option>
+                  {categoryOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              {isCustomCategory && (
+                <div className="input-group">
+                  <label className="input-label" htmlFor="customCategory">Custom Category</label>
+                  <input
+                    id="customCategory"
+                    type="text"
+                    name="category"
+                    className="invoice-input"
+                    placeholder="Enter custom category"
+                    value={invoiceData.category}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              )}
               
               <button type="submit" disabled={loading} className="invoice-button">
                 {loading ? (
