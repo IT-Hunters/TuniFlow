@@ -42,6 +42,7 @@ const ProjectDetails = () => {
 
     fetchProjectDetails();
   }, [id, navigate]);
+  
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this project?')) {
@@ -115,7 +116,8 @@ const ProjectDetails = () => {
       </div>
     );
   }
-
+  console.log("Project data:", project);
+  console.log("Objectives:", project?.objectifs);
   return (
     <div className="container">
       <CoolSidebar />
@@ -209,7 +211,38 @@ const ProjectDetails = () => {
                 ) : (
                   <p className="no-data">No taxes assigned</p>
                 )}
+            
               </div>
+ {/* Objectives Section */}
+<div className="detail-card">
+  <h2 className="card-title">Objectives</h2>
+  {project.objectifs?.length > 0 ? (
+    <div className="grid-container">
+      {project.objectifs.map(objectif => (
+        <div key={objectif._id} className="info-card">
+          <h3>{objectif.name}</h3>
+          <div className="info-details">
+            <p><strong>Description:</strong> {objectif.description}</p>
+            <p><strong>Target Amount:</strong> ${objectif.target_amount}</p>
+            <p><strong>Min Budget:</strong> ${objectif.minbudget}</p>
+            <p><strong>Max Budget:</strong> ${objectif.maxbudget}</p>
+            <p><strong>Start Date:</strong> {formatDate(objectif.datedebut)}</p>
+            <p><strong>End Date:</strong> {formatDate(objectif.datefin)}</p>
+            <p><strong>Progress:</strong> {objectif.progress}%</p>
+            <p><strong>Status:</strong> 
+              <span className={`status ${objectif.status?.toLowerCase() || ''}`}>
+                {objectif.status || 'No status'}
+              </span>
+            </p>
+            <p><strong>Type:</strong> {objectif.objectivetype}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="no-data">No objectives defined</p>
+  )}
+</div>
 
               {/* Assets Section */}
               <div className="detail-card">

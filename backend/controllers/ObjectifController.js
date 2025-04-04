@@ -103,7 +103,7 @@ const createObjectif = async (req, res) => {
             maxbudget,
             datedebut,
             datefin,
-            status: "Pending", // Default value
+            status: "InProgress", // Default value
             objectivetype,
             isStatic,
             project: project._id, // Associate the objective with the project
@@ -114,7 +114,7 @@ const createObjectif = async (req, res) => {
 
         // Add the objective to the project's list of objectives
         project.objectifs.push(nouvelObjectif._id);
-        project.status = project.status || "Pending"; // Default value for the project
+        project.status = project.status || "InProgress"; // Default value for the project
         await project.save();
 
         // Successful response
