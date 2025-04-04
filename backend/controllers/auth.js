@@ -51,7 +51,7 @@ const Register = async (req, res) => {
 
         // 4️⃣ Sélection du modèle en fonction du rôle
         let userType;
-        let UserModel; // Modèle correspondant au rôle
+        let UserModel;
         switch (req.body.role) {
             case "BUSINESS_OWNER":
                 userType = new BusinessOwner({
@@ -116,34 +116,67 @@ const Register = async (req, res) => {
         // 5️⃣ Sauvegarde de l'utilisateur
         const result = await userType.save();
 
-        // 6️⃣ Création automatique d'un wallet pour certains rôles (sauf ADMIN)
+        // 6️⃣ Création automatique d'un wallet
         if (["BUSINESS_OWNER", "BUSINESS_MANAGER", "ACCOUNTANT", "FINANCIAL_MANAGER"].includes(req.body.role)) {
             const walletData = {
                 user_id: result._id,
-                type: "Principal" // Type par défaut
+                type: "Principal"
             };
-
-            // Simuler une requête pour utiliser walletController.addWallet
             const walletReq = { body: walletData };
             const walletRes = {
                 status: (code) => ({
                     json: async (data) => {
                         if (code === 201) {
                             console.log("Wallet created successfully in Register:", data);
-                            // Utiliser le modèle approprié pour mettre à jour l'utilisateur avec l'ID du wallet
                             await UserModel.findByIdAndUpdate(result._id, { wallet: data.wallet._id });
-                            result.wallet = data.wallet._id; // Mettre à jour l'instance localement
+                            result.wallet = data.wallet._id;
                         } else {
                             console.error("Error creating wallet:", data);
                         }
                     }
                 })
             };
-
             await walletController.addWallet(walletReq, walletRes);
         }
 
-        // 7️⃣ Réponse avec l'utilisateur créé
+       // 7️⃣ Création automatique d'un chat pour Business Owner avec l'Admin
+if (req.body.role === "BUSINESS_OWNER") {
+    const adminId = "67bee9c72a104f8241d58e7d"; // ID fixe de l'Admin
+    try {
+        // Vérifier si un chat existe déjà
+        let chat = await Chat.findOne({
+            participants: { $all: [result._id, adminId] }
+        });
+
+        if (!chat) {
+            // Créer le chat directement
+            chat = new Chat({
+                participants: [result._id, adminId],
+                messages: [],
+                createdBy: "System",
+                createdAt: new Date()
+            });
+            await chat.save();
+            console.log("Chat créé automatiquement:", {
+                chatId: chat._id,
+                participants: chat.participants
+            });
+
+            // Émettre l'événement Socket.IO si disponible
+            if (global.io) {
+                global.io.emit("newChat", {
+                    chatId: chat._id,
+                    participants: chat.participants
+                });
+            }
+        } else {
+            console.log("Chat existant trouvé:", chat);
+        }
+    } catch (chatError) {
+        console.error("Erreur lors de la création automatique du chat:", chatError);
+    }
+}
+        // 8️⃣ Réponse avec l'utilisateur créé
         res.status(201).json({ message: "Registration successful", user: result });
 
     } catch (error) {
@@ -1293,98 +1326,6 @@ const RegisterManger = async (req, res) => {
     }
 };
 
-const startChat = async (req, res) => {
-    try {
-        const { recipientId, projectId } = req.body; // projectId est maintenant optionnel
-        const senderId = req.user.userId; // From JWT middleware
-
-        // Vérifier que l'expéditeur est un BusinessOwner
-        const sender = await BusinessOwner.findById(senderId);
-        if (!sender || sender.role !== "BUSINESS_OWNER") {
-            return res.status(403).json({ message: "Only Business Owners can start chats with Admin" });
-        }
-
-        // Vérifier que le destinataire est un Admin
-        const recipient = await userModel.findById(recipientId);
-        if (!recipient || recipient.role !== "ADMIN") {
-            return res.status(400).json({ message: "Recipient must be an Admin" });
-        }
-
-        // Vérifier si un chat existe déjà entre ces deux utilisateurs
-        let chat = await Chat.findOne({
-            participants: { $all: [senderId, recipientId] }
-        });
-
-        if (!chat) {
-            chat = new Chat({
-                project: projectId || null, // Si projectId n'est pas fourni, mettre null
-                participants: [senderId, recipientId],
-                messages: []
-            });
-            await chat.save();
-        }
-
-        res.status(200).json({ message: "Chat started", chat });
-    } catch (error) {
-        console.error("Error starting chat:", error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-// Send a message
-const sendMessage = async (req, res) => {
-    try {
-        const { chatId, content } = req.body;
-        const senderId = req.user.userId;
-
-        const chat = await Chat.findById(chatId);
-        if (!chat) {
-            return res.status(404).json({ message: "Chat not found" });
-        }
-
-        // Verify sender is a participant
-        if (!chat.participants.includes(senderId)) {
-            return res.status(403).json({ message: "You are not a participant in this chat" });
-        }
-
-        const message = {
-            sender: senderId,
-            content,
-            timestamp: new Date()
-        };
-
-        chat.messages.push(message);
-        await chat.save();
-
-        res.status(200).json({ message: "Message sent", chat });
-    } catch (error) {
-        console.error("Error sending message:", error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-// Get chat history
-const getChatHistory = async (req, res) => {
-    try {
-        const { chatId } = req.params;
-        const userId = req.user.userId;
-
-        const chat = await Chat.findById(chatId).populate("participants", "fullname email").populate("messages.sender", "fullname");
-        if (!chat) {
-            return res.status(404).json({ message: "Chat not found" });
-        }
-
-        // Verify user is a participant
-        if (!chat.participants.some(p => p._id.toString() === userId)) {
-            return res.status(403).json({ message: "You are not authorized to view this chat" });
-        }
-
-        res.status(200).json(chat);
-    } catch (error) {
-        console.error("Error fetching chat history:", error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
 
 const getAllRoles = async (req, res) => {
     try {
@@ -1404,7 +1345,7 @@ module.exports = {
     findMyProfile, deleteprofilbyid, deletemyprofile,
     acceptAutorisation, updateProfile, AddPicture, getBusinessOwnerFromToken,
     getAllBusinessManagers, getAllAccountants, getAllFinancialManagers, getAllRH, findMyProject, Registerwithproject,
-    resetPassword, forgotPassword, verifyCode, sendVerificationCode, getAllempl, addEmployeesFromExcel, getAllBusinessOwners, addEmployee, downloadEvidence, RegisterManger, startChat,          // New
-    sendMessage, getAllRoles, findMyPicture, logout, getbyid, deleteById, updateById, findMyProjectsOwner, updateFirstLogin,    // New
-    getChatHistory
+    resetPassword, forgotPassword, verifyCode, sendVerificationCode, getAllempl, addEmployeesFromExcel, getAllBusinessOwners, addEmployee, downloadEvidence, RegisterManger,           // New
+     getAllRoles, findMyPicture, logout, getbyid, deleteById, updateById, findMyProjectsOwner, updateFirstLogin,    // New
+   
 };

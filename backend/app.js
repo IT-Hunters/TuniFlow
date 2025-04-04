@@ -116,32 +116,34 @@ global.io.on("connection", (socket) => {
   // 🔹 Handle Sending Messages
   socket.on("sendMessage", async ({ chatId, content, senderId }) => {
     try {
-      const chat = await Chat.findById(chatId);
-      if (!chat || !chat.participants.includes(senderId)) return;
+        const chat = await Chat.findById(chatId);
+        if (!chat || !chat.participants.includes(senderId)) return;
 
-      const message = { sender: senderId, content, timestamp: new Date() };
-      chat.messages.push(message);
-      await chat.save();
+        const message = { sender: senderId, content, timestamp: new Date() };
+        chat.messages.push(message);
+        await chat.save();
 
-      global.io.to(chatId).emit("newMessage", message);
+        // Inclure chatId dans l'événement newMessage
+        global.io.to(chatId).emit("newMessage", { chatId, ...message });
+        console.log("Message émis via newMessage:", { chatId, ...message });
 
-      // Notify recipient
-      const otherParticipant = chat.participants.find(p => p.toString() !== senderId);
-      if (otherParticipant) {
-        const sender = await userModel.findById(senderId, "fullname");
-        const senderName = sender ? sender.fullname : senderId;
-        global.io.to(chatId).emit("newNotification", {
-          chatId,
-          senderId,
-          recipientId: otherParticipant,
-          message: `${senderName} vous a envoyé un message: "${content}"`,
-          timestamp: new Date()
-        });
-      }
+        const otherParticipant = chat.participants.find(p => p.toString() !== senderId);
+        if (otherParticipant) {
+            const sender = await userModel.findById(senderId, "fullname");
+            const senderName = sender ? sender.fullname : senderId;
+            global.io.to(chatId).emit("newNotification", {
+                chatId,
+                senderId,
+                recipientId: otherParticipant,
+                message: `${senderName} vous a envoyé un message: "${content}"`,
+                timestamp: new Date()
+            });
+            console.log("Notification émise:", { recipientId: otherParticipant, message });
+        }
     } catch (error) {
-      console.error("❌ Error sending message:", error);
+        console.error("❌ Error sending message:", error);
     }
-  });
+});
 
   // 🔹 Typing Indicator
   socket.on("typing", async ({ chatId, senderId }) => {

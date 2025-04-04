@@ -135,3 +135,26 @@
     padding: 8px;
     border-radius: 5px;
   }
+
+
+  .message {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 70%;
+    font-size: 0.95rem;
+    
+  }
+  
+  .message.received {
+    align-self: flex-start; /* Messages reçus à gauche */
+    background-color: #e4e6eb;
+    color: #1c2526;
+  }
+  
+  .message.sent {
+   
+    background-color: #0084ff;
+    color: white;
+    align-self: flex-end; /* Messages envoyés à droite */
+  }

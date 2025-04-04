@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import io from "socket.io-client";
 import { FaWallet, FaBell } from "react-icons/fa";
+import ChatService from "../../services/ChatService"; // Ajustez le chemin
 import "./NavbarHome.css";
 
 const Navbar = ({ notifications: externalNotifications }) => {
@@ -13,20 +13,17 @@ const Navbar = ({ notifications: externalNotifications }) => {
   const [notifications, setNotifications] = useState(externalNotifications || []);
   const navigate = useNavigate();
 
-  // Initialisation avec Socket.IO pour notifications dynamiques
   useEffect(() => {
     const fetchUserAndWallet = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        // Récupérer les données de l'utilisateur
         const userResponse = await axios.get("http://localhost:5000/users/findMyProfile", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(userResponse.data);
 
-        // Récupérer le wallet de l'utilisateur
         const walletResponse = await axios.get(
           `http://localhost:5000/wallet/user/${userResponse.data._id}`,
           {
@@ -42,49 +39,29 @@ const Navbar = ({ notifications: externalNotifications }) => {
 
     fetchUserAndWallet();
 
-    // Connexion Socket.IO pour notifications
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    // Initialiser le socket via ChatService
+    ChatService.initializeSocket();
 
-    const socket = io("http://localhost:5000", {
-      auth: { token },
-    });
-
-    socket.on("connect", () => {
-      console.log("Socket.IO connected for BusinessOwner Navbar:", socket.id);
-    });
-
-    socket.on("newNotification", (notification) => {
-      console.log("New notification received in Navbar:", notification);
+    // Écouter les notifications
+    const handleNewNotification = (notification) => {
+      console.log("New notification in NavbarHome:", notification);
       if (notification.recipientId === userData?._id) {
         setNotifications((prev) => [...prev, notification]);
       }
-    });
+    };
 
-    socket.on("newMessage", (message) => {
-      console.log("New message received in Navbar:", message);
-      if (message.sender !== userData?._id) {
-        setNotifications((prev) => [
-          ...prev,
-          {
-            message: `Nouveau message: ${message.content}`,
-            recipientId: userData?._id,
-            timestamp: new Date(message.timestamp),
-          },
-        ]);
-      }
-    });
+    ChatService.on("newNotification", handleNewNotification);
 
-    socket.on("connect_error", (err) => {
-      console.error("Socket.IO connection error in Navbar:", err.message);
-    });
+    // Émettre userOnline
+    if (userData?._id) {
+      ChatService.emitUserOnline(userData._id);
+    }
 
     return () => {
-      socket.disconnect();
+      ChatService.off("newNotification", handleNewNotification);
     };
   }, [userData?._id]);
 
-  // Synchronisation avec les notifications externes
   useEffect(() => {
     if (externalNotifications) {
       setNotifications(externalNotifications);
@@ -113,9 +90,8 @@ const Navbar = ({ notifications: externalNotifications }) => {
     }
   };
 
-  // Redirection vers la page Wallet
   const handleWalletClick = () => {
-    navigate("/Transaction"); // Assurez-vous que la route "/wallet" est correcte
+    navigate("/Transaction");
   };
 
   return (
@@ -127,7 +103,6 @@ const Navbar = ({ notifications: externalNotifications }) => {
         <div className="search-bar">
           <input type="text" placeholder="Search Anything..." />
         </div>
-        {/* Icône de notifications */}
         <div
           className="notification-menu"
           onClick={() => setNotificationMenuOpen(!notificationMenuOpen)}
@@ -149,16 +124,22 @@ const Navbar = ({ notifications: externalNotifications }) => {
             )}
           </div>
         </div>
-        {/* Icône de portefeuille */}
         <div className="wallet-menu" onClick={handleWalletClick}>
           <FaWallet className="wallet-icon" />
         </div>
-        {/* Menu profil */}
         <div className="profile-menu" onClick={() => setMenuOpen(!menuOpen)}>
-          <img src={userData?.picture } alt="User Profile" className="profile-img" />
+          <img
+            src={userData?.picture || "/default-avatar.png"}
+            alt="User Profile"
+            className="profile-img"
+          />
           <div className={`dropdown-menu ${menuOpen ? "active" : ""}`}>
             <div className="profile-info">
-              <img src={userData?.picture } alt="User" className="dropdown-img" />
+              <img
+                src={userData?.picture || "/default-avatar.png"}
+                alt="User"
+                className="dropdown-img"
+              />
               <div>
                 <p className="user-name">{userData?.fullname}</p>
                 <p className="user-email">{userData?.email}</p>
