@@ -653,6 +653,7 @@ async function findMyProject(req, res) {
                 path: 'project',
                 populate: [
                     { path: 'businessOwner', select: 'fullname email' },
+                    { path: 'businessManager', select: 'fullname email' },
                     { path: 'accountants', select: 'fullname email' },
                     { path: 'financialManagers', select: 'fullname email' },
                     { path: 'rhManagers', select: 'fullname email' },
@@ -681,6 +682,7 @@ async function findMyProject(req, res) {
             endDate: manager.project.due_date,
             businessOwner: manager.project.businessOwner,
             teamMembers: {
+                manager: manager.project.businessManager,
                 accountants: manager.project.accountants,
                 financialManagers: manager.project.financialManagers,
                 rhManagers: manager.project.rhManagers

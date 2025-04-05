@@ -244,6 +244,12 @@ const ProjectDetails = () => {
         <div key={objectif._id} className="info-card">
           <h3>{objectif.name || "Unnamed Objective"}</h3>
           <div className="info-details">
+          <p><strong>Status:</strong> 
+              <span className={`status ${(objectif.status || "").toLowerCase()}`}>
+                {objectif.status || "Not specified"}
+              </span>
+            </p>
+            <p><strong>Type:</strong> {objectif.objectivetype || "Not specified"}</p>
             <p><strong>Description:</strong> {objectif.description || "No description"}</p>
             <p><strong>Target Amount:</strong> ${objectif.target_amount?.toLocaleString() || "0"}</p>
             <p><strong>Budget Range:</strong> 
@@ -264,12 +270,7 @@ const ProjectDetails = () => {
               </div>
             </div>
             
-            <p><strong>Status:</strong> 
-              <span className={`status ${(objectif.status || "").toLowerCase()}`}>
-                {objectif.status || "Not specified"}
-              </span>
-            </p>
-            <p><strong>Type:</strong> {objectif.objectivetype || "Not specified"}</p>
+            
           </div>
         </div>
       ))}

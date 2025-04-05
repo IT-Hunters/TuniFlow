@@ -290,6 +290,17 @@ const ProjectView = () => {
                     {project.businessOwner?.email || '-'}
                   </p>
                 </div>
+
+                <div className="team-card">
+             <h3 className="team-role">Busness Manager</h3>
+               <p className="team-name">
+                 {project.teamMembers?.manager?.fullname || 'Non assigné'}
+               </p>
+               <p className="team-email">
+                {project.teamMembers?.manager?.email || '-'}
+                </p>
+                </div>
+
                 
                 <div className="team-card">
                   <h3 className="team-role">Comptables</h3>

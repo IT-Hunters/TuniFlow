@@ -601,7 +601,9 @@ const generateProjectReportbyid = async (req, res) => {
             .populate("accountants", "fullname lastname email")
             .populate("rhManagers", "fullname lastname email")
             .populate("assets_actif", "name total_value date_acquisition type_actif")
-            .populate("taxes", "nom_taxe taux description categorie date_effet");
+            .populate("taxes", "nom_taxe taux description categorie date_effet")
+            .populate("objectifs");
+            
 
         if (!project) {
             return res.status(404).json({ message: "Projet non trouvé" });
@@ -740,6 +742,60 @@ const generateProjectReportbyid = async (req, res) => {
             doc.text('Aucune taxe associée', styles.tableCell);
         }
 
+// Objectifs du projet
+doc.moveDown(1.5);
+doc.text("Objectifs du projet", styles.sectionTitle);
+doc.moveDown(0.5);
+
+// Vérifier la présence d’objectifs
+if (project.objectifs?.length > 0) {
+    const objectifHeaders = ["Nom", "Type", "Statut", "Montant cible", "Budget min", "Budget max", "Début", "Fin", "Progress"];
+    const objectifWidths = [80, 60, 70, 100, 80, 80, 60, 60, 60]; // ✅ Colonnes ajustées
+
+    const objectifRows = [];
+
+    project.objectifs.forEach(obj => {
+        // ✅ Première ligne avec certaines infos
+        objectifRows.push([
+            obj.name || "N/A",
+            obj.objectivetype || "N/A",
+            obj.status || "N/A",
+            obj.target_amount ? `${obj.target_amount} €` : "N/A",
+            obj.minbudget ? `${obj.minbudget} €` : "N/A",
+            obj.maxbudget ? `${obj.maxbudget} €` : "N/A",
+            obj.datedebut ? new Date(obj.datedebut).toLocaleDateString("fr-FR") : "N/A",
+            obj.datefin ? new Date(obj.datefin).toLocaleDateString("fr-FR") : "N/A",
+            `${obj.progress}%`
+        ]);
+
+        // ✅ Deuxième ligne avec infos complémentaires (ou vide pour format 2 lignes)
+        objectifRows.push([
+            "", // Deuxième ligne vide sous "Nom"
+            obj.objectivetype_detail || "", // Détail du type
+            "", // Statut reste vide
+            "", // Montant cible vide
+            "", // Budget min vide
+            "", // Budget max vide
+            "", // Début vide
+            "", // Fin vide
+            ""  // Progress vide
+        ]);
+    });
+
+    // ✅ Activer le mode paysage si trop large
+    if (doc.page.width < 700) {
+        doc.addPage({ layout: 'landscape' });
+    }
+
+    doc.y = drawTable(objectifHeaders, objectifRows, objectifWidths, doc.y);
+} else {
+    doc.text("Aucun objectif associé à ce projet", styles.tableCell);
+}
+
+
+
+
+
         doc.end();
     } catch (error) {
         console.error("Erreur génération rapport:", error);
@@ -754,12 +810,13 @@ const generateProjectsReportowner = async (req, res) => {
     try {
         const userId = req.user.userId;
 
-        // Peuplement complet des données
+        // Peuplement complet des données avec les objectifs
         const user = await userModel.findById(userId).populate({
             path: 'projects',
             populate: [
                 { path: 'taxes', select: 'nom_taxe taux description categorie date_effet' },
                 { path: 'assets_actif', select: 'name total_value date_acquisition type_actif' },
+                { path: 'objectifs', select: 'name description target_amount minbudget maxbudget datedebut datefin progress status objectivetype' },
                 { path: 'businessOwner', select: 'fullname email' },
                 { path: 'businessManager', select: 'fullname email' },
                 { path: 'accountants', select: 'fullname email' },
@@ -783,7 +840,8 @@ const generateProjectsReportowner = async (req, res) => {
             sectionTitle: { fontSize: 14, font: 'Helvetica-Bold' },
             tableHeader: { fontSize: 12, font: 'Helvetica-Bold', fillColor: '#f0f0f0' },
             tableCell: { fontSize: 12, font: 'Helvetica' },
-            teamMember: { fontSize: 12, font: 'Helvetica', indent: 20 }
+            teamMember: { fontSize: 12, font: 'Helvetica', indent: 20 },
+            progressBar: { width: 100, height: 10 }
         };
 
         // Fonction pour dessiner un tableau
@@ -815,6 +873,21 @@ const generateProjectsReportowner = async (req, res) => {
             });
 
             return startY + (rows.length + 1) * rowHeight + 10;
+        };
+
+        // Fonction pour dessiner une barre de progression
+        const drawProgressBar = (doc, x, y, width, height, progress) => {
+            const filledWidth = (width * progress) / 100;
+            
+            // Fond de la barre
+            doc.rect(x, y, width, height)
+               .fillAndStroke('#e0e0e0', '#333');
+            
+            // Partie remplie
+            doc.rect(x, y, filledWidth, height)
+               .fillAndStroke('#4CAF50');
+            
+            return y + height + 5;
         };
 
         user.projects.forEach((project, index) => {
@@ -869,7 +942,7 @@ const generateProjectsReportowner = async (req, res) => {
             
             doc.moveDown(1.5);
 
-            // Assets Actif - Tableau amélioré
+            // Assets Actif
             doc.text('Assets Actif', styles.sectionTitle);
             doc.moveDown(0.5);
 
@@ -889,14 +962,13 @@ const generateProjectsReportowner = async (req, res) => {
             }
             doc.moveDown(1.5);
 
-            // Taxes - Tableau amélioré
-            
-            doc.text('Taxes', { fontSize: 14, font: 'Helvetica-Bold' });
+            // Taxes
+            doc.text('Taxes', styles.sectionTitle);
             doc.moveDown(0.5);
 
             if (project.taxes?.length > 0) {
                 const taxHeaders = ['Nom Taxe', 'Taux', 'Catégorie', 'Date Effet', 'Description'];
-                const taxWidths = [100, 50, 100, 80, 200]; // Ajustement des largeurs
+                const taxWidths = [100, 50, 100, 80, 200];
                 const taxRows = project.taxes.map(tax => [
                     tax.nom_taxe || 'N/A',
                     tax.taux ? `${tax.taux}%` : 'N/A',
@@ -907,8 +979,65 @@ const generateProjectsReportowner = async (req, res) => {
 
                 doc.y = drawTable(taxHeaders, taxRows, taxWidths, doc.y);
             } else {
-                doc.text('Aucune taxe associée', { fontSize: 12, font: 'Helvetica' });
+                doc.text('Aucune taxe associée', styles.tableCell);
             }
+            doc.moveDown(1.5);
+
+// Section Objectifs
+doc.text("Objectifs du projet", styles.sectionTitle);
+doc.moveDown(0.5);
+
+// Vérifier la présence d'objectifs
+if (project.objectifs?.length > 0) {
+    const objectifHeaders = ["Nom", "Type", "Statut", "Montant cible", "Budget min", "Budget max", "Début", "Fin", "Progress"];
+    const objectifWidths = [80, 60, 70, 100, 80, 80, 60, 60, 60]; // Colonnes ajustées
+
+    const objectifRows = [];
+
+    project.objectifs.forEach(obj => {
+        // Première ligne avec certaines infos
+        objectifRows.push([
+            obj.name || "N/A",
+            obj.objectivetype || "N/A",
+            obj.status || "N/A",
+            obj.target_amount ? `${obj.target_amount} €` : "N/A",
+            obj.minbudget ? `${obj.minbudget} €` : "N/A",
+            obj.maxbudget ? `${obj.maxbudget} €` : "N/A",
+            obj.datedebut ? new Date(obj.datedebut).toLocaleDateString("fr-FR") : "N/A",
+            obj.datefin ? new Date(obj.datefin).toLocaleDateString("fr-FR") : "N/A",
+            `${obj.progress}%`
+        ]);
+
+        // Deuxième ligne avec infos complémentaires (ou vide pour format 2 lignes)
+        objectifRows.push([
+            "", // Deuxième ligne vide sous "Nom"
+            obj.objectivetype_detail || "", // Détail du type
+            "", // Statut reste vide
+            "", // Montant cible vide
+            "", // Budget min vide
+            "", // Budget max vide
+            "", // Début vide
+            "", // Fin vide
+            ""  // Progress vide
+        ]);
+    });
+
+    // Activer le mode paysage si trop large
+    if (doc.page.width < 700) {
+        doc.addPage({ layout: "landscape" });
+    }
+
+    // Dessiner le tableau des objectifs
+    doc.y = drawTable(objectifHeaders, objectifRows, objectifWidths, doc.y);
+
+   
+
+   
+} else {
+    doc.text("Aucun objectif associé à ce projet", styles.tableCell);
+}
+
+
         });
 
         doc.end();
