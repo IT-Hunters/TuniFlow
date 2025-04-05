@@ -29,5 +29,6 @@ router.get('/business-owners',
   authorizeRole(["BUSINESS_MANAGER"]), 
   invoiceController.getBusinessOwners
 );
+router.get("/my-sent-invoices", authenticateJWT, invoiceController.getMySentInvoices)
 
 module.exports = router;

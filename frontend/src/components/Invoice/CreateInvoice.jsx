@@ -1,8 +1,9 @@
-// src/components/CreateInvoice.jsx
+// src/components/Invoice/CreateInvoice.jsx
 import React, { useState, useEffect } from 'react';
 import CoolSidebar from "../sidebarHome/newSidebar"; 
 import Navbar from "../navbarHome/NavbarHome"; 
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './invoiceStyles.css';
 
 const CreateInvoice = () => {
@@ -15,9 +16,9 @@ const CreateInvoice = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [isCustomCategory, setIsCustomCategory] = useState(false); // État pour gérer si "Other" est sélectionné
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const navigate = useNavigate();
 
-  // Liste des catégories prédéfinies
   const categoryOptions = [
     "Consulting",
     "Services",
@@ -50,10 +51,9 @@ const CreateInvoice = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "category") {
-      // Si l'utilisateur sélectionne "Other", afficher le champ texte
       if (value === "Other") {
         setIsCustomCategory(true);
-        setInvoiceData({ ...invoiceData, category: '' }); // Réinitialiser la catégorie
+        setInvoiceData({ ...invoiceData, category: '' });
       } else {
         setIsCustomCategory(false);
         setInvoiceData({ ...invoiceData, category: value });
@@ -82,9 +82,8 @@ const CreateInvoice = () => {
 
       setSuccess(true);
       setInvoiceData({ amount: '', due_date: '', category: '' });
-      setIsCustomCategory(false); // Réinitialiser l'état de la catégorie personnalisée
+      setIsCustomCategory(false);
       
-      // Réinitialiser le statut de succès après 3 secondes
       setTimeout(() => setSuccess(false), 3000);
       
     } catch (error) {
@@ -95,7 +94,10 @@ const CreateInvoice = () => {
     }
   };
 
-  // Formater la date d'aujourd'hui pour la valeur min du sélecteur de date
+  const handleViewInvoices = () => {
+    navigate('/manager-invoices');
+  };
+
   const today = new Date().toISOString().split('T')[0];
 
   return (
@@ -104,101 +106,112 @@ const CreateInvoice = () => {
       <div className="create-invoice-main">
         <Navbar />
         <div className="main-content">
-          <div className="invoice-container">
-            <h2 className="invoice-header">Create an Invoice</h2>
-            
-            {businessOwner ? (
-              <p className="recipient-info">
-                <span className="recipient-label">Recipient:</span> 
-                <span className="recipient-name">{businessOwner.fullname} {businessOwner.lastname}</span>
-              </p>
-            ) : (
-              <p className="loading-recipient">
-                <span className="loading-dot"></span>
-                <span className="loading-dot"></span>
-                <span className="loading-dot"></span>
-                Loading recipient information
-              </p>
-            )}
-            
-            {error && <div className="error-message">{error}</div>}
-            {success && <div className="success-message">Invoice created and sent successfully!</div>}
-            
-            <form className="invoice-form" onSubmit={handleSubmit}>
-              <div className="input-group">
-                <label className="input-label" htmlFor="amount">Amount</label>
-                <input 
-                  id="amount"
-                  type="number" 
-                  name="amount" 
-                  className="invoice-input" 
-                  placeholder="Enter invoice amount" 
-                  value={invoiceData.amount}
-                  onChange={handleChange} 
-                  required 
-                  min="0"
-                  step="0.01"
-                /> 
-              </div>
-              
-              <div className="input-group">
-                <label className="input-label" htmlFor="due_date">Due Date</label>
-                <input 
-                  id="due_date"
-                  type="date" 
-                  name="due_date" 
-                  className="invoice-input" 
-                  value={invoiceData.due_date}
-                  onChange={handleChange} 
-                  required 
-                  min={today}
-                /> 
-              </div>
-              
-              <div className="input-group">
-                <label className="input-label" htmlFor="category">Category</label>
-                <select
-                  id="category"
-                  name="category"
-                  className="invoice-input"
-                  value={isCustomCategory ? "Other" : invoiceData.category}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="" disabled>Select a category</option>
-                  {categoryOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div className="invoice-container-wrapper">
+            {/* Section principale (formulaire à gauche) */}
+            <div className="invoice-container">
+              <h2 className="invoice-header">Create an Invoice</h2>
 
-              {isCustomCategory && (
-                <div className="input-group">
-                  <label className="input-label" htmlFor="customCategory">Custom Category</label>
-                  <input
-                    id="customCategory"
-                    type="text"
-                    name="category"
-                    className="invoice-input"
-                    placeholder="Enter custom category"
-                    value={invoiceData.category}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+              {businessOwner ? (
+                <p className="recipient-info">
+                  <span className="recipient-label">Recipient:</span> 
+                  <span className="recipient-name">{businessOwner.fullname} {businessOwner.lastname}</span>
+                </p>
+              ) : (
+                <p className="loading-recipient">
+                  <span className="loading-dot"></span>
+                  <span className="loading-dot"></span>
+                  <span className="loading-dot"></span>
+                  Loading recipient information
+                </p>
               )}
               
-              <button type="submit" disabled={loading} className="invoice-button">
-                {loading ? (
-                  <>
-                    <span className="loading"></span>
-                    Processing...
-                  </>
-                ) : 'Create and Send Invoice'}
-              </button> 
-            </form>
+              {error && <div className="error-message">{error}</div>}
+              {success && <div className="success-message">Invoice created and sent successfully!</div>}
+              
+              <form className="invoice-form" onSubmit={handleSubmit}>
+                <div className="input-group">
+                  <label className="input-label" htmlFor="amount">Amount</label>
+                  <input 
+                    id="amount"
+                    type="number" 
+                    name="amount" 
+                    className="invoice-input" 
+                    placeholder="Enter invoice amount" 
+                    value={invoiceData.amount}
+                    onChange={handleChange} 
+                    required 
+                    min="0"
+                    step="0.01"
+                  /> 
+                </div>
+                
+                <div className="input-group">
+                  <label className="input-label" htmlFor="due_date">Due Date</label>
+                  <input 
+                    id="due_date"
+                    type="date" 
+                    name="due_date" 
+                    className="invoice-input" 
+                    value={invoiceData.due_date}
+                    onChange={handleChange} 
+                    required 
+                    min={today}
+                  /> 
+                </div>
+                
+                <div className="input-group">
+                  <label className="input-label" htmlFor="category">Category</label>
+                  <select
+                    id="category"
+                    name="category"
+                    className="invoice-input"
+                    value={isCustomCategory ? "Other" : invoiceData.category}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="" disabled>Select a category</option>
+                    {categoryOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {isCustomCategory && (
+                  <div className="input-group">
+                    <label className="input-label" htmlFor="customCategory">Custom Category</label>
+                    <input
+                      id="customCategory"
+                      type="text"
+                      name="category"
+                      className="invoice-input"
+                      placeholder="Enter custom category"
+                      value={invoiceData.category}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                )}
+                
+                <button type="submit" disabled={loading} className="invoice-button">
+                  {loading ? (
+                    <>
+                      <span className="loading"></span>
+                      Processing...
+                    </>
+                  ) : 'Create and Send Invoice'}
+                </button> 
+              </form>
+            </div>
+
+            {/* Section à droite (bouton View Invoices) */}
+            <div className="invoice-actions-sidebar">
+              <h3 className="actions-header">Actions</h3>
+              <button onClick={handleViewInvoices} className="view-invoices-button">
+                View Invoices
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+// src/components/sidebarHome/newSidebar.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -35,7 +36,7 @@ const CoolSidebar = () => {
     { title: "Objective", icon: FaCog, href: "/ObjectiveManagement" },
     { title: "Chat", icon: FaComments, href: "/chat" },
     { title: "Help", icon: FaQuestionCircle, href: "#" },
-    { title: "Invoice", icon: FaFileInvoice, href: "/invoice" },
+    { title: "Invoice", icon: FaFileInvoice, href: userData?.userType === "BusinessOwner" ? "/owner-invoices" : "/invoice" }, // Redirection conditionnelle
     { title: "Add Project", icon: FaPlus, href: "/AddProject" },
     { title: "My Project", icon: FaProjectDiagram, href: "/MyProject" },
     { title: "Manager List", icon: FaUserFriends, href: "/ManagerList" },
@@ -48,8 +49,8 @@ const CoolSidebar = () => {
     if (item.title === "Add Project" || item.title === "Manager List" || item.title === "OwnerProjectsView") {
       return userData?.userType === "BusinessOwner"; // Visible only for BusinessOwner
     }
-    if (item.title === "My Project" || item.title === "Invoice") {
-      return userData?.userType === "BusinessManager"; // Visible only for BusinessManager
+    if (item.title === "My Project" || (item.title === "Invoice" && userData?.userType === "BusinessManager")) {
+      return userData?.userType === "BusinessManager"; // "Invoice" pour BusinessManager va vers CreateInvoice
     }
     if (item.title === "ProjectView") {
       return userData?.userType !== "BusinessOwner"; // Visible for all except BusinessOwner

@@ -383,3 +383,290 @@
   border-color: #007bff;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
+/* src/components/invoiceStyles.css */
+
+/* Conteneur principal */
+.invoice-container {
+  max-width: 1200px; /* Augmenter la largeur pour réduire l'espace blanc */
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Liste des factures */
+.invoices-list {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center; /* Centrer le tableau */
+}
+
+/* Tableau */
+.invoices-table {
+  width: 100%;
+  max-width: 1000px; /* Limiter la largeur du tableau pour éviter qu'il soit trop large */
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Les autres styles restent inchangés */
+.invoices-table th,
+.invoices-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.invoices-table th {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.invoices-table tr {
+  transition: background-color 0.3s ease;
+}
+
+.invoices-table tr:hover {
+  background-color: #f1f5f9;
+}
+
+.invoices-table td {
+  color: #555;
+  font-size: 15px;
+}
+
+/* Statut */
+.status-paid {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.status-pending {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+/* Bouton Accept */
+.accept-button {
+  padding: 8px 15px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.accept-button:hover {
+  background-color: #218838;
+}
+
+/* Label Accepted */
+.accepted-label {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Section Scan QR */
+.scanner-section {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.scanner-toggle-button {
+  padding: 12px 25px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.scanner-toggle-button:hover {
+  background-color: #0056b3;
+}
+
+/* Section Recherche */
+.search-section {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  color: #333;
+  background-color: #fff;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Messages d'erreur */
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Animation de chargement */
+.loading-recipient {
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+}
+
+.loading-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #007bff;
+  border-radius: 50%;
+  margin: 0 3px;
+  animation: dot-flashing 1s infinite alternate;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-flashing {
+  0% {
+    background-color: #007bff;
+  }
+  100% {
+    background-color: #b3d4ff;
+  }
+}
+/* src/components/invoiceStyles.css */
+
+/* Section pour le bouton View Invoices */
+.view-invoices-section {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.view-invoices-button {
+  padding: 12px 25px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.view-invoices-button:hover {
+  background-color: #0056b3;
+}
+/************/
+/* src/components/invoiceStyles.css */
+
+/* Wrapper pour diviser la page en deux sections */
+.invoice-container-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Conteneur du formulaire (à gauche) */
+.invoice-container {
+  flex: 1;
+  max-width: 700px; /* Limiter la largeur du formulaire */
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+/* Sidebar des actions (à droite) */
+.invoice-actions-sidebar {
+  width: 300px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  position: sticky;
+  top: 20px; /* Pour qu'elle reste visible lors du défilement */
+}
+
+.actions-header {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.view-invoices-button {
+  width: 100%;
+  padding: 12px 25px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.view-invoices-button:hover {
+  background-color: #0056b3;
+}
+
+/* Assurer que le formulaire reste lisible */
+.invoice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Les autres styles restent inchangés */
+/* Responsive pour les petits écrans */
+@media (max-width: 768px) {
+  .invoice-container-wrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .invoice-container {
+    max-width: 100%;
+  }
+
+  .invoice-actions-sidebar {
+    width: 100%;
+    max-width: 300px;
+    position: static; /* Désactiver sticky sur mobile */
+  }
+}

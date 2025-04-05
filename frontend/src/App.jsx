@@ -30,6 +30,8 @@ import ObjectifDetails from "./components/Objectif/ObjectifDetails";
 import CreateManager from "./components/Project/Createmanager";
 import ManagerList from "./components/Project/ManagerList";
 import AddUser from "./components/Project/AddUser";
+import OwnerInvoices from "./components/Invoice/OwnerInvoices";
+import ManagerInvoices from "./components/Invoice/ManagerInvoices";
 function App() {         
   return (
     <Router>
@@ -47,6 +49,8 @@ function App() {
         <Route path="/chat" element={<Chat/>} />
         <Route path="/chatadmin" element={<ChatAdmin  />} />
         <Route path="/invoice" element={<CreateInvoice />} />
+        <Route path="/owner-invoices" element={<OwnerInvoices />} />
+        <Route path="/manager-invoices" element={<ManagerInvoices />} />
         <Route path="/send-invoice" element={<SendInvoice />} /> 
         <Route path="/wallet" element={<Wallet />} /> 
         <Route path="/Transaction" element={<Tessst />} /> 

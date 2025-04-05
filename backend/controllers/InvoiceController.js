@@ -258,13 +258,13 @@ exports.acceptInvoice = async (req, res) => {
 
 exports.getMyInvoices = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.userId; 
     const invoices = await Bill.find({ recipient_id: userId })
-      .populate("creator_id", "fullname email");
+      .populate("creator_id", "fullname lastname")
+      .populate("project_id", "status");
     res.status(200).json(invoices);
   } catch (error) {
-    console.error("Error retrieving invoices:", error.message);
-    res.status(500).json({ message: "Error while retrieving invoices", error: error.message });
+    res.status(500).json({ message: "Error fetching invoices", error: error.message });
   }
 };
 
@@ -275,5 +275,17 @@ exports.getBusinessOwners = async (req, res) => {
   } catch (error) {
     console.error("Error retrieving Business Owners:", error.message);
     res.status(500).json({ message: "Error while retrieving Business Owners", error: error.message });
+  }
+};
+// Backend: invoiceController.js
+exports.getMySentInvoices = async (req, res) => {
+  try {
+    const userId = req.user.userId; // Récupéré via middleware d'authentification
+    const invoices = await Bill.find({ creator_id: userId })
+      .populate("recipient_id", "fullname lastname")
+      .populate("project_id", "status");
+    res.status(200).json(invoices);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching sent invoices", error: error.message });
   }
 };
