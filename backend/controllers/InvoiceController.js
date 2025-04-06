@@ -291,7 +291,14 @@ exports.getMySentInvoices = async (req, res) => {
   }
 };
 
-// Backend: invoiceController.js (mise à jour de getInvoiceStatistics)
+
+// Fonction pour calculer le numéro de la semaine
+const getWeekNumber = (date) => {
+  const startOfYear = new Date(date.getFullYear(), 0, 1);
+  const pastDaysOfYear = (date - startOfYear) / (1000 * 60 * 60 * 24);
+  return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+};
+
 exports.getInvoiceStatistics = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -299,6 +306,7 @@ exports.getInvoiceStatistics = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const period = req.query.period || "month";
+    const year = req.query.year ? parseInt(req.query.year) : new Date().getFullYear();
 
     let invoices;
     if (user.role === "BUSINESS_MANAGER") {
@@ -313,7 +321,15 @@ exports.getInvoiceStatistics = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized role" });
     }
 
-    console.log("Invoices found:", invoices); // Log pour vérifier les factures
+    console.log("User ID:", userId);
+    console.log("User Role:", user.role);
+    console.log("Invoices found:", invoices.map(invoice => ({
+      id: invoice._id,
+      due_date: invoice.due_date,
+      amount: invoice.amount,
+      creator_id: invoice.creator_id,
+      recipient_id: invoice.recipient_id,
+    })));
 
     // Calculer les statistiques globales
     const totalPaid = invoices
@@ -344,11 +360,11 @@ exports.getInvoiceStatistics = async (req, res) => {
     let chartData = {};
     if (period === "month") {
       const monthlyData = Array(12).fill(0);
-      const currentYear = new Date().getFullYear();
       invoices.forEach(invoice => {
-        const createdAt = new Date(invoice.createdAt || invoice.due_date); // Utiliser due_date si createdAt n'existe pas
-        if (createdAt.getFullYear() === currentYear) {
-          const month = createdAt.getMonth();
+        const dueDate = new Date(invoice.due_date);
+        console.log(`Invoice ${invoice._id}: due_date=${invoice.due_date}, year=${dueDate.getFullYear()}, month=${dueDate.getMonth()}`);
+        if (dueDate.getFullYear() === year) {
+          const month = dueDate.getMonth();
           monthlyData[month] += invoice.amount;
         }
       });
@@ -357,10 +373,10 @@ exports.getInvoiceStatistics = async (req, res) => {
         data: monthlyData,
       };
     } else if (period === "year") {
-      const years = [...new Set(invoices.map(invoice => new Date(invoice.createdAt || invoice.due_date).getFullYear()))].sort();
+      const years = [...new Set(invoices.map(invoice => new Date(invoice.due_date).getFullYear()))].sort();
       const yearlyData = years.map(year => {
         return invoices
-          .filter(invoice => new Date(invoice.createdAt || invoice.due_date).getFullYear() === year)
+          .filter(invoice => new Date(invoice.due_date).getFullYear() === year)
           .reduce((sum, invoice) => sum + invoice.amount, 0);
       });
       chartData = {
@@ -369,12 +385,14 @@ exports.getInvoiceStatistics = async (req, res) => {
       };
     } else if (period === "week") {
       const weeklyData = Array(52).fill(0);
-      const currentYear = new Date().getFullYear();
       invoices.forEach(invoice => {
-        const createdAt = new Date(invoice.createdAt || invoice.due_date);
-        if (createdAt.getFullYear() === currentYear) {
-          const week = Math.ceil((createdAt.getDate() + (new Date(createdAt.getFullYear(), 0, 1).getDay() + 1)) / 7);
-          weeklyData[week - 1] += invoice.amount;
+        const dueDate = new Date(invoice.due_date);
+        if (dueDate.getFullYear() === year) {
+          const week = getWeekNumber(dueDate);
+          console.log(`Invoice ${invoice._id}: due_date=${invoice.due_date}, week=${week}`);
+          if (week >= 1 && week <= 52) {
+            weeklyData[week - 1] += invoice.amount;
+          }
         }
       });
       chartData = {
@@ -383,7 +401,10 @@ exports.getInvoiceStatistics = async (req, res) => {
       };
     }
 
-    console.log("Chart Data:", chartData); // Log pour vérifier les données du graphique
+    console.log("Chart Data:", chartData);
+
+    const availableYears = [...new Set(invoices.map(invoice => new Date(invoice.due_date).getFullYear()))].sort();
+    console.log("Available Years:", availableYears);
 
     res.status(200).json({
       totalPaid,
@@ -391,6 +412,7 @@ exports.getInvoiceStatistics = async (req, res) => {
       totalOverdue,
       chartData,
       overdueInvoices,
+      availableYears: availableYears.length > 0 ? availableYears : [new Date().getFullYear()],
     });
   } catch (error) {
     console.error("Error fetching invoice statistics:", error.message);
