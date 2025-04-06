@@ -4,19 +4,16 @@ const Wallet = require('../model/wallet');
 const Project = require('../model/Project');
 const nodemailer = require("nodemailer");
 const PDFDocument = require("pdfkit");
-const fs = require("fs"); // Import unique et standard de fs
+const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require('uuid');
 const QRCode = require("qrcode");
-// Vérifiez que fs.createWriteStream est disponible
-console.log('fs.createWriteStream available:', typeof fs.createWriteStream === 'function');
 
-// Générer le PDF de la facture
+// Générer le PDF de la facture (inchangé)
 const generateInvoicePDF = async (invoice) => {
   const pdfPath = path.join(__dirname, '../invoices', `invoice_${invoice._id}.pdf`);
   console.log('Attempting to generate PDF at:', pdfPath);
 
-  // Créer le dossier invoices s’il n’existe pas
   const dir = path.join(__dirname, '../invoices');
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -47,7 +44,6 @@ const generateInvoicePDF = async (invoice) => {
   });
 };
 
-// Créer une facture
 exports.createInvoice = async (req, res) => {
   try {
     const { amount, due_date, category } = req.body;
@@ -89,6 +85,7 @@ exports.createInvoice = async (req, res) => {
     res.status(500).json({ message: "Error while creating the invoice", error: error.message });
   }
 };
+
 
 exports.sendInvoice = async (req, res) => {
   try {
@@ -179,6 +176,7 @@ exports.sendInvoice = async (req, res) => {
   }
 };
 
+
 exports.acceptInvoice = async (req, res) => {
   try {
     const { invoiceId } = req.params;
@@ -256,6 +254,7 @@ exports.acceptInvoice = async (req, res) => {
   }
 };
 
+
 exports.getMyInvoices = async (req, res) => {
   try {
     const userId = req.user.userId; 
@@ -268,6 +267,7 @@ exports.getMyInvoices = async (req, res) => {
   }
 };
 
+// Récupérer les Business Owners (inchangé)
 exports.getBusinessOwners = async (req, res) => {
   try {
     const businessOwners = await User.find({ role: "BUSINESS_OWNER" }, "fullname lastname email");
@@ -277,15 +277,123 @@ exports.getBusinessOwners = async (req, res) => {
     res.status(500).json({ message: "Error while retrieving Business Owners", error: error.message });
   }
 };
-// Backend: invoiceController.js
+
+// Récupérer les factures envoyées (inchangé)
 exports.getMySentInvoices = async (req, res) => {
   try {
-    const userId = req.user.userId; // Récupéré via middleware d'authentification
+    const userId = req.user.userId;
     const invoices = await Bill.find({ creator_id: userId })
       .populate("recipient_id", "fullname lastname")
       .populate("project_id", "status");
     res.status(200).json(invoices);
   } catch (error) {
     res.status(500).json({ message: "Error fetching sent invoices", error: error.message });
+  }
+};
+
+// Backend: invoiceController.js (mise à jour de getInvoiceStatistics)
+exports.getInvoiceStatistics = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const period = req.query.period || "month";
+
+    let invoices;
+    if (user.role === "BUSINESS_MANAGER") {
+      invoices = await Bill.find({ creator_id: userId })
+        .populate("recipient_id", "fullname lastname")
+        .populate("project_id", "status");
+    } else if (user.role === "BUSINESS_OWNER") {
+      invoices = await Bill.find({ recipient_id: userId })
+        .populate("creator_id", "fullname lastname")
+        .populate("project_id", "status");
+    } else {
+      return res.status(403).json({ message: "Unauthorized role" });
+    }
+
+    console.log("Invoices found:", invoices); // Log pour vérifier les factures
+
+    // Calculer les statistiques globales
+    const totalPaid = invoices
+      .filter(invoice => invoice.status === "PAID")
+      .reduce((sum, invoice) => sum + invoice.amount, 0);
+
+    const totalPending = invoices
+      .filter(invoice => invoice.status === "PENDING")
+      .reduce((sum, invoice) => sum + invoice.amount, 0);
+
+    const today = new Date();
+    const totalOverdue = invoices
+      .filter(invoice => invoice.status === "PENDING" && new Date(invoice.due_date) < today)
+      .reduce((sum, invoice) => sum + invoice.amount, 0);
+
+    const overdueInvoices = invoices
+      .filter(invoice => invoice.status === "PENDING" && new Date(invoice.due_date) < today)
+      .map(invoice => ({
+        id: invoice._id,
+        amount: invoice.amount,
+        due_date: invoice.due_date,
+        category: invoice.category,
+        recipient: user.role === "BUSINESS_MANAGER" ? `${invoice.recipient_id.fullname} ${invoice.recipient_id.lastname}` : null,
+        creator: user.role === "BUSINESS_OWNER" ? `${invoice.creator_id.fullname} ${invoice.creator_id.lastname}` : null,
+      }));
+
+    // Agrégation des données selon la période
+    let chartData = {};
+    if (period === "month") {
+      const monthlyData = Array(12).fill(0);
+      const currentYear = new Date().getFullYear();
+      invoices.forEach(invoice => {
+        const createdAt = new Date(invoice.createdAt || invoice.due_date); // Utiliser due_date si createdAt n'existe pas
+        if (createdAt.getFullYear() === currentYear) {
+          const month = createdAt.getMonth();
+          monthlyData[month] += invoice.amount;
+        }
+      });
+      chartData = {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        data: monthlyData,
+      };
+    } else if (period === "year") {
+      const years = [...new Set(invoices.map(invoice => new Date(invoice.createdAt || invoice.due_date).getFullYear()))].sort();
+      const yearlyData = years.map(year => {
+        return invoices
+          .filter(invoice => new Date(invoice.createdAt || invoice.due_date).getFullYear() === year)
+          .reduce((sum, invoice) => sum + invoice.amount, 0);
+      });
+      chartData = {
+        labels: years,
+        data: yearlyData,
+      };
+    } else if (period === "week") {
+      const weeklyData = Array(52).fill(0);
+      const currentYear = new Date().getFullYear();
+      invoices.forEach(invoice => {
+        const createdAt = new Date(invoice.createdAt || invoice.due_date);
+        if (createdAt.getFullYear() === currentYear) {
+          const week = Math.ceil((createdAt.getDate() + (new Date(createdAt.getFullYear(), 0, 1).getDay() + 1)) / 7);
+          weeklyData[week - 1] += invoice.amount;
+        }
+      });
+      chartData = {
+        labels: Array.from({ length: 52 }, (_, i) => `Week ${i + 1}`),
+        data: weeklyData,
+      };
+    }
+
+    console.log("Chart Data:", chartData); // Log pour vérifier les données du graphique
+
+    res.status(200).json({
+      totalPaid,
+      totalPending,
+      totalOverdue,
+      chartData,
+      overdueInvoices,
+    });
+  } catch (error) {
+    console.error("Error fetching invoice statistics:", error.message);
+    res.status(500).json({ message: "Error fetching invoice statistics", error: error.message });
   }
 };

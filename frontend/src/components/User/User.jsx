@@ -1,3 +1,4 @@
+// Frontend: src/components/user/User.jsx
 import { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import {
@@ -13,7 +14,7 @@ import StatsCards from "./StatsCards/StatsCards";
 import TransactionChart from "./TransactionChart/TransactionChart";
 import ProjectsOverview from "./ProjectOverview/ProjectsOverview";
 import EventCalendar from "./EventCalender/EventCalendar";
-import RecentInvoices from "./RecentInvoices/RecentInvoices";
+import InvoiceAnalytics from "./InvoiceAnalytics/InvoiceAnalytics"; 
 import TeamActivity from "./TeamActivities/TeamActivity";
 import RoleSelector from "./RoleSelector/RoleSelector";
 import CoolSidebar from "../sidebarHome/newSidebar";
@@ -77,7 +78,7 @@ export function TransactionList({ walletId }) {
     };
 
     fetchTransactions();
-  }, [walletId]); // Keep walletId in the dependency array
+  }, [walletId]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="error">{error}</p>;
@@ -101,7 +102,7 @@ export function TransactionList({ walletId }) {
   );
 }
 
-function Dashboard({ selectedRole, setSelectedRole, walletId,projectId }) { // Accept walletId as a prop
+function Dashboard({ selectedRole, setSelectedRole, walletId, projectId }) {
   return (
     <div className="main-panel">
       <div className="content-wrapper">
@@ -115,7 +116,7 @@ function Dashboard({ selectedRole, setSelectedRole, walletId,projectId }) { // A
         {/* Row 2: TransactionChart + ProjectsOverview */}
         <div className="row equal-height-row">
           <div className="col-lg-6 grid-margin stretch-card">
-            <TransactionChart walletId={walletId} /> {/* Pass walletId */}
+            <TransactionChart walletId={walletId} />
           </div>
           <div className="col-lg-6 grid-margin stretch-card">
             <div className="dashboard-section">
@@ -135,20 +136,14 @@ function Dashboard({ selectedRole, setSelectedRole, walletId,projectId }) { // A
           </div>
         </div>
 
-        {/* Row 4: RecentInvoices (full width) */}
+        {/* Row 4: InvoiceAnalytics  */}
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card">
-            <RecentInvoices />
+            <InvoiceAnalytics />
           </div>
         </div>
-        {/* Row 5: QRScanner */}
-        <div className="row">
-          <div className="col-lg-12 grid-margin stretch-card">
-            <div className="dashboard-section">
-              <QRScanner />
-            </div>
-          </div>
-        </div>
+
+     
       </div>
     </div>
   );

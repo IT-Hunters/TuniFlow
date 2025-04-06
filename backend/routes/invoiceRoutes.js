@@ -30,5 +30,5 @@ router.get('/business-owners',
   invoiceController.getBusinessOwners
 );
 router.get("/my-sent-invoices", authenticateJWT, invoiceController.getMySentInvoices)
-
+router.get("/statistics", authenticateJWT, invoiceController.getInvoiceStatistics);
 module.exports = router;
