@@ -5,15 +5,17 @@ import Navbar from "../navbarHome/NavbarHome";
 import axios from "axios";
 import QRScanner from "./QRScanner";
 import "./invoiceStyles.css";
+import { useTranslation } from 'react-i18next';
 
 const OwnerInvoices = () => {
+  const { t } = useTranslation();
   const [invoices, setInvoices] = useState([]);
   const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showScanner, setShowScanner] = useState(false);
-  const [expandedHistory, setExpandedHistory] = useState({}); // État pour gérer l'affichage de l'historique
+  const [expandedHistory, setExpandedHistory] = useState({});
   const invoiceRefs = useRef({});
 
   useEffect(() => {
@@ -27,7 +29,7 @@ const OwnerInvoices = () => {
         setInvoices(response.data);
         setFilteredInvoices(response.data);
       } catch (err) {
-        setError("Échec du chargement des factures : " + (err.response?.data?.message || err.message));
+        setError("Failed to load invoices: " + (err.response?.data?.message || err.message));
       } finally {
         setLoading(false);
       }
@@ -66,7 +68,7 @@ const OwnerInvoices = () => {
         )
       );
     } catch (err) {
-      setError("Échec de l'acceptation de la facture : " + (err.response?.data?.message || err.message));
+      setError("Failed to accept invoice: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -83,12 +85,31 @@ const OwnerInvoices = () => {
     }
   };
 
-  // Fonction pour basculer l'affichage de l'historique
   const toggleHistory = (invoiceId) => {
     setExpandedHistory((prev) => ({
       ...prev,
       [invoiceId]: !prev[invoiceId],
     }));
+  };
+
+  const handleExport = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:3000/invoices/export", {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'invoices_export.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setError("Failed to export invoices: " + (err.response?.data?.message || err.message));
+    }
   };
 
   return (
@@ -98,11 +119,11 @@ const OwnerInvoices = () => {
         <Navbar />
         <div className="main-content">
           <div className="invoice-container">
-            <h2 className="invoice-header">Mes factures</h2>
+            <h2 className="invoice-header">{t("My Invoices")}</h2>
 
             <div className="scanner-section">
               <button onClick={toggleScanner} className="scanner-toggle-button">
-                {showScanner ? "Masquer le scanner QR" : "Scanner QR pour payer"}
+                {showScanner ? t("Hide QR Scanner") : t("Scan QR to Pay")}
               </button>
               {showScanner && <QRScanner onScan={handleScan} />}
             </div>
@@ -110,11 +131,17 @@ const OwnerInvoices = () => {
             <div className="search-section">
               <input
                 type="text"
-                placeholder="Rechercher par montant, catégorie ou statut..."
+                placeholder={t("Search by amount, category, or status")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
               />
+            </div>
+
+            <div className="export-section">
+              <button onClick={handleExport} className="export-button">
+                {t("Export to CSV")}
+              </button>
             </div>
 
             {loading && (
@@ -122,14 +149,14 @@ const OwnerInvoices = () => {
                 <span className="loading-dot"></span>
                 <span className="loading-dot"></span>
                 <span className="loading-dot"></span>
-                Chargement des factures...
+                {t("Loading invoices")}
               </p>
             )}
 
             {error && <div className="error-message">{error}</div>}
 
             {!loading && !error && filteredInvoices.length === 0 && (
-              <p>Aucune facture trouvée.</p>
+              <p>{t("No invoices found")}</p>
             )}
 
             {!loading && filteredInvoices.length > 0 && (
@@ -137,12 +164,12 @@ const OwnerInvoices = () => {
                 <table className="invoices-table">
                   <thead>
                     <tr>
-                      <th>Montant</th>
-                      <th>Date d'échéance</th>
-                      <th>Catégorie</th>
-                      <th>Statut</th>
-                      <th>Action</th>
-                      <th>Historique</th> {/* Nouvelle colonne pour l'historique */}
+                      <th>{t("Amount")}</th>
+                      <th>{t("Due Date")}</th>
+                      <th>{t("Category")}</th>
+                      <th>{t("Status")}</th>
+                      <th>{t("Action")}</th>
+                      <th>{t("History")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -150,7 +177,7 @@ const OwnerInvoices = () => {
                       <React.Fragment key={invoice._id}>
                         <tr ref={(el) => (invoiceRefs.current[invoice._id] = el)}>
                           <td>{invoice.amount} TND</td>
-                          <td>{new Date(invoice.due_date).toLocaleDateString('fr-FR')}</td>
+                          <td>{new Date(invoice.due_date).toLocaleDateString()}</td>
                           <td>{invoice.category || "N/A"}</td>
                           <td>
                             <span
@@ -169,10 +196,10 @@ const OwnerInvoices = () => {
                                 onClick={() => handleAcceptInvoice(invoice._id)}
                                 className="accept-button"
                               >
-                                Accepter
+                                {t("Accept")}
                               </button>
                             ) : (
-                              <span className="accepted-label">Acceptée</span>
+                              <span className="accepted-label">{t("Accepted")}</span>
                             )}
                           </td>
                           <td>
@@ -180,7 +207,7 @@ const OwnerInvoices = () => {
                               onClick={() => toggleHistory(invoice._id)}
                               className="history-toggle-button"
                             >
-                              {expandedHistory[invoice._id] ? "Masquer" : "Afficher"} l'historique
+                              {expandedHistory[invoice._id] ? t("Hide History") : t("Show History")}
                             </button>
                           </td>
                         </tr>
@@ -188,27 +215,27 @@ const OwnerInvoices = () => {
                           <tr>
                             <td colSpan="6">
                               <div className="history-section p-4 bg-gray-100 rounded">
-                                <h4 className="text-md font-medium">Historique des actions</h4>
+                                <h4 className="text-md font-medium">{t("Action History")}</h4>
                                 {invoice.history && invoice.history.length > 0 ? (
                                   <ul className="list-disc pl-5">
                                     {invoice.history.map((entry, index) => (
                                       <li key={index}>
-                                        {entry.action === "CREATED" && "Facture créée"}
-                                        {entry.action === "SENT" && "Facture envoyée"}
-                                        {entry.action === "PAID" && "Facture payée"}
-                                        {entry.action === "REMINDER_SENT" && "Rappel envoyé"}
-                                        {" par "}
+                                        {entry.action === "CREATED" && t("Invoice Created")}
+                                        {entry.action === "SENT" && t("Invoice Sent")}
+                                        {entry.action === "PAID" && t("Invoice Paid")}
+                                        {entry.action === "REMINDER_SENT" && t("Reminder Sent")}
+                                        {` ${t("by")} `}
                                         <strong>
-                                          {entry.user?.fullname || "Utilisateur inconnu"}{" "}
+                                          {entry.user?.fullname || "Unknown User"}{" "}
                                           {entry.user?.lastname || ""}
                                         </strong>
-                                        {" le "}
-                                        {new Date(entry.date).toLocaleString('fr-FR')}
+                                        {` ${t("on")} `}
+                                        {new Date(entry.date).toLocaleString()}
                                       </li>
                                     ))}
                                   </ul>
                                 ) : (
-                                  <p>Aucune action enregistrée.</p>
+                                  <p>{t("No actions recorded")}</p>
                                 )}
                               </div>
                             </td>

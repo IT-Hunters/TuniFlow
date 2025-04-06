@@ -19,11 +19,13 @@ const billSchema = new mongoose.Schema({
   lastReminderDate: { type: Date },
   history: [
     {
-      action: { type: String, required: true }, // Ex. "CREATED", "SENT", "PAID", "REMINDER_SENT"
+      action: { type: String, required: true },
       date: { type: Date, default: Date.now },
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
     }
-  ]
+  ],
+  logoUrl: { type: String }, 
+  customNotes: { type: String } 
 });
 
 const Bill = mongoose.model("Bill", billSchema);

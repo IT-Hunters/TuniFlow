@@ -5,18 +5,24 @@ import Navbar from "../navbarHome/NavbarHome";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './invoiceStyles.css';
+import { useTranslation } from 'react-i18next';
 
 const CreateInvoice = () => {
+  const { t } = useTranslation();
   const [invoiceData, setInvoiceData] = useState({
     amount: '',
     due_date: '',
-    category: ''
+    category: '',
+    customNotes: ''
   });
   const [businessOwner, setBusinessOwner] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
   const navigate = useNavigate();
 
   const categoryOptions = [
@@ -42,11 +48,11 @@ const CreateInvoice = () => {
         });
       } catch (error) {
         console.error('Error fetching project:', error);
-        setError('Unable to load recipient information. Please try again later.');
+        setError(t("Unable to load recipient information"));
       }
     };
     fetchProjectData();
-  }, []);
+  }, [t]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,17 +69,49 @@ const CreateInvoice = () => {
     }
   };
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setLogoFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setLogoPreview(previewUrl);
+    } else {
+      setLogoFile(null);
+      setLogoPreview(null);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccess(false);
-    
+
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3000/invoices/create', invoiceData, {
+      let uploadedLogoUrl = null;
+
+      if (logoFile) {
+        const formData = new FormData();
+        formData.append('logo', logoFile);
+        const uploadResponse = await axios.post('http://localhost:3000/invoices/upload-logo', formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        uploadedLogoUrl = uploadResponse.data.logoUrl;
+        setLogoUrl(uploadedLogoUrl);
+      }
+
+      const response = await axios.post('http://localhost:3000/invoices/create', {
+        ...invoiceData,
+        logoUrl: uploadedLogoUrl,
+        customNotes: invoiceData.customNotes
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       const invoiceId = response.data.invoice._id;
 
       await axios.post(`http://localhost:3000/invoices/send/${invoiceId}`, {}, {
@@ -81,14 +119,17 @@ const CreateInvoice = () => {
       });
 
       setSuccess(true);
-      setInvoiceData({ amount: '', due_date: '', category: '' });
+      setInvoiceData({ amount: '', due_date: '', category: '', customNotes: '' });
       setIsCustomCategory(false);
+      setLogoFile(null);
+      setLogoUrl(null);
+      setLogoPreview(null);
       
       setTimeout(() => setSuccess(false), 3000);
       
     } catch (error) {
       console.error('Error:', error);
-      setError(error.response?.data?.message || 'Failed to create or send the invoice');
+      setError(error.response?.data?.message || t("Failed to create or send the invoice"));
     } finally {
       setLoading(false);
     }
@@ -107,13 +148,12 @@ const CreateInvoice = () => {
         <Navbar />
         <div className="main-content">
           <div className="invoice-container-wrapper">
-            {/* Section principale (formulaire à gauche) */}
             <div className="invoice-container">
-              <h2 className="invoice-header">Create an Invoice</h2>
+              <h2 className="invoice-header">{t("Create an Invoice")}</h2>
 
               {businessOwner ? (
                 <p className="recipient-info">
-                  <span className="recipient-label">Recipient:</span> 
+                  <span className="recipient-label">{t("Recipient")}:</span> 
                   <span className="recipient-name">{businessOwner.fullname} {businessOwner.lastname}</span>
                 </p>
               ) : (
@@ -121,22 +161,22 @@ const CreateInvoice = () => {
                   <span className="loading-dot"></span>
                   <span className="loading-dot"></span>
                   <span className="loading-dot"></span>
-                  Loading recipient information
+                  {t("Loading recipient information")}
                 </p>
               )}
               
               {error && <div className="error-message">{error}</div>}
-              {success && <div className="success-message">Invoice created and sent successfully!</div>}
+              {success && <div className="success-message">{t("Invoice created and sent successfully")}</div>}
               
               <form className="invoice-form" onSubmit={handleSubmit}>
                 <div className="input-group">
-                  <label className="input-label" htmlFor="amount">Amount</label>
+                  <label className="input-label" htmlFor="amount">{t("Amount")}</label>
                   <input 
                     id="amount"
                     type="number" 
                     name="amount" 
                     className="invoice-input" 
-                    placeholder="Enter invoice amount" 
+                    placeholder={t("Amount")} 
                     value={invoiceData.amount}
                     onChange={handleChange} 
                     required 
@@ -146,7 +186,7 @@ const CreateInvoice = () => {
                 </div>
                 
                 <div className="input-group">
-                  <label className="input-label" htmlFor="due_date">Due Date</label>
+                  <label className="input-label" htmlFor="due_date">{t("Due Date")}</label>
                   <input 
                     id="due_date"
                     type="date" 
@@ -160,7 +200,7 @@ const CreateInvoice = () => {
                 </div>
                 
                 <div className="input-group">
-                  <label className="input-label" htmlFor="category">Category</label>
+                  <label className="input-label" htmlFor="category">{t("Category")}</label>
                   <select
                     id="category"
                     name="category"
@@ -169,7 +209,7 @@ const CreateInvoice = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="" disabled>Select a category</option>
+                    <option value="" disabled>{t("Select a category")}</option>
                     {categoryOptions.map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -180,36 +220,68 @@ const CreateInvoice = () => {
 
                 {isCustomCategory && (
                   <div className="input-group">
-                    <label className="input-label" htmlFor="customCategory">Custom Category</label>
+                    <label className="input-label" htmlFor="customCategory">{t("Custom Category")}</label>
                     <input
                       id="customCategory"
                       type="text"
                       name="category"
                       className="invoice-input"
-                      placeholder="Enter custom category"
+                      placeholder={t("Enter custom category")}
                       value={invoiceData.category}
                       onChange={handleChange}
                       required
                     />
                   </div>
                 )}
+
+                <div className="input-group">
+                  <label className="input-label" htmlFor="logo">{t("Logo (Optional)")}</label>
+                  <input
+                    id="logo"
+                    type="file"
+                    name="logo"
+                    className="invoice-input"
+                    accept="image/jpeg,image/png"
+                    onChange={handleLogoChange}
+                  />
+                  {logoFile && (
+                    <p className="file-info">{t("Selected file")}: {logoFile.name}</p>
+                  )}
+                  {logoPreview && (
+                    <div className="logo-preview">
+                      <img src={logoPreview} alt="Logo Preview" className="logo-preview-image" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label" htmlFor="customNotes">{t("Custom Notes (Optional)")}</label>
+                  <textarea
+                    id="customNotes"
+                    name="customNotes"
+                    className="invoice-input"
+                    placeholder={t("Add custom notes")}
+                    value={invoiceData.customNotes}
+                    onChange={handleChange}
+                    rows="4"
+                  />
+                </div>
                 
                 <button type="submit" disabled={loading} className="invoice-button">
                   {loading ? (
                     <>
                       <span className="loading"></span>
-                      Processing...
+                      {t("Processing")}
                     </>
-                  ) : 'Create and Send Invoice'}
+                  ) : t("Create and Send Invoice")}
                 </button> 
               </form>
             </div>
 
-            {/* Section à droite (bouton View Invoices) */}
             <div className="invoice-actions-sidebar">
-              <h3 className="actions-header">Actions</h3>
+              <h3 className="actions-header">{t("Actions")}</h3>
               <button onClick={handleViewInvoices} className="view-invoices-button">
-                View Invoices
+                {t("View Invoices")}
               </button>
             </div>
           </div>

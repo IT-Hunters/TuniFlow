@@ -1,0 +1,14 @@
+/* src/components/LanguageSelector.css */
+.language-selector {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+  
+  .language-selector select {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    cursor: pointer;
+  }

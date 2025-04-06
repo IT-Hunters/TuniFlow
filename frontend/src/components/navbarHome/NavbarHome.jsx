@@ -1,8 +1,10 @@
+// src/components/navbarHome/NavbarHome.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaWallet, FaBell } from "react-icons/fa";
 import ChatService from "../../services/ChatService"; // Ajustez le chemin
+import LanguageSelector from "../Language/LanguageSelector"; 
 import "./NavbarHome.css";
 
 const Navbar = ({ notifications: externalNotifications }) => {
@@ -103,6 +105,7 @@ const Navbar = ({ notifications: externalNotifications }) => {
         <div className="search-bar">
           <input type="text" placeholder="Search Anything..." />
         </div>
+        <LanguageSelector /> {/* Ajouter le sélecteur de langue ici */}
         <div
           className="notification-menu"
           onClick={() => setNotificationMenuOpen(!notificationMenuOpen)}

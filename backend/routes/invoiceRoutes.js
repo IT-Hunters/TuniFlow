@@ -31,4 +31,11 @@ router.get('/business-owners',
 );
 router.get("/my-sent-invoices", authenticateJWT, invoiceController.getMySentInvoices)
 router.get("/statistics", authenticateJWT, invoiceController.getInvoiceStatistics);
+router.post("/upload-logo", authenticateJWT, invoiceController.uploadLogo, (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "Aucun fichier téléchargé" });
+  }
+  const logoUrl = `/uploads/logos/${req.file.filename}`;
+  res.status(200).json({ logoUrl });
+});
 module.exports = router;
