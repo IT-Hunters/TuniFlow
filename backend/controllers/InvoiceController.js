@@ -576,3 +576,57 @@ exports.getInvoiceStatistics = async (req, res) => {
     res.status(500).json({ message: "Error retrieving invoice statistics", error: error.message });
   }
 };
+exports.exportInvoices = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { status } = req.query; // Ajouter un paramètre de filtrage par statut
+
+    // Construire la requête de recherche
+    let query = { $or: [{ creator_id: userId }, { recipient_id: userId }] };
+    if (status) {
+      query.status = status; // Filtrer par statut si fourni
+    }
+
+    const invoices = await Bill.find(query)
+      .populate('creator_id', 'fullname lastname')
+      .populate('recipient_id', 'fullname lastname');
+
+    // Préparer les en-têtes du CSV
+    const csvData = [
+      [
+        'ID',
+        'Amount',
+        'Due Date',
+        'Category',
+        'Status',
+        'Creator',
+        'Recipient',
+        'Custom Notes',
+        'History'
+      ],
+      ...invoices.map(invoice => [
+        invoice._id,
+        invoice.amount,
+        new Date(invoice.due_date).toISOString().split('T')[0],
+        invoice.category || 'N/A',
+        invoice.status,
+        `${invoice.creator_id?.fullname || 'N/A'} ${invoice.creator_id?.lastname || ''}`,
+        `${invoice.recipient_id?.fullname || 'N/A'} ${invoice.recipient_id?.lastname || ''}`,
+        invoice.customNotes || 'N/A',
+        invoice.history
+          ? invoice.history
+              .map(entry => `${entry.action} by ${entry.user?.fullname || 'Unknown'} on ${new Date(entry.date).toLocaleString()}`)
+              .join('; ')
+          : 'No history'
+      ]),
+    ];
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="invoices_export.csv"');
+    res.status(200).send(csvContent);
+  } catch (error) {
+    console.error("Error exporting invoices:", error.message);
+    res.status(500).json({ message: 'Failed to export invoices', error: error.message });
+  }
+};

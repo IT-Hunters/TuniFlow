@@ -733,3 +733,97 @@ textarea.invoice-input {
   border: 1px solid #ddd;
   border-radius: 5px;
 }
+/* src/components/Invoice/invoiceStyles.css */
+
+/* Conteneur de la section d'exportation */
+.export-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+/* Filtre d'exportation (menu déroulant) */
+.export-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.export-filter label {
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+}
+
+.export-filter select {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.export-filter select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Style du bouton Export to CSV */
+.export-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: #28a745; /* Vert pour une action d'exportation */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Effet au survol */
+.export-button:hover {
+  background-color: #218838; /* Vert plus foncé */
+  transform: translateY(-1px);
+}
+
+/* État désactivé (pendant l'exportation) */
+.export-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Indicateur de chargement */
+.export-button .loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+/* Animation de rotation pour l'indicateur de chargement */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.export-button svg {
+  margin-right: 8px; /* Espace entre l'icône et le texte */
+}

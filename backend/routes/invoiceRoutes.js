@@ -38,4 +38,5 @@ router.post("/upload-logo", authenticateJWT, invoiceController.uploadLogo, (req,
   const logoUrl = `/uploads/logos/${req.file.filename}`;
   res.status(200).json({ logoUrl });
 });
+router.get('/export', authenticateJWT, invoiceController.exportInvoices);
 module.exports = router;

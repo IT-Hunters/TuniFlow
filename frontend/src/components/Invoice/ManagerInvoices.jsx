@@ -12,13 +12,15 @@ const ManagerInvoices = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedHistory, setExpandedHistory] = useState({});
+  const [exportStatus, setExportStatus] = useState(""); // État pour le filtrage d'exportation
+  const [exporting, setExporting] = useState(false); // État pour l'indicateur de chargement
 
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/invoices/my-sent-invoices", {
+        const response = await axios.get("http://localhost:5000/invoices/my-sent-invoices", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setInvoices(response.data);
@@ -40,21 +42,25 @@ const ManagerInvoices = () => {
 
   const handleExport = async () => {
     try {
+      setExporting(true); // Activer l'indicateur de chargement
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/invoices/export", {
+      const response = await axios.get("http://localhost:5000/invoices/export", {
         headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob'
+        responseType: 'blob',
+        params: { status: exportStatus }, // Ajouter le paramètre de filtrage
       });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'invoices_export.csv');
+      link.setAttribute('download', `invoices_export_${exportStatus || 'all'}.csv`); // Nom de fichier dynamique
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (err) {
       setError("Failed to export invoices: " + (err.response?.data?.message || err.message));
+    } finally {
+      setExporting(false); // Désactiver l'indicateur de chargement
     }
   };
 
@@ -68,8 +74,27 @@ const ManagerInvoices = () => {
             <h2 className="invoice-header">{t("My Sent Invoices")}</h2>
 
             <div className="export-section">
-              <button onClick={handleExport} className="export-button">
-                {t("Export to CSV")}
+              <div className="export-filter">
+                <label htmlFor="export-status">{t("Export Filter")}:</label>
+                <select
+                  id="export-status"
+                  value={exportStatus}
+                  onChange={(e) => setExportStatus(e.target.value)}
+                >
+                  <option value="">{t("All")}</option>
+                  <option value="PENDING">{t("Pending")}</option>
+                  <option value="PAID">{t("Paid")}</option>
+                </select>
+              </div>
+              <button onClick={handleExport} className="export-button" disabled={exporting}>
+                {exporting ? (
+                  <>
+                    <span className="loading"></span>
+                    {t("Exporting")}...
+                  </>
+                ) : (
+                  t("Export to CSV")
+                )}
               </button>
             </div>
 

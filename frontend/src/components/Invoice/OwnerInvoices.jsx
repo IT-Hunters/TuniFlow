@@ -6,7 +6,7 @@ import axios from "axios";
 import QRScanner from "./QRScanner";
 import "./invoiceStyles.css";
 import { useTranslation } from 'react-i18next';
-
+import { FaFileExport } from 'react-icons/fa';
 const OwnerInvoices = () => {
   const { t } = useTranslation();
   const [invoices, setInvoices] = useState([]);
@@ -16,6 +16,8 @@ const OwnerInvoices = () => {
   const [error, setError] = useState("");
   const [showScanner, setShowScanner] = useState(false);
   const [expandedHistory, setExpandedHistory] = useState({});
+  const [exportStatus, setExportStatus] = useState(""); // État pour le filtrage d'exportation
+  const [exporting, setExporting] = useState(false); // État pour l'indicateur de chargement
   const invoiceRefs = useRef({});
 
   useEffect(() => {
@@ -23,7 +25,7 @@ const OwnerInvoices = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/invoices/my-invoices", {
+        const response = await axios.get("http://localhost:5000/invoices/my-invoices", { // Changement de port
           headers: { Authorization: `Bearer ${token}` },
         });
         setInvoices(response.data);
@@ -53,7 +55,7 @@ const OwnerInvoices = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:3000/invoices/${invoiceId}/accept`,
+        `http://localhost:5000/invoices/${invoiceId}/accept`, // Changement de port
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -94,21 +96,25 @@ const OwnerInvoices = () => {
 
   const handleExport = async () => {
     try {
+      setExporting(true); // Activer l'indicateur de chargement
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/invoices/export", {
+      const response = await axios.get("http://localhost:5000/invoices/export", { // Changement de port
         headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob'
+        responseType: 'blob',
+        params: { status: exportStatus }, // Ajouter le paramètre de filtrage
       });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'invoices_export.csv');
+      link.setAttribute('download', `invoices_export_${exportStatus || 'all'}.csv`); // Nom de fichier dynamique
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (err) {
       setError("Failed to export invoices: " + (err.response?.data?.message || err.message));
+    } finally {
+      setExporting(false); // Désactiver l'indicateur de chargement
     }
   };
 
@@ -139,9 +145,31 @@ const OwnerInvoices = () => {
             </div>
 
             <div className="export-section">
-              <button onClick={handleExport} className="export-button">
-                {t("Export to CSV")}
-              </button>
+              <div className="export-filter">
+                <label htmlFor="export-status">{t("Export Filter")}:</label>
+                <select
+                  id="export-status"
+                  value={exportStatus}
+                  onChange={(e) => setExportStatus(e.target.value)}
+                >
+                  <option value="">{t("All")}</option>
+                  <option value="PENDING">{t("Pending")}</option>
+                  <option value="PAID">{t("Paid")}</option>
+                </select>
+              </div>
+              <button onClick={handleExport} className="export-button" disabled={exporting}>
+  {exporting ? (
+    <>
+      <span className="loading"></span>
+      {t("Exporting")}...
+    </>
+  ) : (
+    <>
+      <FaFileExport style={{ marginRight: '8px' }} />
+      {t("Export to CSV")}
+    </>
+  )}
+</button>
             </div>
 
             {loading && (
