@@ -8,6 +8,13 @@ const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require('uuid');
 const QRCode = require("qrcode");
+const cron = require("node-cron"); // Importer node-cron
+
+// Configurer Nodemailer
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+});
 
 // Générer le PDF de la facture (inchangé)
 const generateInvoicePDF = async (invoice) => {
@@ -43,6 +50,98 @@ const generateInvoicePDF = async (invoice) => {
     doc.end();
   });
 };
+
+// Fonction pour envoyer un email de rappel
+const sendReminderEmail = async (recipientEmail, bill) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: recipientEmail,
+    subject: `Reminder: Overdue Invoice #${bill.id}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
+        <h2 style="color: #e74c3c; text-align: center;">Overdue Invoice Reminder</h2>
+        <p style="color: #555;">Hello <strong>${bill.recipient_id.fullname}</strong>,</p>
+        <p style="color: #555;">We would like to remind you that the following invoice is overdue:</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+          <tr>
+            <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Invoice ID</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${bill.id}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Amount</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${bill.amount} TND</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Due Date</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${new Date(bill.due_date).toLocaleDateString()}</td>
+          </tr>
+        </table>
+        <p style="color: #555;">Please settle the payment at your earliest convenience to avoid any further actions.</p>
+        <p style="color: #555;">If you have already paid this invoice, please disregard this email.</p>
+        <p style="color: #555;">Best regards,<br>TuniFlow Team</p>
+        <div style="text-align: center; margin-top: 20px;">
+          <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 5px;">View My Dashboard</a>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Reminder email sent to ${recipientEmail} for bill ${bill.id}`);
+  } catch (error) {
+    console.error(`Error sending reminder email to ${recipientEmail}:`, error.message);
+    throw error;
+  }
+};
+
+// Fonction pour vérifier les factures en retard et envoyer des rappels
+const sendOverdueReminders = async () => {
+  try {
+    const today = new Date();
+    // Trouver les factures en retard (PENDING, due_date < aujourd'hui, reminderSent = false)
+    const overdueBills = await Bill.find({
+      status: "PENDING",
+      due_date: { $lt: today },
+      reminderSent: false,
+    }).populate("recipient_id");
+
+    console.log(`Found ${overdueBills.length} overdue bills to process.`);
+
+    for (const bill of overdueBills) {
+      const recipient = bill.recipient_id;
+      if (!recipient || !recipient.email) {
+        console.log(`No email found for recipient of bill ${bill.id}`);
+        continue;
+      }
+
+      // Envoyer l'email de rappel
+      await sendReminderEmail(recipient.email, bill);
+
+      // Mettre à jour la facture pour indiquer que le rappel a été envoyé
+      bill.reminderSent = true;
+      bill.lastReminderDate = new Date();
+      await bill.save();
+
+      console.log(`Reminder sent for bill ${bill.id} to ${recipient.email}`);
+    }
+  } catch (error) {
+    console.error("Error in sendOverdueReminders:", error.message);
+  }
+};
+
+// Fonction pour initialiser la tâche cron
+const initializeReminderJob = () => {
+  // Planifier la tâche pour envoyer les rappels tous les jours à 9h00
+  cron.schedule("0 9 * * *", async () => {
+    console.log("Running overdue invoice reminder job at", new Date().toISOString());
+    await sendOverdueReminders();
+  });
+  console.log("Reminder job scheduled to run daily at 9:00 AM");
+};
+
+// Appeler la fonction d'initialisation immédiatement pour planifier la tâche
+initializeReminderJob();
 
 exports.createInvoice = async (req, res) => {
   try {
@@ -86,7 +185,6 @@ exports.createInvoice = async (req, res) => {
   }
 };
 
-
 exports.sendInvoice = async (req, res) => {
   try {
     const { invoiceId } = req.params;
@@ -118,11 +216,6 @@ exports.sendInvoice = async (req, res) => {
       return res.status(500).json({ message: "Error: QR code was not generated correctly" });
     }
     console.log("QR code generated at:", qrCodePath);
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-    });
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -176,7 +269,6 @@ exports.sendInvoice = async (req, res) => {
   }
 };
 
-
 exports.acceptInvoice = async (req, res) => {
   try {
     const { invoiceId } = req.params;
@@ -207,11 +299,6 @@ exports.acceptInvoice = async (req, res) => {
     }
     wallet.balance -= invoice.amount;
     await wallet.save();
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-    });
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -254,7 +341,6 @@ exports.acceptInvoice = async (req, res) => {
   }
 };
 
-
 exports.getMyInvoices = async (req, res) => {
   try {
     const userId = req.user.userId; 
@@ -267,7 +353,6 @@ exports.getMyInvoices = async (req, res) => {
   }
 };
 
-// Récupérer les Business Owners (inchangé)
 exports.getBusinessOwners = async (req, res) => {
   try {
     const businessOwners = await User.find({ role: "BUSINESS_OWNER" }, "fullname lastname email");
@@ -278,7 +363,6 @@ exports.getBusinessOwners = async (req, res) => {
   }
 };
 
-// Récupérer les factures envoyées (inchangé)
 exports.getMySentInvoices = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -291,8 +375,7 @@ exports.getMySentInvoices = async (req, res) => {
   }
 };
 
-
-// Fonction pour calculer le numéro de la semaine
+// Fonction pour calculer le numéro de la semaine (inchangé)
 const getWeekNumber = (date) => {
   const startOfYear = new Date(date.getFullYear(), 0, 1);
   const pastDaysOfYear = (date - startOfYear) / (1000 * 60 * 60 * 24);
