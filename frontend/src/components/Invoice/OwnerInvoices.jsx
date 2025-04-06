@@ -13,7 +13,8 @@ const OwnerInvoices = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showScanner, setShowScanner] = useState(false);
-  const invoiceRefs = useRef({}); // Références pour chaque ligne du tableau
+  const [expandedHistory, setExpandedHistory] = useState({}); // État pour gérer l'affichage de l'historique
+  const invoiceRefs = useRef({});
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -26,7 +27,7 @@ const OwnerInvoices = () => {
         setInvoices(response.data);
         setFilteredInvoices(response.data);
       } catch (err) {
-        setError("Failed to load invoices: " + (err.response?.data?.message || err.message));
+        setError("Échec du chargement des factures : " + (err.response?.data?.message || err.message));
       } finally {
         setLoading(false);
       }
@@ -65,7 +66,7 @@ const OwnerInvoices = () => {
         )
       );
     } catch (err) {
-      setError("Failed to accept invoice: " + (err.response?.data?.message || err.message));
+      setError("Échec de l'acceptation de la facture : " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -74,13 +75,20 @@ const OwnerInvoices = () => {
   };
 
   const handleScan = (invoiceId) => {
-    // Faire défiler vers la facture correspondante
     if (invoiceRefs.current[invoiceId]) {
       invoiceRefs.current[invoiceId].scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
     }
+  };
+
+  // Fonction pour basculer l'affichage de l'historique
+  const toggleHistory = (invoiceId) => {
+    setExpandedHistory((prev) => ({
+      ...prev,
+      [invoiceId]: !prev[invoiceId],
+    }));
   };
 
   return (
@@ -90,11 +98,11 @@ const OwnerInvoices = () => {
         <Navbar />
         <div className="main-content">
           <div className="invoice-container">
-            <h2 className="invoice-header">My Invoices</h2>
+            <h2 className="invoice-header">Mes factures</h2>
 
             <div className="scanner-section">
               <button onClick={toggleScanner} className="scanner-toggle-button">
-                {showScanner ? "Hide QR Scanner" : "Scan QR to Pay"}
+                {showScanner ? "Masquer le scanner QR" : "Scanner QR pour payer"}
               </button>
               {showScanner && <QRScanner onScan={handleScan} />}
             </div>
@@ -102,7 +110,7 @@ const OwnerInvoices = () => {
             <div className="search-section">
               <input
                 type="text"
-                placeholder="Search by amount, category, or status..."
+                placeholder="Rechercher par montant, catégorie ou statut..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
@@ -114,14 +122,14 @@ const OwnerInvoices = () => {
                 <span className="loading-dot"></span>
                 <span className="loading-dot"></span>
                 <span className="loading-dot"></span>
-                Loading invoices...
+                Chargement des factures...
               </p>
             )}
 
             {error && <div className="error-message">{error}</div>}
 
             {!loading && !error && filteredInvoices.length === 0 && (
-              <p>No invoices found.</p>
+              <p>Aucune facture trouvée.</p>
             )}
 
             {!loading && filteredInvoices.length > 0 && (
@@ -129,46 +137,84 @@ const OwnerInvoices = () => {
                 <table className="invoices-table">
                   <thead>
                     <tr>
-                      <th>Amount</th>
-                      <th>Due Date</th>
-                      <th>Category</th>
-                      <th>Status</th>
+                      <th>Montant</th>
+                      <th>Date d'échéance</th>
+                      <th>Catégorie</th>
+                      <th>Statut</th>
                       <th>Action</th>
+                      <th>Historique</th> {/* Nouvelle colonne pour l'historique */}
                     </tr>
                   </thead>
                   <tbody>
                     {filteredInvoices.map((invoice) => (
-                      <tr
-                        key={invoice._id}
-                        ref={(el) => (invoiceRefs.current[invoice._id] = el)} // Ajouter une ref à chaque ligne
-                      >
-                        <td>{invoice.amount} TND</td>
-                        <td>{new Date(invoice.due_date).toLocaleDateString()}</td>
-                        <td>{invoice.category || "N/A"}</td>
-                        <td>
-                          <span
-                            className={
-                              invoice.status === "PAID"
-                                ? "status-paid"
-                                : "status-pending"
-                            }
-                          >
-                            {invoice.status}
-                          </span>
-                        </td>
-                        <td>
-                          {invoice.status === "PENDING" ? (
-                            <button
-                              onClick={() => handleAcceptInvoice(invoice._id)}
-                              className="accept-button"
+                      <React.Fragment key={invoice._id}>
+                        <tr ref={(el) => (invoiceRefs.current[invoice._id] = el)}>
+                          <td>{invoice.amount} TND</td>
+                          <td>{new Date(invoice.due_date).toLocaleDateString('fr-FR')}</td>
+                          <td>{invoice.category || "N/A"}</td>
+                          <td>
+                            <span
+                              className={
+                                invoice.status === "PAID"
+                                  ? "status-paid"
+                                  : "status-pending"
+                              }
                             >
-                              Accept
+                              {invoice.status}
+                            </span>
+                          </td>
+                          <td>
+                            {invoice.status === "PENDING" ? (
+                              <button
+                                onClick={() => handleAcceptInvoice(invoice._id)}
+                                className="accept-button"
+                              >
+                                Accepter
+                              </button>
+                            ) : (
+                              <span className="accepted-label">Acceptée</span>
+                            )}
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => toggleHistory(invoice._id)}
+                              className="history-toggle-button"
+                            >
+                              {expandedHistory[invoice._id] ? "Masquer" : "Afficher"} l'historique
                             </button>
-                          ) : (
-                            <span className="accepted-label">Accepted</span>
-                          )}
-                        </td>
-                      </tr>
+                          </td>
+                        </tr>
+                        {expandedHistory[invoice._id] && (
+                          <tr>
+                            <td colSpan="6">
+                              <div className="history-section p-4 bg-gray-100 rounded">
+                                <h4 className="text-md font-medium">Historique des actions</h4>
+                                {invoice.history && invoice.history.length > 0 ? (
+                                  <ul className="list-disc pl-5">
+                                    {invoice.history.map((entry, index) => (
+                                      <li key={index}>
+                                        {entry.action === "CREATED" && "Facture créée"}
+                                        {entry.action === "SENT" && "Facture envoyée"}
+                                        {entry.action === "PAID" && "Facture payée"}
+                                        {entry.action === "REMINDER_SENT" && "Rappel envoyé"}
+                                        {" par "}
+                                        <strong>
+                                          {entry.user?.fullname || "Utilisateur inconnu"}{" "}
+                                          {entry.user?.lastname || ""}
+                                        </strong>
+                                        {" le "}
+                                        {new Date(entry.date).toLocaleString('fr-FR')}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p>Aucune action enregistrée.</p>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>

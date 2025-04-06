@@ -670,3 +670,39 @@
     position: static; /* Désactiver sticky sur mobile */
   }
 }
+/* src/components/Invoice/invoiceStyles.css */
+.history-toggle-button {
+  background-color: #007bff;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.history-toggle-button:hover {
+  background-color: #0056b3;
+}
+
+.history-section {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.history-section h4 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.history-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.history-section li {
+  color: #555;
+  margin-bottom: 5px;
+}

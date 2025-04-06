@@ -8,7 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require('uuid');
 const QRCode = require("qrcode");
-const cron = require("node-cron"); // Importer node-cron
+const cron = require("node-cron");
 
 // Configurer Nodemailer
 const transporter = nodemailer.createTransport({
@@ -56,31 +56,31 @@ const sendReminderEmail = async (recipientEmail, bill) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: recipientEmail,
-    subject: `Reminder: Overdue Invoice #${bill.id}`,
+    subject: `Rappel : Facture en retard #${bill.id}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
-        <h2 style="color: #e74c3c; text-align: center;">Overdue Invoice Reminder</h2>
-        <p style="color: #555;">Hello <strong>${bill.recipient_id.fullname}</strong>,</p>
-        <p style="color: #555;">We would like to remind you that the following invoice is overdue:</p>
+        <h2 style="color: #e74c3c; text-align: center;">Rappel de facture en retard</h2>
+        <p style="color: #555;">Bonjour <strong>${bill.recipient_id.fullname}</strong>,</p>
+        <p style="color: #555;">Nous vous rappelons que la facture suivante est en retard de paiement :</p>
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
           <tr>
-            <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Invoice ID</td>
+            <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">ID de la facture</td>
             <td style="padding: 10px; border: 1px solid #ddd;">${bill.id}</td>
           </tr>
           <tr>
-            <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Amount</td>
+            <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Montant</td>
             <td style="padding: 10px; border: 1px solid #ddd;">${bill.amount} TND</td>
           </tr>
           <tr>
-            <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Due Date</td>
-            <td style="padding: 10px; border: 1px solid #ddd;">${new Date(bill.due_date).toLocaleDateString()}</td>
+            <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Date d'échéance</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${new Date(bill.due_date).toLocaleDateString('fr-FR')}</td>
           </tr>
         </table>
-        <p style="color: #555;">Please settle the payment at your earliest convenience to avoid any further actions.</p>
-        <p style="color: #555;">If you have already paid this invoice, please disregard this email.</p>
-        <p style="color: #555;">Best regards,<br>TuniFlow Team</p>
+        <p style="color: #555;">Veuillez régler le paiement dès que possible afin d'éviter d'autres actions.</p>
+        <p style="color: #555;">Si vous avez déjà payé cette facture, veuillez ignorer cet email.</p>
+        <p style="color: #555;">Cordialement,<br>L'équipe TuniFlow</p>
         <div style="text-align: center; margin-top: 20px;">
-          <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 5px;">View My Dashboard</a>
+          <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 5px;">Voir mon tableau de bord</a>
         </div>
       </div>
     `,
@@ -88,9 +88,9 @@ const sendReminderEmail = async (recipientEmail, bill) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`Reminder email sent to ${recipientEmail} for bill ${bill.id}`);
+    console.log(`Rappel envoyé à ${recipientEmail} pour la facture ${bill.id}`);
   } catch (error) {
-    console.error(`Error sending reminder email to ${recipientEmail}:`, error.message);
+    console.error(`Erreur lors de l'envoi du rappel à ${recipientEmail}:`, error.message);
     throw error;
   }
 };
@@ -99,7 +99,6 @@ const sendReminderEmail = async (recipientEmail, bill) => {
 const sendOverdueReminders = async () => {
   try {
     const today = new Date();
-    // Trouver les factures en retard (PENDING, due_date < aujourd'hui, reminderSent = false)
     const overdueBills = await Bill.find({
       status: "PENDING",
       due_date: { $lt: today },
@@ -111,28 +110,34 @@ const sendOverdueReminders = async () => {
     for (const bill of overdueBills) {
       const recipient = bill.recipient_id;
       if (!recipient || !recipient.email) {
-        console.log(`No email found for recipient of bill ${bill.id}`);
+        console.log(`Aucun email trouvé pour le destinataire de la facture ${bill.id}`);
         continue;
       }
 
       // Envoyer l'email de rappel
       await sendReminderEmail(recipient.email, bill);
 
+      // Ajouter une entrée dans l'historique
+      bill.history.push({
+        action: "REMINDER_SENT",
+        date: new Date(),
+        user: recipient._id // On peut utiliser l'ID du destinataire ou un ID système si nécessaire
+      });
+
       // Mettre à jour la facture pour indiquer que le rappel a été envoyé
       bill.reminderSent = true;
       bill.lastReminderDate = new Date();
       await bill.save();
 
-      console.log(`Reminder sent for bill ${bill.id} to ${recipient.email}`);
+      console.log(`Rappel envoyé pour la facture ${bill.id} à ${recipient.email}`);
     }
   } catch (error) {
-    console.error("Error in sendOverdueReminders:", error.message);
+    console.error("Erreur dans sendOverdueReminders:", error.message);
   }
 };
 
 // Fonction pour initialiser la tâche cron
 const initializeReminderJob = () => {
-  // Planifier la tâche pour envoyer les rappels tous les jours à 9h00
   cron.schedule("0 9 * * *", async () => {
     console.log("Running overdue invoice reminder job at", new Date().toISOString());
     await sendOverdueReminders();
@@ -140,7 +145,6 @@ const initializeReminderJob = () => {
   console.log("Reminder job scheduled to run daily at 9:00 AM");
 };
 
-// Appeler la fonction d'initialisation immédiatement pour planifier la tâche
 initializeReminderJob();
 
 exports.createInvoice = async (req, res) => {
@@ -171,17 +175,24 @@ exports.createInvoice = async (req, res) => {
       due_date,
       category,
       status: "PENDING",
-      project_id: project._id
+      project_id: project._id,
+      history: [
+        {
+          action: "CREATED",
+          date: new Date(),
+          user: creator_id
+        }
+      ]
     });
     console.log('New invoice before saving:', newInvoice);
 
     await newInvoice.save();
     console.log('Invoice saved successfully');
 
-    res.status(201).json({ message: "Invoice created successfully", invoice: newInvoice });
+    res.status(201).json({ message: "Facture créée avec succès", invoice: newInvoice });
   } catch (error) {
-    console.error("Error creating invoice:", error.message);
-    res.status(500).json({ message: "Error while creating the invoice", error: error.message });
+    console.error("Erreur lors de la création de la facture:", error.message);
+    res.status(500).json({ message: "Erreur lors de la création de la facture", error: error.message });
   }
 };
 
@@ -220,36 +231,36 @@ exports.sendInvoice = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: invoice.recipient_id.email,
-      subject: `Invoice from ${invoice.creator_id.fullname} (Project: ${invoice.project_id.status})`,
+      subject: `Facture de ${invoice.creator_id.fullname} (Projet: ${invoice.project_id.status})`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
-          <h2 style="color: #333; text-align: center;">New Invoice</h2>
-          <p style="color: #555;">Hello <strong>${invoice.recipient_id.fullname}</strong>,</p>
-          <p style="color: #555;">You have received a new invoice from <strong>${invoice.creator_id.fullname}</strong>. Here are the details:</p>
+          <h2 style="color: #333; text-align: center;">Nouvelle facture</h2>
+          <p style="color: #555;">Bonjour <strong>${invoice.recipient_id.fullname}</strong>,</p>
+          <p style="color: #555;">Vous avez reçu une nouvelle facture de <strong>${invoice.creator_id.fullname}</strong>. Voici les détails :</p>
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Amount</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Montant</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.amount} TND</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Due Date</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Date d'échéance</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.due_date.toLocaleDateString()}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Project</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Projet</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.project_id.status}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Category</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Catégorie</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.category || "N/A"}</td>
             </tr>
           </table>
-          <p style="color: #555;">Scan the QR code below to accept and pay this invoice:</p>
+          <p style="color: #555;">Scannez le QR code ci-dessous pour accepter et payer cette facture :</p>
           <img src="cid:qr_code" alt="QR Code" style="display: block; margin: 20px auto; width: 200px;"/>
-          <p style="color: #555;">Please find the invoice PDF attached.</p>
-          <p style="color: #555;">Best regards,<br>TuniFlow Team</p>
+          <p style="color: #555;">Veuillez trouver la facture en PDF en pièce jointe.</p>
+          <p style="color: #555;">Cordialement,<br>L'équipe TuniFlow</p>
           <div style="text-align: center; margin-top: 20px;">
-            <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">View My Dashboard</a>
+            <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Voir mon tableau de bord</a>
           </div>
         </div>
       `,
@@ -262,10 +273,18 @@ exports.sendInvoice = async (req, res) => {
     await transporter.sendMail(mailOptions);
     console.log("Email successfully sent to:", invoice.recipient_id.email);
 
-    res.status(200).json({ message: "Invoice successfully sent to the Business Owner with QR code!" });
+    // Ajouter une entrée dans l'historique
+    invoice.history.push({
+      action: "SENT",
+      date: new Date(),
+      user: req.user.userId
+    });
+    await invoice.save();
+
+    res.status(200).json({ message: "Facture envoyée avec succès au Business Owner avec QR code !" });
   } catch (error) {
-    console.error("Error sending invoice:", error.message);
-    res.status(500).json({ message: "Error while sending the invoice", error: error.message });
+    console.error("Erreur lors de l'envoi de la facture:", error.message);
+    res.status(500).json({ message: "Erreur lors de l'envoi de la facture", error: error.message });
   }
 };
 
@@ -277,25 +296,33 @@ exports.acceptInvoice = async (req, res) => {
     const invoice = await Bill.findById(invoiceId)
       .populate("creator_id", "fullname email")
       .populate("recipient_id", "fullname email");
-    if (!invoice) return res.status(404).json({ message: "Invoice not found" });
+    if (!invoice) return res.status(404).json({ message: "Facture non trouvée" });
     if (invoice.recipient_id._id.toString() !== userId) {
-      return res.status(403).json({ message: "You are not authorized to accept this invoice" });
+      return res.status(403).json({ message: "Vous n'êtes pas autorisé à accepter cette facture" });
     }
     
     if (invoice.status === "CANCELLED") {
-      return res.status(400).json({ message: "This invoice can no longer be accepted because is cancelled" });
+      return res.status(400).json({ message: "Cette facture ne peut plus être acceptée car elle est annulée" });
     }
     if (invoice.status === "PAID") {
-      return res.status(400).json({ message: "Invoice is already paid" });
+      return res.status(400).json({ message: "La facture est déjà payée" });
     }
 
     invoice.status = "PAID";
+    
+    // Ajouter une entrée dans l'historique
+    invoice.history.push({
+      action: "PAID",
+      date: new Date(),
+      user: userId
+    });
+
     await invoice.save();
 
     const wallet = await Wallet.findOne({ user_id: userId });
-    if (!wallet) return res.status(404).json({ message: "Wallet not found" });
+    if (!wallet) return res.status(404).json({ message: "Portefeuille non trouvé" });
     if (wallet.balance < invoice.amount) {
-      return res.status(400).json({ message: "Insufficient balance" });
+      return res.status(400).json({ message: "Solde insuffisant" });
     }
     wallet.balance -= invoice.amount;
     await wallet.save();
@@ -303,30 +330,30 @@ exports.acceptInvoice = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: invoice.creator_id.email,
-      subject: "Invoice Accepted",
+      subject: "Facture acceptée",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
-          <h2 style="color: #28a745; text-align: center;">Invoice Accepted</h2>
-          <p style="color: #555;">Hello <strong>${invoice.creator_id.fullname}</strong>,</p>
-          <p style="color: #555;">Your invoice of <strong>${invoice.amount} TND</strong> has been accepted by <strong>${invoice.recipient_id.fullname}</strong>.</p>
+          <h2 style="color: #28a745; text-align: center;">Facture acceptée</h2>
+          <p style="color: #555;">Bonjour <strong>${invoice.creator_id.fullname}</strong>,</p>
+          <p style="color: #555;">Votre facture de <strong>${invoice.amount} TND</strong> a été acceptée par <strong>${invoice.recipient_id.fullname}</strong>.</p>
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Amount</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Montant</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.amount} TND</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Due Date</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Date d'échéance</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.due_date.toLocaleDateString()}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Status</td>
-              <td style="padding: 10px; border: 1px solid #ddd; color: #28a745;">PAID</td>
+              <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Statut</td>
+              <td style="padding: 10px; border: 1px solid #ddd; color: #28a745;">PAYÉ</td>
             </tr>
           </table>
-          <p style="color: #555;">Thank you for your collaboration.</p>
-          <p style="color: #555;">Best regards,<br>TuniFlow Team</p>
+          <p style="color: #555;">Merci pour votre collaboration.</p>
+          <p style="color: #555;">Cordialement,<br>L'équipe TuniFlow</p>
           <div style="text-align: center; margin-top: 20px;">
-            <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #28a745; color: #fff; text-decoration: none; border-radius: 5px;">View My Dashboard</a>
+            <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #28a745; color: #fff; text-decoration: none; border-radius: 5px;">Voir mon tableau de bord</a>
           </div>
         </div>
       `
@@ -334,10 +361,10 @@ exports.acceptInvoice = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({ message: "Invoice accepted and balance updated" });
+    res.status(200).json({ message: "Facture acceptée et solde mis à jour" });
   } catch (error) {
-    console.error("Error accepting invoice:", error);
-    res.status(500).json({ message: "Error while accepting the invoice" });
+    console.error("Erreur lors de l'acceptation de la facture:", error);
+    res.status(500).json({ message: "Erreur lors de l'acceptation de la facture" });
   }
 };
 
@@ -346,10 +373,11 @@ exports.getMyInvoices = async (req, res) => {
     const userId = req.user.userId; 
     const invoices = await Bill.find({ recipient_id: userId })
       .populate("creator_id", "fullname lastname")
-      .populate("project_id", "status");
+      .populate("project_id", "status")
+      .populate("history.user", "fullname lastname"); // Populer l'utilisateur dans l'historique
     res.status(200).json(invoices);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching invoices", error: error.message });
+    res.status(500).json({ message: "Erreur lors de la récupération des factures", error: error.message });
   }
 };
 
@@ -358,8 +386,8 @@ exports.getBusinessOwners = async (req, res) => {
     const businessOwners = await User.find({ role: "BUSINESS_OWNER" }, "fullname lastname email");
     res.status(200).json(businessOwners);
   } catch (error) {
-    console.error("Error retrieving Business Owners:", error.message);
-    res.status(500).json({ message: "Error while retrieving Business Owners", error: error.message });
+    console.error("Erreur lors de la récupération des Business Owners:", error.message);
+    res.status(500).json({ message: "Erreur lors de la récupération des Business Owners", error: error.message });
   }
 };
 
@@ -368,10 +396,11 @@ exports.getMySentInvoices = async (req, res) => {
     const userId = req.user.userId;
     const invoices = await Bill.find({ creator_id: userId })
       .populate("recipient_id", "fullname lastname")
-      .populate("project_id", "status");
+      .populate("project_id", "status")
+      .populate("history.user", "fullname lastname"); // Populer l'utilisateur dans l'historique
     res.status(200).json(invoices);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching sent invoices", error: error.message });
+    res.status(500).json({ message: "Erreur lors de la récupération des factures envoyées", error: error.message });
   }
 };
 
@@ -386,7 +415,7 @@ exports.getInvoiceStatistics = async (req, res) => {
   try {
     const userId = req.user.userId;
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
 
     const period = req.query.period || "month";
     const year = req.query.year ? parseInt(req.query.year) : new Date().getFullYear();
@@ -401,7 +430,7 @@ exports.getInvoiceStatistics = async (req, res) => {
         .populate("creator_id", "fullname lastname")
         .populate("project_id", "status");
     } else {
-      return res.status(403).json({ message: "Unauthorized role" });
+      return res.status(403).json({ message: "Rôle non autorisé" });
     }
 
     console.log("User ID:", userId);
@@ -414,7 +443,6 @@ exports.getInvoiceStatistics = async (req, res) => {
       recipient_id: invoice.recipient_id,
     })));
 
-    // Calculer les statistiques globales
     const totalPaid = invoices
       .filter(invoice => invoice.status === "PAID")
       .reduce((sum, invoice) => sum + invoice.amount, 0);
@@ -439,7 +467,6 @@ exports.getInvoiceStatistics = async (req, res) => {
         creator: user.role === "BUSINESS_OWNER" ? `${invoice.creator_id.fullname} ${invoice.creator_id.lastname}` : null,
       }));
 
-    // Agrégation des données selon la période
     let chartData = {};
     if (period === "month") {
       const monthlyData = Array(12).fill(0);
@@ -452,7 +479,7 @@ exports.getInvoiceStatistics = async (req, res) => {
         }
       });
       chartData = {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"],
         data: monthlyData,
       };
     } else if (period === "year") {
@@ -479,7 +506,7 @@ exports.getInvoiceStatistics = async (req, res) => {
         }
       });
       chartData = {
-        labels: Array.from({ length: 52 }, (_, i) => `Week ${i + 1}`),
+        labels: Array.from({ length: 52 }, (_, i) => `Semaine ${i + 1}`),
         data: weeklyData,
       };
     }
@@ -498,7 +525,7 @@ exports.getInvoiceStatistics = async (req, res) => {
       availableYears: availableYears.length > 0 ? availableYears : [new Date().getFullYear()],
     });
   } catch (error) {
-    console.error("Error fetching invoice statistics:", error.message);
-    res.status(500).json({ message: "Error fetching invoice statistics", error: error.message });
+    console.error("Erreur lors de la récupération des statistiques des factures:", error.message);
+    res.status(500).json({ message: "Erreur lors de la récupération des statistiques des factures", error: error.message });
   }
 };
