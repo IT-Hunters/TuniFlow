@@ -1,30 +1,76 @@
-/* Conteneur global de la page */
+/* Variables CSS globales pour une meilleure cohérence et maintenance */
+:root {
+  --primary-color: #0ea5e9;
+  --primary-hover: #0284c7;
+  --secondary-color: #007bff;
+  --secondary-hover: #0056b3;
+  --success-color: #28a745;
+  --success-hover: #218838;
+  --warning-color: #ff9800;
+  --danger-color: #b91c1c;
+  --light-bg: #f8fafc;
+  --white: #ffffff;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --border-radius-sm: 5px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 15px 30px rgba(0, 0, 0, 0.08);
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Styles de base et réinitialisation */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--gray-700);
+  background-color: var(--light-bg);
+  line-height: 1.5;
+}
+
+/* Structure principale */
 .create-invoice-page {
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--light-bg);
+  font-family: var(--font-family);
 }
 
-/* Contenu principal à droite de la sidebar - ajusté pour coller à la sidebar */
 .create-invoice-main {
   flex: 1;
-  padding: 0; /* Suppression du padding latéral pour coller à la sidebar */
-  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
 }
 
-/* Style de la Navbar agrandie */
+/* Navbar */
 .create-invoice-main .navbar-home {
-  height: 80px; /* Hauteur agrandie de la navbar */
+  height: 80px;
   padding: 0 30px;
   width: 100%;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background-color: var(--white);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
   z-index: 10;
 }
 
-
+/* Contenu principal */
 .main-content {
   padding: 30px;
   flex: 1;
@@ -33,31 +79,63 @@
   align-items: flex-start;
 }
 
+/* Structure de la page avec sidebar */
+.invoice-container-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+}
+
+/* Conteneur principal de facture */
 .invoice-container {
-  width: 700px; 
-  max-width: 90%;
+  flex: 1;
+  max-width: 700px;
   margin: 40px auto;
-  padding: 50px; 
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  background-color: var(--white);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .invoice-container:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-xl);
 }
 
-/* Titre du formulaire - AGRANDI */
-.invoice-header {
-  font-size: 32px; /* Taille augmentée */
-  font-weight: 700;
-  color: #1e293b;
+/* Sidebar des actions */
+.invoice-actions-sidebar {
+  width: 300px;
+  background-color: var(--white);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: 25px;
+  position: sticky;
+  top: 20px;
+}
+
+.actions-header {
+  font-size: 20px;
+  color: var(--gray-800);
+  margin-bottom: 20px;
   text-align: center;
-  margin-bottom: 40px; /* Marge augmentée */
+  font-weight: 600;
+}
+
+/* En-tête de facture */
+.invoice-header {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--gray-800);
+  text-align: center;
+  margin-bottom: 40px;
   position: relative;
-  padding-bottom: 20px; /* Padding augmenté */
+  padding-bottom: 20px;
 }
 
 .invoice-header:after {
@@ -66,37 +144,471 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 80px; /* Largeur augmentée */
-  height: 4px; /* Hauteur augmentée */
-  background-color: #0ea5e9;
+  width: 80px;
+  height: 4px;
+  background-color: var(--primary-color);
   border-radius: 3px;
 }
 
-/* Information sur le destinataire - AGRANDI */
+/* Information du destinataire */
 .invoice-container p {
   text-align: center;
-  margin-bottom: 30px; /* Marge augmentée */
-  font-size: 18px; /* Taille de police augmentée */
-  color: #64748b;
+  margin-bottom: 30px;
+  font-size: 18px;
+  color: var(--gray-500);
   font-weight: 500;
-  background-color: #f1f5f9;
-  padding: 16px; /* Padding augmenté */
-  border-radius: 8px;
+  background-color: var(--gray-100);
+  padding: 16px;
+  border-radius: var(--border-radius-md);
 }
 
-/* Animation dots pour chargement */
+/* Formulaire */
+.invoice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.input-group {
+  position: relative;
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--gray-600);
+  font-size: 16px;
+}
+
+/* Champs de formulaire */
+.invoice-input {
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 16px;
+  color: var(--gray-700);
+  background-color: var(--light-bg);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  transition: all 0.3s ease;
+}
+
+.invoice-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+  background-color: var(--white);
+}
+
+.invoice-input::placeholder {
+  color: var(--gray-400);
+  font-weight: 400;
+}
+
+/* Select amélioré */
+.invoice-form select {
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 16px;
+  background-color: var(--light-bg);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  color: var(--gray-700);
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%2394a3b8" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  transition: all 0.3s ease;
+}
+
+.invoice-form select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+  background-color: var(--white);
+}
+
+/* Input date */
+.invoice-input[type="date"] {
+  color: var(--gray-700);
+  cursor: pointer;
+}
+
+/* Téléchargements de fichiers */
+.invoice-input[type="file"] {
+  padding: 12px 0;
+}
+
+.file-info {
+  color: var(--gray-500);
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+/* Textarea */
+textarea.invoice-input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Prévisualisation logo */
+.logo-preview {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.logo-preview-image {
+  max-width: 150px;
+  max-height: 150px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-md);
+  padding: 5px;
+  background-color: var(--white);
+}
+
+/* Boutons */
+.invoice-button, 
+.view-invoices-button, 
+.scanner-toggle-button,
+.export-button,
+.history-toggle-button {
+  padding: 16px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.invoice-button:hover:not(:disabled),
+.view-invoices-button:hover,
+.scanner-toggle-button:hover,
+.export-button:hover:not(:disabled),
+.history-toggle-button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(14, 165, 233, 0.25);
+}
+
+.invoice-button:active:not(:disabled),
+.view-invoices-button:active,
+.scanner-toggle-button:active,
+.export-button:active:not(:disabled),
+.history-toggle-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+}
+
+.invoice-button:disabled {
+  background-color: var(--gray-300);
+  color: var(--gray-400);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Variantes de boutons */
+.view-invoices-button, .scanner-toggle-button {
+  width: 100%;
+  background-color: var(--secondary-color);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+  margin-bottom: 15px;
+}
+
+.view-invoices-button:hover, .scanner-toggle-button:hover {
+  background-color: var(--secondary-hover);
+  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.25);
+}
+
+.export-button {
+  background-color: var(--success-color);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+}
+
+.export-button:hover:not(:disabled) {
+  background-color: var(--success-hover);
+  box-shadow: 0 6px 15px rgba(40, 167, 69, 0.25);
+}
+
+.export-button svg {
+  margin-right: 10px;
+}
+
+.export-button:disabled {
+  background-color: var(--gray-300);
+}
+
+.history-toggle-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/* Effet ripple sur les boutons */
+.invoice-button:after,
+.view-invoices-button:after,
+.scanner-toggle-button:after,
+.export-button:after,
+.history-toggle-button:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.invoice-button:focus:not(:active)::after,
+.view-invoices-button:focus:not(:active)::after,
+.scanner-toggle-button:focus:not(:active)::after,
+.export-button:focus:not(:active)::after,
+.history-toggle-button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+/* Historique */
+.history-section {
+  background-color: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-md);
+  margin-top: 15px;
+  padding: 15px;
+}
+
+.history-section h4 {
+  margin-bottom: 10px;
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+.history-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.history-section li {
+  color: var(--gray-600);
+  margin-bottom: 8px;
+}
+
+/* Table d'affichage des factures */
+.invoices-list {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.invoices-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--white);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.invoices-table th,
+.invoices-table td {
+  padding: 15px;
+  text-align: left;
+}
+
+.invoices-table th {
+  background-color: var(--secondary-color);
+  color: var(--white);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.invoices-table tr {
+  transition: background-color 0.3s ease;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.invoices-table tr:last-child {
+  border-bottom: none;
+}
+
+.invoices-table tr:hover {
+  background-color: var(--gray-100);
+}
+
+.invoices-table td {
+  color: var(--gray-700);
+  font-size: 15px;
+}
+
+/* Statuts de facture */
+.status-paid {
+  color: var(--success-color);
+  font-weight: bold;
+}
+
+.status-pending {
+  color: var(--warning-color);
+  font-weight: bold;
+}
+
+.accepted-label {
+  color: var(--success-color);
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Bouton d'acceptation */
+.accept-button {
+  padding: 8px 15px;
+  background-color: var(--success-color);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.accept-button:hover {
+  background-color: var(--success-hover);
+}
+
+/* Section filtres et export */
+.export-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.export-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.export-filter label {
+  font-weight: 600;
+  color: var(--gray-700);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.export-filter select {
+  padding: 10px 15px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--gray-200);
+  background-color: var(--white);
+  font-size: 14px;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  flex: 1;
+}
+
+.export-filter select:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+/* Section recherche */
+.search-section {
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: center;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 20px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  font-size: 16px;
+  color: var(--gray-700);
+  background-color: var(--white);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(14, 165, 233, 0.3);
+}
+
+/* Messages */
+.error-message {
+  background-color: #fee2e2;
+  color: var(--danger-color);
+  padding: 16px;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 25px;
+  font-size: 16px;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.success-message {
+  background-color: #dcfce7;
+  color: var(--success-color);
+  padding: 16px;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 25px;
+  font-size: 16px;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Animations de chargement */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--white);
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 12px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .loading-recipient {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  margin: 20px 0;
+  color: var(--gray-500);
 }
 
 .loading-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
-  background-color: #94a3b8;
+  background-color: var(--gray-400);
   border-radius: 50%;
   animation: dotPulse 1.4s infinite ease-in-out;
 }
@@ -124,136 +636,16 @@
   }
 }
 
-/* Messages d'erreur et de succès */
-.error-message {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  padding: 16px; /* Padding augmenté */
-  border-radius: 8px;
-  margin-bottom: 25px; /* Marge augmentée */
-  font-size: 16px; /* Taille augmentée */
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-.success-message {
-  background-color: #dcfce7;
-  color: #15803d;
-  padding: 16px; /* Padding augmenté */
-  border-radius: 8px;
-  margin-bottom: 25px; /* Marge augmentée */
-  font-size: 16px; /* Taille augmentée */
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-/* Formulaire - AGRANDI */
-.invoice-form {
-  display: flex;
-  flex-direction: column;
-  gap: 30px; /* Espacement augmenté entre les champs */
-}
-
-/* Conteneurs pour les inputs */
-.input-group {
-  position: relative;
-}
-
-/* Étiquettes des champs */
-.input-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #475569;
-  font-size: 16px;
-}
-
-/* Champs de saisie (input et select) - AGRANDI */
-.invoice-input {
-  width: 100%;
-  padding: 18px 22px; /* Padding augmenté */
-  font-size: 18px; /* Taille de police augmentée */
-  color: #334155;
-  background-color: #f8fafc;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px; /* Rayon augmenté */
-  transition: all 0.3s ease;
-}
-
-/* Style au focus pour les champs */
-.invoice-input:focus {
-  outline: none;
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
-  background-color: #fff;
-}
-
-/* Placeholder */
-.invoice-input::placeholder {
-  color: #94a3b8;
-  font-weight: 400;
-}
-
-/* Style spécifique pour input type date */
-.invoice-input[type="date"] {
-  color: #334155;
-  cursor: pointer;
-}
-
-/* Style spécifique pour le select */
-.invoice-input[type="select"] {
-  appearance: none;
-  background-image: url('data:image/svg+xml;utf8,<svg fill="%2394a3b8" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 18px center;
-  padding-right: 50px;
-}
-
-/* Bouton de soumission - AGRANDI */
-.invoice-button {
-  padding: 20px 28px; /* Padding augmenté */
-  margin-top: 15px;
-  font-size: 18px; /* Taille de police augmentée */
-  font-weight: 600;
-  color: #fff;
-  background-color: #0ea5e9;
-  border: none;
-  border-radius: 12px; /* Rayon augmenté */
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-}
-
-/* Effet hover sur le bouton */
-.invoice-button:hover:not(:disabled) {
-  background-color: #0284c7;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(14, 165, 233, 0.25);
-}
-
-/* Effet clic sur le bouton */
-.invoice-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
-}
-
-/* Animation pour le bouton - effet ripple */
-.invoice-button:after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.5);
-  opacity: 0;
-  border-radius: 100%;
-  transform: scale(1, 1) translate(-50%);
-  transform-origin: 50% 50%;
-}
-
-.invoice-button:focus:not(:active)::after {
-  animation: ripple 1s ease-out;
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes ripple {
@@ -271,79 +663,11 @@
   }
 }
 
-/* Bouton désactivé */
-.invoice-button:disabled {
-  background-color: #cbd5e1;
-  color: #94a3b8;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Animation de chargement */
-.loading {
-  display: inline-block;
-  width: 22px; /* Taille augmentée */
-  height: 22px; /* Taille augmentée */
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: #fff;
-  animation: spin 1s ease-in-out infinite;
-  margin-right: 12px;
-  vertical-align: middle;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .main-content {
-    padding: 15px;
-  }
-
-  .invoice-container {
-    margin: 20px auto;
-    padding: 25px;
-  }
-
-  .invoice-header {
-    font-size: 24px;
-    margin-bottom: 25px;
-  }
-
-  .invoice-input {
-    padding: 14px 18px;
-    font-size: 16px;
-  }
-  
-  .invoice-button {
-    padding: 16px 22px;
-    font-size: 16px;
-  }
-}
-
-/* Animation pour les éléments qui apparaissent */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .invoice-container {
   animation: fadeIn 0.6s ease-out forwards;
 }
 
-/* Ajustements pour le sidebar et navbar */
-/* Assurez-vous que le sidebar n'a pas de marge */
+/* Sidebar */
 .cool-sidebar {
   margin: 0;
   height: 100vh;
@@ -351,310 +675,8 @@
   top: 0;
 }
 
-/* Ajustement pour que la navbar soit en pleine largeur et collée à la sidebar */
-.navbar-home {
-  width: 100%;
-  margin: 0;
-  padding-left: 30px;
-  padding-right: 30px;
-  height: 80px; /* Hauteur agrandie */
-  display: flex;
-  align-items: center;
-  background-color: #ffffff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-/* src/components/invoiceStyles.css */
-.invoice-form select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
-  background-color: #fff;
-  color: #333;
-  appearance: none; /* Supprime le style par défaut du navigateur */
-  background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Flèche personnalisée */
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-}
-
-.invoice-form select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-}
-/* src/components/invoiceStyles.css */
-
-/* Conteneur principal */
-.invoice-container {
-  max-width: 1200px; /* Augmenter la largeur pour réduire l'espace blanc */
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Liste des factures */
-.invoices-list {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center; /* Centrer le tableau */
-}
-
-/* Tableau */
-.invoices-table {
-  width: 100%;
-  max-width: 1000px; /* Limiter la largeur du tableau pour éviter qu'il soit trop large */
-  border-collapse: collapse;
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Les autres styles restent inchangés */
-.invoices-table th,
-.invoices-table td {
-  padding: 15px;
-  text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.invoices-table th {
-  background-color: #007bff;
-  color: #fff;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 14px;
-}
-
-.invoices-table tr {
-  transition: background-color 0.3s ease;
-}
-
-.invoices-table tr:hover {
-  background-color: #f1f5f9;
-}
-
-.invoices-table td {
-  color: #555;
-  font-size: 15px;
-}
-
-/* Statut */
-.status-paid {
-  color: #28a745;
-  font-weight: bold;
-}
-
-.status-pending {
-  color: #ff9800;
-  font-weight: bold;
-}
-
-/* Bouton Accept */
-.accept-button {
-  padding: 8px 15px;
-  background-color: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-}
-
-.accept-button:hover {
-  background-color: #218838;
-}
-
-/* Label Accepted */
-.accepted-label {
-  color: #28a745;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-/* Section Scan QR */
-.scanner-section {
-  margin-bottom: 30px;
-  text-align: center;
-}
-
-.scanner-toggle-button {
-  padding: 12px 25px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-}
-
-.scanner-toggle-button:hover {
-  background-color: #0056b3;
-}
-
-/* Section Recherche */
-.search-section {
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.search-input {
-  width: 100%;
-  max-width: 400px;
-  padding: 10px 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
-  color: #333;
-  background-color: #fff;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: border-color 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-}
-
-/* Messages d'erreur */
-.error-message {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-/* Animation de chargement */
-.loading-recipient {
-  text-align: center;
-  color: #666;
-  font-size: 16px;
-}
-
-.loading-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background-color: #007bff;
-  border-radius: 50%;
-  margin: 0 3px;
-  animation: dot-flashing 1s infinite alternate;
-}
-
-.loading-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.loading-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes dot-flashing {
-  0% {
-    background-color: #007bff;
-  }
-  100% {
-    background-color: #b3d4ff;
-  }
-}
-/* src/components/invoiceStyles.css */
-
-/* Section pour le bouton View Invoices */
-.view-invoices-section {
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.view-invoices-button {
-  padding: 12px 25px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-}
-
-.view-invoices-button:hover {
-  background-color: #0056b3;
-}
-/************/
-/* src/components/invoiceStyles.css */
-
-/* Wrapper pour diviser la page en deux sections */
-.invoice-container-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-/* Conteneur du formulaire (à gauche) */
-.invoice-container {
-  flex: 1;
-  max-width: 700px; /* Limiter la largeur du formulaire */
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
-
-/* Sidebar des actions (à droite) */
-.invoice-actions-sidebar {
-  width: 300px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  position: sticky;
-  top: 20px; /* Pour qu'elle reste visible lors du défilement */
-}
-
-.actions-header {
-  font-size: 20px;
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.view-invoices-button {
-  width: 100%;
-  padding: 12px 25px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-}
-
-.view-invoices-button:hover {
-  background-color: #0056b3;
-}
-
-/* Assurer que le formulaire reste lisible */
-.invoice-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-/* Les autres styles restent inchangés */
-/* Responsive pour les petits écrans */
-@media (max-width: 768px) {
+/* Media queries - Responsive design */
+@media (max-width: 1024px) {
   .invoice-container-wrapper {
     flex-direction: column;
     align-items: center;
@@ -662,168 +684,94 @@
 
   .invoice-container {
     max-width: 100%;
+    margin: 20px auto;
   }
 
   .invoice-actions-sidebar {
     width: 100%;
-    max-width: 300px;
-    position: static; /* Désactiver sticky sur mobile */
+    max-width: 700px;
+    position: static;
+    margin-bottom: 30px;
+  }
+
+  .export-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .export-filter {
+    width: 100%;
   }
 }
-/* src/components/Invoice/invoiceStyles.css */
-.history-toggle-button {
-  background-color: #007bff;
-  color: white;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
 
-.history-toggle-button:hover {
-  background-color: #0056b3;
-}
-
-.history-section {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  margin-top: 10px;
-}
-
-.history-section h4 {
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.history-section ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.history-section li {
-  color: #555;
-  margin-bottom: 5px;
-}
-/* src/components/Invoice/invoiceStyles.css */
-.file-info {
-  color: #555;
-  font-size: 0.9rem;
-  margin-top: 5px;
-}
-
-.invoice-input[type="file"] {
-  padding: 5px 0;
-}
-
-textarea.invoice-input {
-  resize: vertical;
-  min-height: 100px;
-}
-/* src/components/Invoice/invoiceStyles.css */
-.logo-preview {
-  margin-top: 10px;
-  text-align: center;
-}
-
-.logo-preview-image {
-  max-width: 150px;
-  max-height: 150px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-}
-/* src/components/Invoice/invoiceStyles.css */
-
-/* Conteneur de la section d'exportation */
-.export-section {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-/* Filtre d'exportation (menu déroulant) */
-.export-filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.export-filter label {
-  font-weight: bold;
-  color: #333;
-  font-size: 14px;
-}
-
-.export-filter select {
-  padding: 8px 12px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-}
-
-.export-filter select:focus {
-  outline: none;
-  border-color: #007bff;
-}
-
-/* Style du bouton Export to CSV */
-.export-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 20px;
-  background-color: #28a745; /* Vert pour une action d'exportation */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* Effet au survol */
-.export-button:hover {
-  background-color: #218838; /* Vert plus foncé */
-  transform: translateY(-1px);
-}
-
-/* État désactivé (pendant l'exportation) */
-.export-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
-/* Indicateur de chargement */
-.export-button .loading {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #fff;
-  border-top: 2px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-right: 8px;
-}
-
-/* Animation de rotation pour l'indicateur de chargement */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
   }
-  100% {
-    transform: rotate(360deg);
+
+  .invoice-container {
+    padding: 25px;
+  }
+
+  .invoice-header {
+    font-size: 24px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+  }
+
+  .invoice-input, 
+  .invoice-form select {
+    padding: 14px 18px;
+    font-size: 16px;
+  }
+  
+  .invoice-button,
+  .view-invoices-button,
+  .scanner-toggle-button {
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+
+  .invoices-table {
+    font-size: 14px;
+  }
+
+  .invoices-table th,
+  .invoices-table td {
+    padding: 10px;
+  }
+
+  .export-section {
+    gap: 10px;
   }
 }
-.export-button svg {
-  margin-right: 8px; /* Espace entre l'icône et le texte */
+
+@media (max-width: 480px) {
+  .invoice-container {
+    padding: 20px;
+  }
+
+  .invoice-header {
+    font-size: 22px;
+  }
+
+  .invoice-container p {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .input-label {
+    font-size: 14px;
+  }
+
+  .invoice-input, 
+  .invoice-form select {
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+
+  .invoices-table {
+    display: block;
+    overflow-x: auto;
+  }
 }
