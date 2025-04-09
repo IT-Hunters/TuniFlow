@@ -204,6 +204,19 @@ h2 {
   margin-bottom: 20px;
 }
 
+.auth-error-text {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.auth-success-text {
+  color: green;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
 @keyframes spin {
   to {
     transform: rotate(360deg);

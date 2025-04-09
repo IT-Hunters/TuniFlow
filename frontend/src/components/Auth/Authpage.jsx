@@ -1,5 +1,6 @@
+// src/components/AuthPage.jsx
 import { useState, useEffect } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; 
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./AuthPage.css";
@@ -18,35 +19,31 @@ const AuthPage = () => {
     confirm: "",
   });
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const response = await axios.post("http://localhost:3000/users/forgot-password", {
-        email: formData.email,
-      });
-      setMessage(response.data.message);  // Message de succès
-    } catch (err) {
-      setError(err.response?.data.message || "Erreur lors de l'envoi du lien");
-    }finally{
-      await new Promise((resolve) => setTimeout(resolve, 2000)); 
-      setLoading(false);
+
+  // Vérifier si l'utilisateur est déjà connecté
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      axios
+        .get("http://localhost:3000/users/findMyProfile", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          const { role } = response.data;
+          if (role === "ADMIN") {
+            navigate("/dashboard");
+          } else {
+            navigate("/user");
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem("token");
+        });
     }
-  };
-  const toggleMode = () => {
-    setIsLogin((prev) => !prev);
-    setFormData({
-      fullname: "",
-      lastname: "",
-      email: "",
-      password: "",
-      confirm: "",
-    });
-    setError(""); 
-    setFile(null);
-  };
+  }, [navigate]);
 
   useEffect(() => {
     document.body.classList.add("auth-page");
@@ -55,6 +52,40 @@ const AuthPage = () => {
       document.body.classList.remove("auth-page");
     };
   }, []);
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await axios.post("http://localhost:3000/users/forgot-password", {
+        email: formData.email,
+      });
+      setMessage(response.data.message);
+    } catch (err) {
+      setError(err.response?.data.message || "Erreur lors de l'envoi du lien");
+    } finally {
+      console.log("Starting 1-second delay for forgot password...");
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 seconde fixe
+      console.log("1-second delay completed for forgot password.");
+      setLoading(false);
+    }
+  };
+
+  const handleToggleMode = () => {
+    setIsLogin((prev) => !prev);
+    setFormData({
+      fullname: "",
+      lastname: "",
+      email: "",
+      password: "",
+      confirm: "",
+    });
+    setError("");
+    setMessage("");
+    setFile(null);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,29 +101,31 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true)
+    setLoading(true);
+    setError("");
+    setMessage("");
 
     if (!isLogin && formData.password !== formData.confirm) {
       setError("Les mots de passe ne correspondent pas.");
+      console.log("Password mismatch, waiting 1 second...");
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 seconde fixe
+      setLoading(false);
       return;
     }
 
+    let redirectPath = null;
+
     try {
       if (isLogin) {
-        const response = await axios.post("http://localhost:3000/users/login", { 
-          email: formData.email, 
-          password: formData.password 
+        const response = await axios.post("http://localhost:3000/users/login", {
+          email: formData.email,
+          password: formData.password,
         });
 
         const { token, role } = response.data;
         localStorage.setItem("token", token);
-        if (role === "ADMIN") {
-          navigate("/dashboard");
-        } else {
-          navigate("/user");
-          setError("");
-        }
-        } else {
+        redirectPath = role === "ADMIN" ? "/dashboard" : "/user";
+      } else {
         const formDataToSend = new FormData();
         formDataToSend.append("fullname", formData.fullname);
         formDataToSend.append("lastname", formData.lastname);
@@ -105,22 +138,34 @@ const AuthPage = () => {
           formDataToSend.append("evidence", file);
         }
 
-        const response = await axios.post("http://localhost:3000/users/register", formDataToSend, {
-         
-        });
+        const response = await axios.post("http://localhost:3000/users/register", formDataToSend);
 
         setIsLogin(true);
-        setError("");
-        setTimeout(() => {
-          setLoading(false)
-        }, 2000)
+        setMessage("Registration successful! Please log in.");
+      }
+
+      // Attendre 1 seconde fixe
+      console.log("Starting 1-second delay for submit...");
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 seconde fixe
+      console.log("1-second delay completed for submit.");
+
+      // Rediriger après le délai
+      if (redirectPath) {
+        navigate(redirectPath);
       }
     } catch (err) {
       if (err.response?.data) {
-        setError(Object.values(err.response.data)[0]); 
+        setError(Object.values(err.response.data)[0]);
       } else {
         setError("Une erreur s'est produite.");
       }
+
+      // Attendre 1 seconde fixe même en cas d'erreur
+      console.log("Error occurred, waiting 1 second...");
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 seconde fixe
+      console.log("1-second delay completed after error.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -143,7 +188,6 @@ const AuthPage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-               
               />
             </div>
 
@@ -154,7 +198,6 @@ const AuthPage = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-               
               />
               <span className="auth-eye-icon" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -162,20 +205,21 @@ const AuthPage = () => {
             </div>
 
             {error && <p className="auth-error-text">{error}</p>}
-            
+            {message && <p className="auth-success-text">{message}</p>}
+
             <button className="auth-btn" type="submit">
               Log In
             </button>
-             <p className="auth-switch-text">
-      Forget Your  Password ?{" "}
-      <span className="auth-toggle-link" onClick={() => navigate("/forgot-password")}>
-        Click here
-      </span>
-    </p>
-            
+            <p className="auth-switch-text">
+              Forget Your Password?{" "}
+              <span className="auth-toggle-link" onClick={() => navigate("/forgot-password")}>
+                Click here
+              </span>
+            </p>
+
             <p className="auth-switch-text">
               Don’t have an account?{" "}
-              <span className="auth-toggle-link" onClick={toggleMode}>
+              <span className="auth-toggle-link" onClick={handleToggleMode}>
                 Sign Up
               </span>
             </p>
@@ -190,7 +234,6 @@ const AuthPage = () => {
                 name="fullname"
                 value={formData.fullname}
                 onChange={handleChange}
-               
               />
             </div>
             <div className="auth-input-field">
@@ -200,7 +243,6 @@ const AuthPage = () => {
                 name="lastname"
                 value={formData.lastname}
                 onChange={handleChange}
-               
               />
             </div>
             <div className="auth-input-field">
@@ -210,7 +252,6 @@ const AuthPage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-              
               />
             </div>
 
@@ -221,7 +262,6 @@ const AuthPage = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                
               />
               <span className="auth-eye-icon" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -235,32 +275,27 @@ const AuthPage = () => {
                 name="confirm"
                 value={formData.confirm}
                 onChange={handleChange}
-              
               />
               <span className="auth-eye-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
 
-         {/* Champ d'upload de fichier avec un bouton stylisé */}
-<div className="auth-input-field">
-{/* Champ d'upload de fichier avec un bouton stylisé */}
-<div className="auth-input-field">
-  <input 
-    type="file" 
-    id="file-upload" 
-    className="auth-file-input" 
-    onChange={handleFileChange} 
-  />
-  <label htmlFor="file-upload" className="auth-file-label">
-     Prove Your Company 📂 
-  </label>
-  {file && <p className="auth-file-name">{file.name}</p>}
-</div>
-  
-</div>
+            <div className="auth-input-field">
+              <input
+                type="file"
+                id="file-upload"
+                className="auth-file-input"
+                onChange={handleFileChange}
+              />
+              <label htmlFor="file-upload" className="auth-file-label">
+                Prove Your Company 📂
+              </label>
+              {file && <p className="auth-file-name">{file.name}</p>}
+            </div>
 
             {error && <p className="auth-error-text">{error}</p>}
+            {message && <p className="auth-success-text">{message}</p>}
 
             <button className="auth-btn" type="submit">
               Sign Up
@@ -268,7 +303,7 @@ const AuthPage = () => {
 
             <p className="auth-switch-text">
               Already have an account?{" "}
-              <span className="auth-toggle-link" onClick={toggleMode}>
+              <span className="auth-toggle-link" onClick={handleToggleMode}>
                 Log In
               </span>
             </p>
