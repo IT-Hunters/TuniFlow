@@ -32,12 +32,23 @@ const objectifSchema = new Schema({
         ], 
     },
     isStatic: { type: Boolean, required: true }, // Indique si l'objectif est statique
+    project: { type: Schema.Types.ObjectId, ref: "Project", required: true }, // Reference to the Project
+    // Fields for notification tracking
+    notified50Percent: { type: Boolean, default: false }, // Tracks if 50% progress notification was sent
+    notified70Percent: { type: Boolean, default: false }, // Tracks if 70% progress notification was sent
+    notified90Percent: { type: Boolean, default: false }, // Tracks if 90% progress notification was sent
+    notifiedDueSoon: { type: Boolean, default: false }, // Tracks if due-soon notification was sent
+    // Field for progress history (for analytics dashboard)
+    progressHistory: [
+        {
+            progress: { type: Number, required: true },
+            date: { type: Date, default: Date.now },
+        },
+    ],
 }, {
     timestamps: true, // Ajouter les champs createdAt et updatedAt
 });
 
 const Objectif = mongoose.model("Objectif", objectifSchema, "objectif");
 
-
-
-module.exports =  Objectif;
+module.exports = Objectif;

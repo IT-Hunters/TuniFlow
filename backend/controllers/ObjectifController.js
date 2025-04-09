@@ -286,24 +286,32 @@ const updateObjectifById = async (req, res) => {
     if (updateData.isStatic !== undefined && typeof updateData.isStatic !== "boolean") {
       errors.isStatic = "isStatic must be a boolean value.";
     }
-    if (updateData.progress !== undefined && (typeof updateData.progress !== "number" || updateData.progress < 0 || updateData.progress > 100)) {
-      errors.progress = "Progress must be a number between 0 and 100.";
-    }
+    // Removed validation for progress field to allow any value
 
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ success: false, errors });
     }
 
-    const objectif = await Objectif.findByIdAndUpdate(objectifId, updateData, {
+    // If progress is provided, add it to progressHistory
+    if (updateData.progress !== undefined) {
+      const objectif = await Objectif.findById(objectifId);
+      if (!objectif) {
+        return res.status(404).json({ success: false, message: "Objective not found" });
+      }
+      objectif.progressHistory.push({ progress: Number(updateData.progress), date: new Date() });
+      updateData.progressHistory = objectif.progressHistory; // Update progressHistory in the updateData
+    }
+
+    const updatedObjectif = await Objectif.findByIdAndUpdate(objectifId, updateData, {
       new: true,
       runValidators: true,
     });
 
-    if (!objectif) {
+    if (!updatedObjectif) {
       return res.status(404).json({ success: false, message: "Objective not found" });
     }
 
-    res.status(200).json({ success: true, objectif });
+    res.status(200).json({ success: true, objectif: updatedObjectif });
   } catch (error) {
     console.error("Error updating objective:", error);
     res.status(500).json({ success: false, message: "Internal server error", error: error.message });

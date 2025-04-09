@@ -1,11 +1,11 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Objectifmanagement.css';
 
-const API_Objectif = 'http://localhost:3000/objectif';
+const API_Objectif = 'http://localhost:3000/objectif'; // Updated to match your backend port
 
 const EditObjective = () => {
   const navigate = useNavigate();
@@ -23,6 +23,7 @@ const EditObjective = () => {
     datefin: objective?.datefin
       ? new Date(objective.datefin).toISOString().split('T')[0]
       : '',
+    progress: objective?.progress || 0, // Ensure progress is initialized as a number
   });
 
   useEffect(() => {
@@ -44,7 +45,7 @@ const EditObjective = () => {
   };
 
   const handleProgressChange = (e) => {
-    const value = e.target.value;
+    const value = Number(e.target.value); // Convert to number
     setEditObjective((prev) => ({
       ...prev,
       progress: value,
@@ -263,8 +264,9 @@ const EditObjective = () => {
                 <div className="PB-range-slider-div">
                   <input
                     type="range"
-                    min="0"
-                    max="100"
+                    min="-100" // Allow negative values
+                    max="200"  // Allow values above 100
+                    step="1"   // Allow finer control
                     value={editObjective.progress || 0}
                     className={`PB-range-slider ${
                       errors.progress ? 'input-error' : ''

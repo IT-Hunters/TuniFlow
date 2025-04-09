@@ -58,7 +58,6 @@ app.use('/assetCalculation', assetCalculationRoutes);
 app.use('/taxes', taxeRoutes);
 app.use('/wallets', walletRoutes);
 app.use('/transactions', transactionRoutes);
-
 app.use('/objectif', ObjectifRouter);
 app.use('/chat', chatRouter);
 app.use('/userLogs', userLogsRoutes);
@@ -78,10 +77,10 @@ global.io = new Server(server, {
   },
 });
 
-
 // 🟢 Import Models
 const Chat = require('./model/Chat');
 const userModel = require('./model/user');
+const { startNotificationJob } = require('./jobs/notificationJob');
 
 // 🟢 Global Connected Users Set
 global.connectedUsers = new Set();
@@ -90,62 +89,60 @@ global.connectedUsers = new Set();
 global.io.on("connection", (socket) => {
   console.log(`🟢 Socket connected: ${socket.id}`);
 
-  // When a user logs in, the client emits "userOnline" with the user ID.
   socket.on("userOnline", (userId) => {
-    // Store the userId on the socket so we know who to remove on disconnect
     socket.userId = userId;
     global.connectedUsers.add(userId);
     console.log('✅ Connected Users:', Array.from(global.connectedUsers));
-    // Emit the updated list of connected users to all clients
     global.io.emit("userOnline", Array.from(global.connectedUsers));
   });
 
-  // When a user explicitly logs out, the client can emit "userOffline"
   socket.on("userOffline", (userId) => {
     global.connectedUsers.delete(userId);
     console.log('❌ Updated Connected Users:', Array.from(global.connectedUsers));
     global.io.emit("userOnline", Array.from(global.connectedUsers));
   });
 
-  // 🔹 Join Chat Room
   socket.on("joinChat", (chatId) => {
     socket.join(chatId);
     console.log(`User ${socket.id} joined chat: ${chatId}`);
   });
 
-  // 🔹 Handle Sending Messages
   socket.on("sendMessage", async ({ chatId, content, senderId }) => {
     try {
-        const chat = await Chat.findById(chatId);
-        if (!chat || !chat.participants.includes(senderId)) return;
+      const chat = await Chat.findById(chatId);
+      if (!chat || !chat.participants.includes(senderId)) return;
 
-        const message = { sender: senderId, content, timestamp: new Date() };
-        chat.messages.push(message);
-        await chat.save();
+      const message = { sender: senderId, content, timestamp: new Date() };
+      chat.messages.push(message);
+      await chat.save();
 
-        // Inclure chatId dans l'événement newMessage
-        global.io.to(chatId).emit("newMessage", { chatId, ...message });
-        console.log("Message émis via newMessage:", { chatId, ...message });
+      global.io.to(chatId).emit("newMessage", { chatId, ...message });
+      console.log("Message émis via newMessage:", { chatId, ...message });
 
-        const otherParticipant = chat.participants.find(p => p.toString() !== senderId);
-        if (otherParticipant) {
-            const sender = await userModel.findById(senderId, "fullname");
-            const senderName = sender ? sender.fullname : senderId;
-            global.io.to(chatId).emit("newNotification", {
-                chatId,
-                senderId,
-                recipientId: otherParticipant,
-                message: `${senderName} vous a envoyé un message: "${content}"`,
-                timestamp: new Date()
-            });
-            console.log("Notification émise:", { recipientId: otherParticipant, message });
-        }
+      const otherParticipant = chat.participants.find(p => p.toString() !== senderId);
+      if (otherParticipant) {
+        const sender = await userModel.findById(senderId, "fullname");
+        const senderName = sender ? sender.fullname : senderId;
+        const notificationMessage = `${senderName} vous a envoyé un message: "${content}"`;
+
+        global.io.to(chatId).emit("newNotification", {
+          chatId,
+          senderId,
+          recipientId: otherParticipant,
+          message: notificationMessage,
+          timestamp: new Date()
+        });
+
+        console.log("Notification émise:", {
+          recipientId: otherParticipant,
+          message: notificationMessage
+        });
+      }
     } catch (error) {
-        console.error("❌ Error sending message:", error);
+      console.error("❌ Error sending message:", error);
     }
-});
+  });
 
-  // 🔹 Typing Indicator
   socket.on("typing", async ({ chatId, senderId }) => {
     const chat = await Chat.findById(chatId);
     if (!chat || !chat.participants.includes(senderId)) return;
@@ -154,7 +151,12 @@ global.io.on("connection", (socket) => {
     if (otherParticipant) {
       const sender = await userModel.findById(senderId, "fullname");
       const senderName = sender ? sender.fullname : senderId;
-      global.io.to(chatId).emit("userTyping", { chatId, senderId, senderName, recipientId: otherParticipant });
+      global.io.to(chatId).emit("userTyping", {
+        chatId,
+        senderId,
+        senderName,
+        recipientId: otherParticipant
+      });
     }
   });
 
@@ -162,10 +164,8 @@ global.io.on("connection", (socket) => {
     global.io.to(chatId).emit("userStoppedTyping", { chatId, senderId });
   });
 
-  // 🔹 Handle Disconnection
   socket.on("disconnect", () => {
     console.log(`🔴 Socket disconnected: ${socket.id}`);
-    // Remove the user from connectedUsers if we stored their userId
     if (socket.userId) {
       global.connectedUsers.delete(socket.userId);
       console.log(`❌ User ${socket.userId} removed. Connected Users:`, Array.from(global.connectedUsers));
@@ -173,7 +173,7 @@ global.io.on("connection", (socket) => {
     }
   });
 });
-
+startNotificationJob();
 // 🟢 Start Server
 const PORT = 5000;
 server.listen(PORT, () => {
