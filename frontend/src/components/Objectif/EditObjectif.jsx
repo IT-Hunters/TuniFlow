@@ -45,15 +45,27 @@ const EditObjective = () => {
   };
 
   const handleProgressChange = (e) => {
-    const value = Number(e.target.value); // Convert to number
+    let value = Number(e.target.value); // Convert to number
+
+    // Cap the progress at 100%
+    if (value > 100) {
+      value = 100;
+    }
+    // Ensure progress is not negative
+    if (value < 0) {
+      value = 0;
+    }
+
     setEditObjective((prev) => ({
       ...prev,
       progress: value,
     }));
+
     const sliderValue = document.querySelector('.PB-range-slidervalue');
     if (sliderValue) {
       sliderValue.textContent = `${value}%`;
     }
+
     if (errors.progress) {
       setErrors((prev) => ({ ...prev, progress: '' }));
     }
@@ -264,8 +276,8 @@ const EditObjective = () => {
                 <div className="PB-range-slider-div">
                   <input
                     type="range"
-                    min="-100" // Allow negative values
-                    max="200"  // Allow values above 100
+                    min="0"    // Set minimum to 0
+                    max="100"  // Set maximum to 100
                     step="1"   // Allow finer control
                     value={editObjective.progress || 0}
                     className={`PB-range-slider ${
