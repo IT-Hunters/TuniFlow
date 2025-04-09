@@ -12,7 +12,7 @@ const ObjectivesList = () => {
   const [objectives, setObjectives] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [selectedProject, setSelectedProject] = useState('');
+  const [selectedProject, setSelectedProject] = useState(''); // Initially empty
   const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
 
@@ -21,8 +21,13 @@ const ObjectivesList = () => {
   }, []);
 
   useEffect(() => {
+    // Only fetch objectives if selectedProject is a non-empty string and a valid ObjectId
     if (selectedProject) {
-      fetchObjectives();
+      if (/^[0-9a-fA-F]{24}$/.test(selectedProject)) {
+        fetchObjectives();
+      } else {
+        setError('Invalid project ID format. Please select a valid project.');
+      }
     }
   }, [selectedProject]);
 
@@ -31,16 +36,25 @@ const ObjectivesList = () => {
       setLoading(true);
       const response = await axios.get(`${API_Users}/findMyProject`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
-      if (!response.data || typeof response.data !== 'object') {
-        throw new Error('Invalid response format from findMyProject API');
+      const projectData = Array.isArray(response.data) ? response.data : [response.data];
+      console.log('Fetched projects:', projectData); // Debug log
+      if (!projectData.length) {
+        setError('No projects found for this user.');
+        return;
       }
-      setProjects([response.data]);
-      setSelectedProject(response.data._id);
+      setProjects(projectData);
+      // Use project.id instead of project._id
+      if (projectData[0] && projectData[0].id && /^[0-9a-fA-F]{24}$/.test(projectData[0].id)) {
+        setSelectedProject(projectData[0].id);
+      } else {
+        setError('Invalid project ID in fetched data. Please contact support.');
+      }
     } catch (err) {
-      setError('Failed to fetch project. Check if the backend is running at http://localhost:3000');
+      console.error('Error fetching project:', err.response?.data || err.message);
+      setError(`Failed to fetch project: ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -49,14 +63,17 @@ const ObjectivesList = () => {
   const fetchObjectives = async () => {
     try {
       setLoading(true);
+      console.log('Fetching objectives for projectId:', selectedProject); // Debug log
       const response = await axios.get(`${API_Objectif}/getAllObjectifsByProjectId/${selectedProject}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
+      console.log('Objectives response:', response.data); // Debug log
       setObjectives(response.data.objectifs || []);
     } catch (err) {
-      setError('Failed to fetch objectives');
+      console.error('Error fetching objectives:', err.response?.data || err.message);
+      setError(err.response?.data?.message || 'Failed to fetch objectives');
     } finally {
       setLoading(false);
     }
@@ -83,11 +100,14 @@ const ObjectivesList = () => {
             <h2>Select Project</h2>
             <select 
               value={selectedProject} 
-              onChange={(e) => setSelectedProject(e.target.value)}
+              onChange={(e) => {
+                console.log('Selected project ID:', e.target.value); // Debug log
+                setSelectedProject(e.target.value);
+              }}
             >
               <option value="">Select a project</option>
               {projects.map(project => (
-                <option key={project._id} value={project._id}>
+                <option key={project.id} value={project.id}> {/* Use project.id instead of project._id */}
                   {project.name} (Owner: {project.businessOwner?.name || 'Unknown'})
                 </option>
               ))}
@@ -101,13 +121,12 @@ const ObjectivesList = () => {
           {/* Objectives List and Add Button */}
           {selectedProject && !loading && !error && (
             <>
-              {objectives.length > 0 && (
+              {objectives.length > 0 ? (
                 <div className="objectives-list">
                   <h2>Objectives</h2>
                   <div className="objectives-grid">
                     {objectives.map(objective => (
                       <div key={objective._id} className="objectif-card">
-                        {/* Bookmark for Objective Type */}
                         <div className="objectif-bookmark">
                           {objective.objectivetype}
                         </div>
@@ -141,6 +160,10 @@ const ObjectivesList = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              ) : (
+                <div className="no-objectives">
+                  <p>No objectives found for this project.</p>
                 </div>
               )}
               <div className="add-objective-section">

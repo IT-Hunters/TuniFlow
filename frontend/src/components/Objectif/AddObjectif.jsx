@@ -57,12 +57,21 @@ const AddObjective = () => {
     setSuccessMessage('');
 
     try {
+      const token = localStorage.getItem('token');
+      console.log('Token retrieved from localStorage:', token); // Debug log
+      if (!token) {
+        setErrors({ general: 'No authentication token found. Please log in again.' });
+        setTimeout(() => navigate('/login'), 2000);
+        return;
+      }
+
       const objectiveData = { ...newObjective, project: selectedProject };
+      console.log('Creating objective with data:', objectiveData); // Debug log
       const response = await axios.post(
         `${API_Objectif}/createobjectifs`,
         objectiveData,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -82,6 +91,7 @@ const AddObjective = () => {
         setTimeout(() => navigate('/ObjectiveManagement'), 1000);
       }
     } catch (err) {
+      console.error('Error creating objective:', err.response?.data || err.message);
       if (err.response && err.response.data.errors) {
         setErrors(err.response.data.errors);
       } else {
