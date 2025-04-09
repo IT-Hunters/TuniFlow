@@ -1,42 +1,75 @@
-"use client";
-
+// ProjectsOverview.jsx
 import { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import "./ProjectsOverview.css";
 import { getObjectifs } from "../../../services/ObjectifService";
 
-export default function ProjectsOverview({ selectedRole, projectId }) {
+export default function ProjectsOverview({ projectId }) {
   const [allProjects, setAllProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(''); // Add error state
+
+  console.log('Received projectId:', projectId);
 
   useEffect(() => {
     const fetchProjects = async () => {
       setLoading(true);
+      setError(''); // Reset error
       try {
-        const response = await getObjectifs(selectedRole, projectId);
+        const response = await getObjectifs(projectId);
+        console.log('getObjectifs response:', response);
 
-        if (response.success) {
-          // Combine ongoing projects and completedToday into one array
-          const combinedProjects = [
-            ...(response.data || []),
-            ...(response.completedToday || [])
-          ];
-          setAllProjects(combinedProjects);
+        if (response.success && response.objectifs) {
+          const mappedProjects = response.objectifs.map(obj => ({
+            id: obj._id || '',
+            name: obj.name || 'Unnamed Objective',
+            progress: obj.progress || 0,
+            status: obj.status || 'InProgress',
+            budgetStatus: calculateBudgetStatus(obj),
+            department: obj.objectivetype || 'N/A',
+            dueDate: obj.datefin || new Date(),
+            minBudget: obj.minbudget || 0,
+            maxBudget: obj.maxbudget || 0,
+            spent: calculateSpent(obj),
+          }));
+          console.log('Mapped projects:', mappedProjects);
+          setAllProjects(mappedProjects);
         } else {
           setAllProjects([]);
+          setError('No objectives found in the response');
         }
       } catch (error) {
         console.error("Error fetching projects:", error);
+        setError(error.response?.data?.message || 'Failed to fetch objectives');
         setAllProjects([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProjects();
-  }, [selectedRole, projectId]);
+    if (projectId && /^[0-9a-fA-F]{24}$/.test(projectId)) {
+      fetchProjects();
+    } else {
+      setError('Invalid project ID');
+      setLoading(false);
+    }
+  }, [projectId]);
 
-  // Memoize status icon function to prevent unnecessary recalculations
+  const calculateBudgetStatus = (objective) => {
+    const spent = calculateSpent(objective);
+    const maxBudget = objective.maxbudget || 0;
+    if (maxBudget === 0) return "WithinBudget";
+    if (spent > maxBudget) return "AtRisk";
+    if (spent > maxBudget * 0.9) return "CloseToLimit";
+    return "WithinBudget";
+  };
+
+  const calculateSpent = (objective) => {
+    const maxBudget = objective.maxbudget || 0;
+    const progress = objective.progress || 0;
+    return Math.round((progress / 100) * maxBudget);
+  };
+
   const getStatusIcon = useMemo(() => {
     return (status, budgetStatus) => {
       if (status === "InProgress") {
@@ -50,7 +83,6 @@ export default function ProjectsOverview({ selectedRole, projectId }) {
     };
   }, []);
 
-  // Separate component for project item to improve readability
   const ProjectItem = ({ project }) => (
     <div className="project-item">
       <div className="project-header">
@@ -73,7 +105,7 @@ export default function ProjectsOverview({ selectedRole, projectId }) {
         <div className="progress-bar-container">
           <div 
             className="progress-bar" 
-            style={{ width: `${project.progress}%` ,background: `#3b82f6`}}
+            style={{ width: `${Math.min(project.progress, 100)}%`, background: '#3b82f6' }}
           />
         </div>
       </div>
@@ -91,14 +123,14 @@ export default function ProjectsOverview({ selectedRole, projectId }) {
           <p className="detail-label">Budget Pattern</p>
           <p className="detail-value">
             {project.maxBudget !== undefined && project.minBudget !== undefined
-              ? `${project.minBudget.toLocaleString()} TND  -  ${project.maxBudget.toLocaleString()} TND`
+              ? `${project.minBudget.toLocaleString()} TND - ${project.maxBudget.toLocaleString()} TND`
               : "N/A"}
           </p>
         </div>
         <div className="project-detail">
           <p className="detail-label">Spent</p>
           <p className="detail-value">
-            ${project.spent.toLocaleString()} (
+            {project.spent.toLocaleString()} TND (
             {project.progress !== undefined ? project.progress : "N/A"}%)
           </p>
         </div>
@@ -106,12 +138,19 @@ export default function ProjectsOverview({ selectedRole, projectId }) {
     </div>
   );
 
-  // Render content based on loading state and data availability
   const renderContent = () => {
     if (loading) {
       return (
         <div className="projects-loading">
-          <p>Loading projects...</p>
+          <p>Loading objectives...</p>
+        </div>
+      );
+    }
+    
+    if (error) {
+      return (
+        <div className="projects-error">
+          <p>{error}</p>
         </div>
       );
     }
@@ -119,7 +158,7 @@ export default function ProjectsOverview({ selectedRole, projectId }) {
     if (allProjects.length === 0) {
       return (
         <div className="projects-empty">
-          <p>No projects found for the selected criteria</p>
+          <p>No objectives found for the selected project</p>
         </div>
       );
     }
@@ -137,7 +176,7 @@ export default function ProjectsOverview({ selectedRole, projectId }) {
     <div className="projects-card">
       <div className="projects-header">
         <h2 className="projects-title">Objectives Overview</h2>
-        <p className="projects-description">Track your active projects objectives across all types</p>
+        <p className="projects-description">Track your active project objectives across all types</p>
       </div>
       <div className="projects-content">
         {renderContent()}
@@ -147,6 +186,5 @@ export default function ProjectsOverview({ selectedRole, projectId }) {
 }
 
 ProjectsOverview.propTypes = {
-  selectedRole: PropTypes.string.isRequired,
   projectId: PropTypes.string.isRequired
 };

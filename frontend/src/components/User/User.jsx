@@ -10,6 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Add useNavigate for redirection
 import StatsCards from "./StatsCards/StatsCards";
 import TransactionChart from "./TransactionChart/TransactionChart";
 import ProjectsOverview from "./ProjectOverview/ProjectsOverview";
@@ -24,10 +25,20 @@ import "./User.css";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
+const API_Users = 'http://localhost:3000/users';
+
 export default function User() {
   const [selectedRole, setSelectedRole] = useState("all");
   const walletId = "67d15c34ea844b95d23a1788"; 
-  const projectId = "67e8cad500e54584114910e8";
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
   return (
     <div className="container">
       <CoolSidebar />
@@ -37,7 +48,6 @@ export default function User() {
           selectedRole={selectedRole} 
           setSelectedRole={setSelectedRole} 
           walletId={walletId} 
-          projectId={projectId}
         />
       </div>
     </div>
@@ -102,7 +112,40 @@ export function TransactionList({ walletId }) {
   );
 }
 
-function Dashboard({ selectedRole, setSelectedRole, walletId, projectId }) {
+function Dashboard({ selectedRole, setSelectedRole, walletId }) {
+  const [projects, setProjects] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchMyProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${API_Users}/findMyProject`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        const projectData = Array.isArray(response.data) ? response.data : [response.data];
+        console.log('Fetched projects:', projectData);
+        if (projectData.length > 0) {
+          setProjects(projectData);
+          setSelectedProjectId(projectData[0].id); // Set the first project as default
+        } else {
+          setError('No projects found. Please create a project to view objectives.');
+        }
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setError('Failed to fetch projects: ' + (err.response?.data?.message || err.message));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyProjects();
+  }, []);
+
   return (
     <div className="main-panel">
       <div className="content-wrapper">
@@ -113,7 +156,32 @@ function Dashboard({ selectedRole, setSelectedRole, walletId, projectId }) {
           </div>
         </div>
 
-        {/* Row 2: TransactionChart + ProjectsOverview */}
+        {/* Row 2: Project Selection + TransactionChart + ProjectsOverview */}
+        <div className="row">
+          <div className="col-lg-12 grid-margin stretch-card">
+            <div className="project-selection">
+              <h2>Select Project</h2>
+              {loading ? (
+                <p>Loading projects...</p>
+              ) : error ? (
+                <p className="error">{error}</p>
+              ) : (
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                >
+                  <option value="">Select a project</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>
+                      {project.name} (Owner: {project.businessOwner?.name || 'Unknown'})
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="row equal-height-row">
           <div className="col-lg-6 grid-margin stretch-card">
             <TransactionChart walletId={walletId} />
@@ -121,7 +189,11 @@ function Dashboard({ selectedRole, setSelectedRole, walletId, projectId }) {
           <div className="col-lg-6 grid-margin stretch-card">
             <div className="dashboard-section">
               <RoleSelector selectedRole={selectedRole} setSelectedRole={setSelectedRole} />
-              <ProjectsOverview selectedRole={selectedRole} projectId={projectId} />
+              {selectedProjectId ? (
+                <ProjectsOverview projectId={selectedProjectId} /> // Remove selectedRole
+              ) : (
+                <p>Please select a project to view objectives.</p>
+              )}
             </div>
           </div>
         </div>
@@ -136,14 +208,12 @@ function Dashboard({ selectedRole, setSelectedRole, walletId, projectId }) {
           </div>
         </div>
 
-        {/* Row 4: InvoiceAnalytics  */}
+        {/* Row 4: InvoiceAnalytics */}
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card">
             <InvoiceAnalytics />
           </div>
         </div>
-
-     
       </div>
     </div>
   );
