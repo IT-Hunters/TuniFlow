@@ -4,16 +4,101 @@
   padding: 0;
   box-sizing: border-box;
 }
+
 /* Apply styles to the body only when inside the auth component */
 .auth-page {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f5f7fb;
+  /* Dégradé bleu ciel en arrière-plan */
+  background: linear-gradient(135deg, #e6f2ff, #b3d9ff);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
+  position: relative;
+  overflow: hidden; /* Pour masquer les cercles qui dépassent */
 }
 
+/* Ajout de cercles décoratifs en arrière-plan */
+.auth-page::before,
+.auth-page::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  z-index: 0;
+}
+
+/* Grand cercle en haut à droite */
+.auth-page::before {
+  width: 500px;
+  height: 500px;
+  top: -250px;
+  right: -150px;
+  background: radial-gradient(circle, rgba(173, 216, 230, 0.25) 0%, rgba(173, 216, 230, 0) 70%);
+}
+
+/* Cercle moyen en bas à gauche */
+.auth-page::after {
+  width: 400px;
+  height: 400px;
+  bottom: -200px;
+  left: -100px;
+  background: radial-gradient(circle, rgba(135, 206, 250, 0.2) 0%, rgba(135, 206, 250, 0) 70%);
+}
+
+/* Ajout de cercles décoratifs supplémentaires avec des pseudo-éléments */
+.auth-page {
+  position: relative;
+}
+
+/* Création de cercles décoratifs additionnels */
+.auth-background-circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.auth-background-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(173, 216, 230, 0.15));
+}
+
+.auth-circle-1 {
+  width: 150px;
+  height: 150px;
+  top: 15%;
+  left: 20%;
+  opacity: 0.5;
+}
+
+.auth-circle-2 {
+  width: 80px;
+  height: 80px;
+  top: 60%;
+  left: 75%;
+  opacity: 0.4;
+}
+
+.auth-circle-3 {
+  width: 200px;
+  height: 200px;
+  top: 70%;
+  left: 30%;
+  opacity: 0.3;
+}
+
+.auth-circle-4 {
+  width: 120px;
+  height: 120px;
+  top: 25%;
+  left: 85%;
+  opacity: 0.35;
+}
 
 /* Main container: 900x550, with two "boxes" inside (form + blue) */
 .auth-container {
@@ -21,8 +106,9 @@
   height: 550px;
   position: relative;
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  box-shadow: 0 0 25px rgba(30, 144, 255, 0.2);
   overflow: hidden;
+  z-index: 1; /* Pour s'assurer que le conteneur est au-dessus des cercles */
 }
 
 /* We will move each box with transform for a smooth slide */
@@ -34,6 +120,7 @@
   height: 100%;
   transition: transform 0.6s ease; /* Smooth animation */
 }
+
 .auth-image {
   transition: transform 0.6s ease; /* Smooth animation */
 }
@@ -43,17 +130,44 @@
    - auth-blue-box is on the right (left: 50%) */
 .auth-form-box {
   left: 0;
-  background: #fff;
+  background: #EBF2FF;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .auth-blue-box {
   left: 50%;
-  background: #081c37;
+  /* Utiliser le même dégradé que la navbar-home */
+  background: linear-gradient(135deg, #1E3A8A, #1E90FF 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ajout de cercles décoratifs dans la boîte bleue */
+.auth-blue-box::before,
+.auth-blue-box::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.auth-blue-box::before {
+  width: 200px;
+  height: 200px;
+  top: -50px;
+  right: -50px;
+}
+
+.auth-blue-box::after {
+  width: 150px;
+  height: 150px;
+  bottom: -30px;
+  left: 30px;
 }
 
 /* When user clicks "Already have an account?" => .auth-login-mode
@@ -61,6 +175,7 @@
 .auth-container.auth-login-mode .auth-form-box {
   transform: translateX(100%);
 }
+
 .auth-container.auth-login-mode .auth-blue-box {
   transform: translateX(-100%);
 }
@@ -88,10 +203,12 @@
   transform: translateX(-100%);
   opacity: 0;
 }
+
 .auth-container.auth-login-mode .auth-sign-in-form {
   transform: translateX(0);
   opacity: 1;
 }
+
 .auth-file-input {
   display: none; /* Cache l'input natif */
 }
@@ -100,18 +217,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #007bff; /* Bleu dynamique */
+  /* Utiliser le même dégradé que la navbar-home mais un peu plus clair */
+  background: linear-gradient(135deg, #2E4A9A, #40A0FF 100%);
   color: white;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
   font-weight: bold;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .auth-file-label:hover {
-  background-color: #0056b3; /* Bleu plus foncé au survol */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .auth-file-name {
@@ -123,50 +243,44 @@
 
 /* Form styling */
 h2 {
-  margin-bottom: 1rem;
-}
-.auth-input-field {
-  margin-bottom: 0.5rem;
-}
-.auth-input-field input {
-  width: 100%;
-  padding: 0.7rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-.auth-btn {
-  margin-top: 0.5rem;
-  background: #081c37;
-  color: #fff;
-  border: none;
-  padding: 0.7rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-}
-.auth-switch-text {
-  font-size: 0.9rem;
-  margin-top: 1rem;
-}
-.auth-toggle-link {
-  color: #081c37;
-  cursor: pointer;
-  text-decoration: underline;
+  margin-bottom: 1.5rem;
+  color: #1E3A8A;
+  font-size: 1.8rem;
+  position: relative;
+  padding-bottom: 10px;
 }
 
-/* Blue box image */
-.auth-blue-image {
-  max-width: 300px;
-  border-radius: 8px;
-  object-fit: cover;
+h2:after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(135deg, #1E3A8A, #1E90FF 100%);
+  bottom: 0;
+  left: 0;
 }
+
 .auth-input-field {
   position: relative;
+  margin-bottom: 1rem;
 }
 
 .auth-input-field input {
   width: 100%;
+  padding: 0.8rem 0.8rem 0.8rem 1rem;
+  border: 1px solid #ccd5e6;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  background-color: rgba(255, 255, 255, 0.7);
   padding-right: 40px; /* Space for eye icon */
+}
+
+.auth-input-field input:focus {
+  border-color: #1E90FF;
+  box-shadow: 0 0 0 2px rgba(30, 144, 255, 0.2);
+  outline: none;
+  background-color: #fff;
 }
 
 .auth-eye-icon {
@@ -176,8 +290,76 @@ h2 {
   transform: translateY(-50%);
   cursor: pointer;
   font-size: 18px;
+  color: #6d87bf;
+  transition: color 0.3s ease;
 }
-/* Add these styles to your existing AuthPage.css file */
+
+.auth-eye-icon:hover {
+  color: #1E3A8A;
+}
+
+.auth-btn {
+  width: 100%;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #1E3A8A, #1E90FF 100%);
+  color: #fff;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.auth-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.auth-btn:active {
+  transform: translateY(0);
+}
+
+.auth-switch-text {
+  font-size: 0.9rem;
+  margin-top: 1.2rem;
+  color: #1E3A8A;
+  text-align: center;
+}
+
+.auth-toggle-link {
+  color: #1E90FF;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.auth-toggle-link:hover {
+  color: #1E3A8A;
+}
+
+/* Blue box image */
+.auth-blue-image {
+  max-width: 300px;
+  /* Suppression du border-radius pour l'image */
+  border-radius: 0;
+  object-fit: cover;
+  /* Suppression de l'ombre pour un effet transparent */
+  box-shadow: none;
+  transition: transform 0.3s ease;
+  transform: scale(0.95);
+  /* Augmenter l'opacité pour une meilleure visibilité */
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-blue-box:hover .auth-blue-image {
+  transform: scale(1);
+}
 
 .auth-loading-overlay {
   position: fixed;
@@ -199,27 +381,64 @@ h2 {
   height: 50px;
   border: 5px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: #1E90FF;
   animation: spin 1s ease-in-out infinite;
   margin-bottom: 20px;
 }
 
 .auth-error-text {
-  color: red;
+  color: #e74c3c;
   font-size: 0.9rem;
-  margin-top: 0.5rem;
+  margin-top: 0.7rem;
   text-align: center;
+  background-color: rgba(231, 76, 60, 0.1);
+  padding: 8px;
+  border-radius: 4px;
+  border-left: 3px solid #e74c3c;
 }
 
 .auth-success-text {
-  color: green;
+  color: #2ecc71;
   font-size: 0.9rem;
-  margin-top: 0.5rem;
+  margin-top: 0.7rem;
   text-align: center;
+  background-color: rgba(46, 204, 113, 0.1);
+  padding: 8px;
+  border-radius: 4px;
+  border-left: 3px solid #2ecc71;
 }
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
+/* Animation subtile des cercles */
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+}
+
+.auth-circle-1 {
+  animation: float 8s ease-in-out infinite;
+}
+
+.auth-circle-2 {
+  animation: float 10s ease-in-out infinite;
+}
+
+.auth-circle-3 {
+  animation: float 12s ease-in-out infinite;
+}
+
+.auth-circle-4 {
+  animation: float 9s ease-in-out infinite;
+}

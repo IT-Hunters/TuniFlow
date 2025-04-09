@@ -1,12 +1,12 @@
+// src/components/ForgotPassword.jsx
 import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./forgetpassword.css"; 
+import "./forgetpassword.css";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -17,53 +17,72 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+    setMessage("");
     try {
       const response = await axios.post("http://localhost:3000/users/forgot-password", {
         email: email,
       });
-      setMessage(response.data.message);  
-      setError(""); 
+      setMessage(response.data.message);
+      setError("");
     } catch (err) {
-      setError(err.response?.data.message || "eror during sending link");
-      setMessage("");  
+      setError(err.response?.data.message || "Error during sending link");
+      setMessage("");
+    } finally {
+      console.log("Starting 1-second delay for forgot password...");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("1-second delay completed for forgot password.");
+      setLoading(false);
     }
   };
 
   return (
-    <div className="forgot-password-container forgot-password-login-mode">
-      <div className="forgot-password-form-box">
-        <form onSubmit={handleSubmit} className="forgot-password-sign-in-form">
-          <h2>Reset     Password </h2>
-          
-          <div className="forgot-password-input-field">
-            <input
-              type="email"
-              placeholder="Enter Emai;"
-              value={email}
-              onChange={handleChange}
-              required
-            />
-          </div>
+    <div className="forgot-password-page">
+      {loading && (
+        <div className="forgot-password-loading-overlay">
+          <div className="forgot-password-loading-spinner"></div>
+          <p>Please wait...</p>
+        </div>
+      )}
 
-          {message && <p className="success-message">{message}</p>}
-          {error && <p className="forgot-password-error-text">{error}</p>}
+      <div className="forgot-password-container">
+        <div className="forgot-password-blue-box">
+          <img
+            src="/forgot-password.png"
+            alt="Forgot Password Illustration"
+            className="forgot-password-blue-image"
+          />
+        </div>
 
-          <button type="submit" className="forgot-password-btn">
-            send <link rel="stylesheet" href="" />
-          </button>
+        <div className="forgot-password-form-box">
+          <form onSubmit={handleSubmit} className="forgot-password-sign-in-form">
+            <h2>Reset Password</h2>
+            <div className="forgot-password-input-field">
+              <input
+                type="email"
+                placeholder="Enter Email"
+                value={email}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <p className="forgot-password-switch-text">
-            back to <span className="forgot-password-toggle-link" onClick={() => navigate("/")}>login</span>
-          </p>
-        </form>
-      </div>
+            {message && <p className="success-message">{message}</p>}
+            {error && <p className="forgot-password-error-text">{error}</p>}
 
-      <div className="forgot-password-blue-box">
-        <img
-          src="/forgot-password.png" 
-          alt="Forgot Password Illustration"
-          className="forgot-password-blue-image"
-        />
+            <button type="submit" className="forgot-password-btn">
+              Send
+            </button>
+
+            <p className="forgot-password-switch-text">
+              Back to{" "}
+              <span className="forgot-password-toggle-link" onClick={() => navigate("/")}>
+                login
+              </span>
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   );
