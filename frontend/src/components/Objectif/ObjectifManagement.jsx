@@ -14,6 +14,7 @@ const ObjectivesList = () => {
   const [objectives, setObjectives] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); // Added for success feedback
   const [selectedProject, setSelectedProject] = useState('');
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,6 +33,13 @@ const ObjectivesList = () => {
       }
     }
   }, [selectedProject]);
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   const fetchMyProject = async () => {
     try {
@@ -87,6 +95,40 @@ const ObjectivesList = () => {
 
   const handleAddObjective = () => {
     navigate('/AddObjective', { state: { selectedProject } });
+  };
+
+  const handleDelete = async (objectifId) => {
+    // Show a confirmation dialog before deleting
+    const confirmDelete = window.confirm('Are you sure you want to delete this objective?');
+    if (!confirmDelete) return;
+
+    setLoading(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      const response = await axios.delete(`${API_Objectif}/deletobjectif/${objectifId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (response.data.success) {
+        setSuccessMessage('Objective deleted successfully');
+        // Remove the deleted objective from the state
+        setObjectives((prev) => prev.filter((obj) => obj._id !== objectifId));
+        // Reset pagination if necessary
+        if (paginatedObjectives.length === 1 && currentPage > 1) {
+          setCurrentPage((prev) => prev - 1);
+        }
+      } else {
+        setError('Failed to delete objective');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error deleting objective');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const totalPages = Math.ceil(objectives.length / ITEMS_PER_PAGE);
@@ -150,7 +192,10 @@ const ObjectivesList = () => {
             </select>
           </div>
 
-          {/* Error and Loading States */}
+          {/* Success, Error, and Loading States */}
+          {successMessage && (
+            <div className="alert alert-success">{successMessage}</div>
+          )}
           {error && <div className="error-message">{error}</div>}
           {loading && <div className="loading">Loading...</div>}
 
@@ -186,13 +231,22 @@ const ObjectivesList = () => {
                             <span>{new Date(objective.datefin).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
                           </div>
                         </div>
-                        <button
-                          className="objectif-card-button objective-button"
-                          onClick={() => handleViewDetails(objective)}
-                          disabled={loading}
-                        >
-                          View Details
-                        </button>
+                        <div className="button-group">
+                          <button
+                            className="objectif-card-button objective-button"
+                            onClick={() => handleViewDetails(objective)}
+                            disabled={loading}
+                          >
+                            View Details
+                          </button>
+                          <button
+                            className="objectif-card-button objective-button delete-button"
+                            onClick={() => handleDelete(objective._id)}
+                            disabled={loading}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

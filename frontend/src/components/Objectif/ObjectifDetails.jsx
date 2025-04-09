@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Objectifmanagement.css';
 import axios from 'axios';
-
+import ObjectiveAnalytics from '../Objectif/ObjectiveAnalytics';
 // API base URL (replace with your backend URL)
 const API_URL = 'http://localhost:3000/objectif';
 
@@ -200,7 +200,7 @@ const ObjectifDetails = () => {
             <h3>Description</h3>
             <p>{objective.description}</p>
           </div>
-
+          <ObjectiveAnalytics objectiveId={objective._id} />
           {/* Buttons */}
           <div className="objectif-details-buttons ">
             <button 

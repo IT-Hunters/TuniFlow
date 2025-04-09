@@ -723,4 +723,44 @@
     .form_content{
         padding: 30px;
         max-width: 1280px;    }
+
+/* Add to the bottom of Objectifmanagement.css */
+
+.analytics-dashboard {
+    background: var(--color-white);
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    margin-top: var(--space-5);
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .analytics-dashboard h2 {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--color-black);
+    margin-bottom: var(--space-4);
+  }
+  
+  .analytics-content p {
+    font-size: var(--text-base);
+    color: var(--color-gray-600);
+    margin-bottom: var(--space-3);
+  }
+  
+  .progress-chart {
+    margin-top: var(--space-4);
+  }
+  
+  .progress-chart h3 {
+    font-size: var(--text-lg);
+    font-weight: 500;
+    color: var(--color-gray-700);
+    margin-bottom: var(--space-3);
+  }
+
+
+
   }

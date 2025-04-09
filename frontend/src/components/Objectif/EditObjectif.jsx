@@ -1,11 +1,11 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Objectifmanagement.css';
 
-const API_Objectif = 'http://localhost:3000/objectif';
+const API_Objectif = 'http://localhost:3000/objectif'; // Updated to match your backend port
 
 const EditObjective = () => {
   const navigate = useNavigate();
@@ -23,6 +23,7 @@ const EditObjective = () => {
     datefin: objective?.datefin
       ? new Date(objective.datefin).toISOString().split('T')[0]
       : '',
+    progress: objective?.progress || 0, // Ensure progress is initialized as a number
   });
 
   useEffect(() => {
@@ -44,15 +45,27 @@ const EditObjective = () => {
   };
 
   const handleProgressChange = (e) => {
-    const value = e.target.value;
+    let value = Number(e.target.value); // Convert to number
+
+    // Cap the progress at 100%
+    if (value > 100) {
+      value = 100;
+    }
+    // Ensure progress is not negative
+    if (value < 0) {
+      value = 0;
+    }
+
     setEditObjective((prev) => ({
       ...prev,
       progress: value,
     }));
+
     const sliderValue = document.querySelector('.PB-range-slidervalue');
     if (sliderValue) {
       sliderValue.textContent = `${value}%`;
     }
+
     if (errors.progress) {
       setErrors((prev) => ({ ...prev, progress: '' }));
     }
@@ -263,8 +276,9 @@ const EditObjective = () => {
                 <div className="PB-range-slider-div">
                   <input
                     type="range"
-                    min="0"
-                    max="100"
+                    min="0"    // Set minimum to 0
+                    max="100"  // Set maximum to 100
+                    step="1"   // Allow finer control
                     value={editObjective.progress || 0}
                     className={`PB-range-slider ${
                       errors.progress ? 'input-error' : ''
