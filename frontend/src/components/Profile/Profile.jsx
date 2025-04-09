@@ -165,7 +165,6 @@ const ViewProfile = () => {
   return (
     <>
       <div className="container">
-        <Sidebar />
         <div className="main">
           <Navbar />
           <div className="profile-container flex justify-center items-start gap-6 p-6">
