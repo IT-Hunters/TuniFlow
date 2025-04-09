@@ -32,7 +32,6 @@ const UsersTable = () => {
       setIsLoading(true)
       try {
         const response = await getAllUsers()
-        // Log the response to inspect the user objects
         console.log("Fetched users:", response)
         setUsers(response)
         setError(null)
@@ -141,7 +140,6 @@ const UsersTable = () => {
     return <span className={config.className}>{config.label}</span>
   }
 
-  // Handle edit button click
   const handleEdit = (user) => {
     if (!user || !user._id) {
       alert("User ID is missing. Cannot edit this user.")
@@ -149,14 +147,13 @@ const UsersTable = () => {
     }
     setSelectedUser(user)
     setFormData({
-      fullname: user.fullname ,
+      fullname: user.fullname,
       lastname: user.lastname,
       email: user.email,
     })
     setEditModalOpen(true)
   }
 
-  // Handle delete button click
   const handleDelete = async (userId) => {
     if (!userId) {
       alert("User ID is missing. Cannot delete this user.")
@@ -181,13 +178,11 @@ const UsersTable = () => {
     }
   }
 
-  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!selectedUser || !selectedUser._id) {
@@ -253,7 +248,7 @@ const UsersTable = () => {
         </div>
         <div className="card-content">
           <button onClick={() => window.location.reload()} className="btn btn-outline">
-            <span className="icon">↻</span> Retry
+            Retry
           </button>
         </div>
       </div>
@@ -305,7 +300,7 @@ const UsersTable = () => {
         </div>
         {(searchTerm || selectedRole) && (
           <button className="btn btn-text clear-filters" onClick={clearFilters}>
-            <span className="icon">✕</span> Clear filters
+            Clear filters
           </button>
         )}
       </div>
@@ -342,13 +337,13 @@ const UsersTable = () => {
                         className="btn btn-action btn-edit"
                         onClick={() => handleEdit(user)}
                       >
-                        <span className="icon">✎</span> Edit
+                        Edit
                       </button>
                       <button
                         className="btn btn-action btn-delete"
                         onClick={() => handleDelete(user._id)}
                       >
-                        <span className="icon">✖</span> Delete
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -413,7 +408,6 @@ const UsersTable = () => {
           </div>
         )}
 
-        {/* Edit Modal */}
         {editModalOpen && (
           <div className="modal-overlay">
             <div className="modal-content">
@@ -451,14 +445,14 @@ const UsersTable = () => {
                 </div>
                 <div className="modal-actions">
                   <button type="submit" className="btn btn-action btn-save">
-                    <span className="icon">✓</span> Save
+                    Save
                   </button>
                   <button
                     type="button"
                     className="btn btn-action btn-cancel"
                     onClick={() => setEditModalOpen(false)}
                   >
-                    <span className="icon">✖</span> Cancel
+                    Cancel
                   </button>
                 </div>
               </form>

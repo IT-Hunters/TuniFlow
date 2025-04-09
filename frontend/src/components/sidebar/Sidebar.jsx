@@ -28,17 +28,12 @@ const Sidebar = () => {
       <ul>
         <li><a href="/dashboard">Dashboard</a></li>
         <li><Link to="/adminusers">Business Owners</Link></li>
-        <li><a href="#0">Store</a></li>
-        <li><a href="#0">Orders</a></li>
-        <li><a href="#0">Customers</a></li>
-        <li><a href="#0">Reports</a></li>
-        <li><a href="#0">Settings</a></li>
+      
         <li>
           <a href="#0" onClick={(e) => { e.preventDefault(); handleChatClick(); }}>
             Chat {/* Texte seul, sans icône */}
           </a>
         </li>
-        <li><a href="#0">Help & Center</a></li>
         <li><a href="#0" onClick={handleLogout} >Log Out</a></li>
       </ul>
     </nav>
