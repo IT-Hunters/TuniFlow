@@ -109,7 +109,7 @@ const AddObjective = () => {
       <Sidebar />
       <div className="main">
         <Navbar />
-        <div className="content">
+        <div className="form_content">
           <h1>Add New Objective</h1>
 
           {successMessage && (

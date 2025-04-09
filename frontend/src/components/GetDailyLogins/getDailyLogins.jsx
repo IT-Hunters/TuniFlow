@@ -48,7 +48,7 @@ const LoginChart = () => {
   }
 
   return (
-    <div className="chart-container">
+    <div className="login-chart-container">
       <h1>Daily Login Statistics</h1>
       <div className="chart-wrapper">
         <ResponsiveContainer width="100%" height={400}>

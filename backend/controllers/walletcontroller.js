@@ -153,15 +153,24 @@ const getTopProjects = async (req, res) => {
   try {
     const topProjects = await Project.find()
       .populate("wallet", "balance")
-      .populate("businessManager", "name")
-      .sort({ "wallet.balance": -1 })
+      .populate("businessManager", "fullname")
       .limit(5);
+
+    // Log the wallet field for each project
+    topProjects.forEach((project, index) => {
+      console.log(`Project ${index + 1} Wallet:`, project.wallet);
+    });
+
+    // Sort by wallet.balance in descending order
+    topProjects.sort((a, b) => (b.wallet?.balance || 0) - (a.wallet?.balance || 0));
+
+    console.log("Top Projects:", JSON.stringify(topProjects, null, 2));
     res.json(topProjects);
   } catch (err) {
+    console.error("Error fetching top projects:", err);
     res.status(500).json({ message: err.message });
   }
-};
-
+}
 // 📌 Data for candlestick charts
 const getCandlestickData = async (req, res) => {
   const { interval = 1 } = req.query;

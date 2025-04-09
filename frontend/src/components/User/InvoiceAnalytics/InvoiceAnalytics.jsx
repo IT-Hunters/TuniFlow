@@ -152,6 +152,24 @@ const InvoiceAnalytics = () => {
           <h2 className="analytics-title">Invoice Analytics</h2>
           <p className="analytics-description">Overview of your invoice activity</p>
         </div>
+       
+      </div>
+      <div className="analytics-content">
+        {/* Statistics cards */}
+        <div className="stats-cards">
+          <div className="stats-card">
+            <h3>Total Paid</h3>
+            <p className="stats-value">{stats.totalPaid.toLocaleString()} TND</p>
+          </div>
+          <div className="stats-card">
+            <h3>Total Pending</h3>
+            <p className="stats-value">{stats.totalPending.toLocaleString()} TND</p>
+          </div>
+          <div className="stats-card">
+            <h3>Total Overdue</h3>
+            <p className="stats-value">{stats.totalOverdue.toLocaleString()} TND</p>
+          </div>
+        </div>
         <div className="selectors">
           <div className="period-selector">
             <label htmlFor="period">View by: </label>
@@ -188,24 +206,6 @@ const InvoiceAnalytics = () => {
             </div>
           )}
         </div>
-      </div>
-      <div className="analytics-content">
-        {/* Statistics cards */}
-        <div className="stats-cards">
-          <div className="stats-card">
-            <h3>Total Paid</h3>
-            <p className="stats-value">{stats.totalPaid.toLocaleString()} TND</p>
-          </div>
-          <div className="stats-card">
-            <h3>Total Pending</h3>
-            <p className="stats-value">{stats.totalPending.toLocaleString()} TND</p>
-          </div>
-          <div className="stats-card">
-            <h3>Total Overdue</h3>
-            <p className="stats-value">{stats.totalOverdue.toLocaleString()} TND</p>
-          </div>
-        </div>
-
         {/* Overdue invoices table - Moved before chart */}
         {stats.overdueInvoices && stats.overdueInvoices.length > 0 && (
           <div className="overdue-invoices">

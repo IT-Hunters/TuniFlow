@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, parseISO } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  parseISO,
+} from "date-fns";
 import "./EventCalendar.css";
 
 export default function EventCalendar() {
@@ -85,12 +93,19 @@ export default function EventCalendar() {
         <div className="event-form">
           <input
             type="text"
+            className="event-input"
             placeholder={selectedDate ? `Add event on ${format(selectedDate, "MMM dd")}` : "Select a date first"}
             value={newEvent}
             onChange={(e) => setNewEvent(e.target.value)}
             disabled={!selectedDate}
           />
-          <button onClick={addEvent} disabled={!selectedDate || newEvent.trim() === ""}>+</button>
+          <button
+            className="add-event-btn"
+            onClick={addEvent}
+            disabled={!selectedDate || newEvent.trim() === ""}
+          >
+            +
+          </button>
         </div>
         {selectedDate && getEventsForDate(selectedDate).length > 0 && (
           <div className="selected-date-events">
