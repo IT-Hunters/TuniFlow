@@ -32,6 +32,7 @@ import ManagerList from "./components/Project/ManagerList";
 import AddUser from "./components/Project/AddUser";
 import OwnerInvoices from "./components/Invoice/OwnerInvoices";
 import ManagerInvoices from "./components/Invoice/ManagerInvoices";
+import AddEmployee from "./components/Project/AddEmployee";
 function App() {         
   return (
     <Router>
@@ -69,6 +70,7 @@ function App() {
         <Route path="/projectview" element={<ProjectView  />} />
         <Route path="/OwnerProjectsView" element={<OwnerProjectsView  />} />
         <Route path="/projects/:id" element={<ProjectDetails />} />
+        <Route path="/add-employee" element={<AddEmployee />} />
       </Routes>
     </Router>
   );

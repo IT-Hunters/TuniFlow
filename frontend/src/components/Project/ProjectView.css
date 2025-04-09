@@ -257,3 +257,11 @@
   margin-left: 10px;
   font-weight: bold;
 }
+.add-employee-btn {
+  background-color: #2196F3;
+  color: white;
+}
+
+.add-employee-btn:hover {
+  background-color: #0b7dda;
+}
