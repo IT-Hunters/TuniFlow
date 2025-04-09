@@ -7,16 +7,32 @@ import Navbar from '../navbarHome/NavbarHome';
 
 const API_URL = 'http://localhost:3000/users';
 
+const decodeJWT = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(window.atob(base64));
+  } catch (e) {
+    return null;
+  }
+};
+
 const ProjectView = () => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
+
+  // Récupérer les infos utilisateur depuis le token
+  const token = localStorage.getItem('token');
+  const decodedToken = token ? decodeJWT(token) : null;
+  const userRole = decodedToken?.role;
+  const userId = decodedToken?.userId;
 
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const token = localStorage.getItem('token');
         if (!token) {
           navigate('/login');
           return;
@@ -44,7 +60,7 @@ const ProjectView = () => {
     };
 
     fetchProject();
-  }, [navigate]);
+  }, [navigate, token]);
 
   const generateReport = async (projectId) => {
     if (!projectId) {
@@ -53,7 +69,6 @@ const ProjectView = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
       if (!token) {
         navigate('/login');
         return;
@@ -81,6 +96,48 @@ const ProjectView = () => {
     } catch (err) {
       console.error("Erreur lors de la génération du rapport:", err);
       alert(`Erreur lors de la génération du rapport: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  const handleExcelUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    
+    try {
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(
+        'http://localhost:3000/users/upload-employees',
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      alert(`Succès: ${response.data.message}`);
+      // Rafraîchir les données
+      const projectResponse = await axios.get(`${API_URL}/findMyProject`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProject(projectResponse.data);
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert(`Erreur: ${error.response?.data?.message || error.message || 'Erreur inconnue'}`);
+    } finally {
+      setIsUploading(false);
+      // Réinitialiser la valeur du input pour permettre le re-upload du même fichier
+      event.target.value = '';
     }
   };
 
@@ -134,15 +191,59 @@ const ProjectView = () => {
               {project.name || `Projet ${project.id?.slice(-4) || 'Sans nom'}`}
             </h1>
             <div className="action-buttons">
-  <button 
-    onClick={() => generateReport(project.id)} 
-    className="action-btn generate-report-btn"
-    style={{ backgroundColor: '#4CAF50', color: 'white' }}
-  >
-    Générer Rapport
-  </button>
-</div>
+              {userRole === 'RH' && (
+                <>
+                  <button 
+                    onClick={() => navigate('/add-employee')} 
+                    className="action-btn add-employee-btn"
+                    style={{ backgroundColor: '#2196F3', color: 'white', marginRight: '10px' }}
+                  >
+                    Ajouter Employé
+                  </button>
+                  
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <input
+                      type="file"
+                      id="excel-upload"
+                      accept=".xlsx,.xls"
+                      style={{ display: 'none' }}
+                      onChange={handleExcelUpload}
+                      disabled={isUploading}
+                    />
+                    <label 
+                      htmlFor="excel-upload"
+                      className="action-btn add-excel-btn"
+                      style={{ 
+                        backgroundColor: isUploading ? '#cccccc' : '#FF9800', 
+                        color: 'white', 
+                        cursor: isUploading ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {isUploading ? 'Import en cours...' : 'Ajouter Employés via Excel'}
+                    </label>
+                    {isUploading && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)'
+                      }}>
+                        <div className="spinner"></div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+              <button 
+                onClick={() => generateReport(project.id)} 
+                className="action-btn generate-report-btn"
+                style={{ backgroundColor: '#4CAF50', color: 'white' }}
+              >
+                Générer Rapport
+              </button>
+            </div>
           </header>
+        
 
           <div className="project-layout">
             {/* Colonne de gauche : Détails du projet */}
@@ -185,8 +286,12 @@ const ProjectView = () => {
             <h3>{objectif.name}</h3>
             <span>Status:</span>
             <span className={`status-badge ${objectif.status.toLowerCase()}`}>
-              
-            </span>
+  {objectif.status}
+</span>
+
+            <span className={`status-badge ${objectif.status.toLowerCase()}`}>
+</span>
+
           </div>
           
           <p className="objectif-description">{objectif.description}</p>
