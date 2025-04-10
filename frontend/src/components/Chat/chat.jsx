@@ -16,8 +16,10 @@ const Chat = () => {
     const [notifications, setNotifications] = useState([]);
     const [typingUser, setTypingUser] = useState(null);
     const [error, setError] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
+    const fileInputRef = useRef(null);
     const ADMIN_ID = "67bee9c72a104f8241d58e7d";
 
     useEffect(() => {
@@ -48,7 +50,7 @@ const Chat = () => {
         ChatService.joinChat(chatId);
 
         const handleNewMessage = (message) => {
-            console.log("Chat.jsx - Nouveau message reçu:", message);
+            console.log("Message reçu via Socket.io :", message); // Débogage
             if (message.chatId === chatId) {
                 setMessages((prev) => [...prev, message]);
                 scrollToBottomIfNeeded();
@@ -137,6 +139,30 @@ const Chat = () => {
         }
     };
 
+    const handleFileUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("chatId", chatId);
+        formData.append("senderId", senderId);
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                "http://localhost:5000/chat/upload",
+                formData,
+                { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } }
+            );
+            console.log("Réponse de l'upload :", response.data); // Débogage
+            scrollToBottom();
+        } catch (error) {
+            setError("Erreur lors de l'upload du fichier : " + error.message);
+            console.error("Erreur dans handleFileUpload:", error);
+        }
+    };
+
     const handleTyping = (e) => {
         setMessageInput(e.target.value);
         if (chatId && senderId) {
@@ -156,6 +182,12 @@ const Chat = () => {
                 scrollToBottom();
             }
         }
+    };
+
+    const emojis = ["😊", "😂", "😍", "👍", "😢", "😡", "✨", "🎉"];
+    const addEmoji = (emoji) => {
+        setMessageInput((prev) => prev + emoji);
+        setShowEmojiPicker(false);
     };
 
     if (error && error !== "Aucun chat avec l'Admin pour le moment. Vous pouvez commencer à écrire.") {
@@ -193,11 +225,43 @@ const Chat = () => {
                             >
                                 <div className="message-content">
                                     <p>{msg.content}</p>
+                                    {msg.fileUrl && (
+                                        <div className="file-content">
+                                            {msg.fileUrl.match(/\.(png|jpg|jpeg|jfif)$/i) ? (
+                                                <img
+                                                    src={`http://localhost:5000${msg.fileUrl}`}
+                                                    alt="Fichier envoyé"
+                                                    style={{ maxWidth: "200px", maxHeight: "200px" }}
+                                                    onError={(e) => (e.target.style.display = "none")} // Cache si erreur de chargement
+                                                />
+                                            ) : msg.fileUrl.match(/\.pdf$/i) ? (
+                                                <a
+                                                    href={`http://localhost:5000${msg.fileUrl}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    style={{ color: "#007bff", textDecoration: "underline" }}
+                                                >
+                                                    Voir le PDF
+                                                </a>
+                                            ) : (
+                                                <a
+                                                    href={`http://localhost:5000${msg.fileUrl}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    style={{ color: "#007bff", textDecoration: "underline" }}
+                                                >
+                                                    Télécharger le fichier
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
                                     <span className="message-time">
-                                        {new Date(msg.timestamp).toLocaleTimeString([], {
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                        })}
+                                        {msg.timestamp && !isNaN(new Date(msg.timestamp).getTime())
+                                            ? new Date(msg.timestamp).toLocaleTimeString([], {
+                                                  hour: "2-digit",
+                                                  minute: "2-digit",
+                                              })
+                                            : "Heure indisponible"}
                                     </span>
                                 </div>
                             </div>
@@ -210,7 +274,17 @@ const Chat = () => {
                         <div ref={messagesEndRef} />
                     </div>
                     <div className="chat-input">
-                        <FaPaperclip className="input-icon" />
+                        <FaPaperclip
+                            className="input-icon"
+                            onClick={() => fileInputRef.current?.click()}
+                        />
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: "none" }}
+                            accept="image/png,image/jpeg,image/jpg,image/jfif,application/pdf" // Accepter images et PDF
+                            onChange={handleFileUpload}
+                        />
                         <input
                             type="text"
                             placeholder="Écrire un message..."
@@ -218,7 +292,23 @@ const Chat = () => {
                             onChange={handleTyping}
                             onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                         />
-                        <FaSmile className="input-icon" />
+                        <FaSmile
+                            className="input-icon"
+                            onClick={() => setShowEmojiPicker((prev) => !prev)}
+                        />
+                        {showEmojiPicker && (
+                            <div className="emoji-picker" style={{ position: "absolute", bottom: "60px", right: "20px" }}>
+                                {emojis.map((emoji, index) => (
+                                    <span
+                                        key={index}
+                                        style={{ fontSize: "24px", margin: "5px", cursor: "pointer" }}
+                                        onClick={() => addEmoji(emoji)}
+                                    >
+                                        {emoji}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                         <button onClick={sendMessage}>
                             <FaPaperPlane />
                         </button>

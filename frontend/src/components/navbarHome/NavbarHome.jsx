@@ -21,18 +21,18 @@ const Navbar = ({ notifications: externalNotifications }) => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const userResponse = await axios.get("http://localhost:5000/users/findMyProfile", {
+        const userResponse = await axios.get("http://localhost:3000/users/findMyProfile", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(userResponse.data);
 
-        const walletResponse = await axios.get(
-          `http://localhost:5000/wallet/user/${userResponse.data._id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setWalletData(walletResponse.data);
+       // const walletResponse = await axios.get(
+         // `http://localhost:3000/wallet/user/${userResponse.data._id}`,
+          //{
+           // headers: { Authorization: `Bearer ${token}` },
+          //}
+        //);
+        //setWalletData(walletResponse.data);
       } catch (error) {
         console.error("Erreur lors de la récupération :", error);
         if (error.response?.status === 404) setWalletData(null);
@@ -74,7 +74,7 @@ const Navbar = ({ notifications: externalNotifications }) => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:5000/users/logout",
+        "http://localhost:3000/users/logout",
         {},
         {
           headers: { Authorization: `Bearer ${token}` },

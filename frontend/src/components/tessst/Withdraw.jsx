@@ -25,7 +25,7 @@ const Withdraw = ({ goBack, walletId }) => {
       }
 
       const response = await axios.post(
-        `http://localhost:5000/transactions/withdraw/${walletId}`,
+        `http://localhost:3000/transactions/withdraw/${walletId}`,
         { amount: parseFloat(amount) },
         {
           headers: { Authorization: `Bearer ${token}` },

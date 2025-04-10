@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine } from "react-icons/fa"; // Ajout de FaChartLine
+import { Line, Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import Deposit from "./Depossit";
 import Withdraw from "./Withdraw";
 import Transfer from "./Transfer";
@@ -8,91 +19,70 @@ import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 import "./Tessst.css";
 
+// Enregistrement des composants Chart.js
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend);
+
 const Wallet = () => {
   const [activeScreen, setActiveScreen] = useState("main");
   const [walletData, setWalletData] = useState({ balance: 0, currency: "TND", transactions: [] });
   const [walletId, setWalletId] = useState("");
   const [error, setError] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showCharts, setShowCharts] = useState(false); // État pour afficher/masquer les graphiques
+  const transactionsPerPage = 5;
 
   const fetchUserProfile = async (token) => {
     try {
-      console.log("Étape 1 : Récupération du profil utilisateur...");
-      const response = await axios.get("http://localhost:5000/users/findMyProfile", {
+      const response = await axios.get("http://localhost:3000/users/findMyProfile", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Profil utilisateur récupéré :", response.data);
       return response.data._id;
     } catch (error) {
-      throw new Error(
-        `Erreur lors de la récupération du profil : ${error.response?.status} - ${
-          error.response?.data?.message || error.message
-        }`
-      );
+      throw new Error(`Erreur lors de la récupération du profil : ${error.message}`);
     }
   };
 
   const fetchWallet = async (userId, token) => {
     try {
-      console.log("Étape 2 : Récupération du wallet pour userId :", userId);
-      const response = await axios.get(`http://localhost:5000/wallets/user/${userId}`, { // Corrigé ici
+      const response = await axios.get(`http://localhost:3000/wallets/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Wallet récupéré :", response.data);
       return response.data;
     } catch (error) {
-      throw new Error(
-        `Erreur lors de la récupération du wallet : ${error.response?.status} - ${
-          error.response?.data?.message || error.message
-        }`
-      );
+      throw new Error(`Erreur lors de la récupération du wallet : ${error.message}`);
     }
   };
 
   const fetchTransactions = async (walletId, token) => {
     try {
-      console.log("Étape 3 : Récupération des transactions pour walletId :", walletId);
-      const response = await axios.get(`http://localhost:5000/transactions/getTransactions/${walletId}`, {
+      const response = await axios.get(`http://localhost:3000/transactions/getTransactions/${walletId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Transactions récupérées :", response.data);
       return response.data;
     } catch (error) {
-      throw new Error(
-        `Erreur lors de la récupération des transactions : ${error.response?.status} - ${
-          error.response?.data?.message || error.message
-        }`
-      );
+      throw new Error(`Erreur lors de la récupération des transactions : ${error.message}`);
     }
   };
 
   const fetchWalletData = async () => {
-    setError(""); // Réinitialiser l'erreur au début
+    setError("");
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         setError("Veuillez vous connecter pour voir votre portefeuille.");
-        console.log("Erreur : Aucun token trouvé dans localStorage");
         return;
       }
-
-      // Étape 1 : Récupérer l'ID de l'utilisateur
       const userId = await fetchUserProfile(token);
-
-      // Étape 2 : Récupérer le wallet
       const wallet = await fetchWallet(userId, token);
       setWalletId(wallet._id);
-
-      // Étape 3 : Récupérer les transactions
       const transactions = await fetchTransactions(wallet._id, token);
-
-      // Mettre à jour l'état avec les données récupérées
       setWalletData({
         balance: wallet.balance,
         currency: wallet.currency,
         transactions: transactions,
       });
     } catch (error) {
-      console.error("Erreur dans fetchWalletData :", error);
       setError(error.message || "Erreur lors de la récupération des données.");
     }
   };
@@ -106,6 +96,51 @@ const Wallet = () => {
     setActiveScreen("main");
   };
 
+  // Filtrer les transactions selon le type
+  const filteredTransactions = walletData.transactions.filter((transaction) =>
+    filter === "all" ? true : transaction.type === filter
+  );
+
+  // Pagination
+  const indexOfLastTransaction = currentPage * transactionsPerPage;
+  const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+  const currentTransactions = filteredTransactions.slice(indexOfFirstTransaction, indexOfLastTransaction);
+  const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+
+  // Données pour le graphique en courbes (évolution du solde)
+  const balanceData = {
+    labels: walletData.transactions.map((t) => new Date(t.date).toLocaleDateString()),
+    datasets: [
+      {
+        label: "Solde",
+        data: walletData.transactions.reduce((acc, t, i) => {
+          const previousBalance = i === 0 ? walletData.balance : acc[i - 1];
+          return [...acc, t.type === "income" ? previousBalance + t.amount : previousBalance - t.amount];
+        }, []),
+        borderColor: "#007bff",
+        fill: false,
+      },
+    ],
+  };
+
+  // Données pour le diagramme circulaire (répartition income/expense)
+  const pieData = {
+    labels: ["Revenus", "Dépenses"],
+    datasets: [
+      {
+        data: [
+          walletData.transactions
+            .filter((t) => t.type === "income")
+            .reduce((sum, t) => sum + t.amount, 0),
+          walletData.transactions
+            .filter((t) => t.type === "expense")
+            .reduce((sum, t) => sum + t.amount, 0),
+        ],
+        backgroundColor: ["#28a745", "#dc3545"],
+      },
+    ],
+  };
+
   return (
     <div className="app-container">
       <CoolSidebar />
@@ -114,7 +149,7 @@ const Wallet = () => {
         {activeScreen === "main" && (
           <div className="wallet-container">
             <div className="wallet-header">
-              <h2> Wallet</h2>
+              <h2>Wallet</h2>
               <p className="wallet-balance">
                 Balance : {walletData.balance} {walletData.currency}
               </p>
@@ -146,9 +181,51 @@ const Wallet = () => {
               <h3>
                 <FaHistory /> Recent Transactions
               </h3>
-              {walletData.transactions.length > 0 ? (
+
+              {/* Boutons de filtre */}
+              <div className="filter-buttons">
+                <button
+                  className={`filter-button ${filter === "all" ? "active" : ""}`}
+                  onClick={() => setFilter("all")}
+                >
+                  Toutes
+                </button>
+                <button
+                  className={`filter-button ${filter === "income" ? "active" : ""}`}
+                  onClick={() => setFilter("income")}
+                >
+                  Revenus
+                </button>
+                <button
+                  className={`filter-button ${filter === "expense" ? "active" : ""}`}
+                  onClick={() => setFilter("expense")}
+                >
+                  Dépenses
+                </button>
+              </div>
+
+              {/* Icône pour afficher/masquer les graphiques */}
+              <div className="charts-toggle">
+                <FaChartLine
+                  className="charts-icon"
+                  onClick={() => setShowCharts(!showCharts)}
+                  title="Afficher/Masquer les statistiques"
+                />
+              </div>
+
+              {/* Graphiques masquables */}
+              {showCharts && (
+                <div className="charts-container">
+                  <h3>Évolution du solde</h3>
+                  <Line data={balanceData} options={{ responsive: true }} />
+                  <h3>Répartition Revenus/Dépenses</h3>
+                  <Pie data={pieData} options={{ responsive: true }} />
+                </div>
+              )}
+
+              {currentTransactions.length > 0 ? (
                 <ul>
-                  {walletData.transactions.map((transaction) => (
+                  {currentTransactions.map((transaction) => (
                     <li key={transaction._id} className="transaction-item">
                       <div className="transaction-icon">
                         {transaction.type === "income" ? (
@@ -171,6 +248,27 @@ const Wallet = () => {
                 </ul>
               ) : (
                 <p className="no-transactions">Aucune transaction trouvée.</p>
+              )}
+
+              {/* Contrôles de pagination */}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Précédent
+                  </button>
+                  <span>
+                    Page {currentPage} sur {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Suivant
+                  </button>
+                </div>
               )}
             </div>
           </div>

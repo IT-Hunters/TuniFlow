@@ -10,6 +10,7 @@ const ChatSchema = new Schema({
         {
             sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
             content: { type: String, required: true },
+            fileUrl: String, // Champ pour l'URL du fichier
             timestamp: { type: Date, default: Date.now }
         }
     ],

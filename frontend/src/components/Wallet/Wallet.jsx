@@ -24,12 +24,12 @@ const Wallet = () => {
           throw new Error("Token non trouvé");
         }
 
-        const walletResponse = await axios.get(`http://localhost:5000/wallet/${walletId}`, {
+        const walletResponse = await axios.get(`http://localhost:3000/wallet/${walletId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setWallet(walletResponse.data);
 
-        const transactionsResponse = await axios.get(`http://localhost:5000/transaction/getTransactions/${walletId}`, {
+        const transactionsResponse = await axios.get(`http://localhost:3000/transaction/getTransactions/${walletId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTransactions(transactionsResponse.data);
@@ -50,7 +50,7 @@ const Wallet = () => {
       const user_id = localStorage.getItem("userId");
 
       const response = await axios.post(
-        "http://localhost:5000/addWallet",
+        "http://localhost:3000/addWallet",
         { user_id, type, projectId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -68,7 +68,7 @@ const Wallet = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `http://localhost:5000/transaction/deposit/${walletId}`,
+        `http://localhost:3000/transaction/deposit/${walletId}`,
         { amount },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -84,7 +84,7 @@ const Wallet = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `http://localhost:5000/transaction/withdraw/${walletId}`,
+        `http://localhost:3000/transaction/withdraw/${walletId}`,
         { amount },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -100,7 +100,7 @@ const Wallet = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `http://localhost:5000/transaction/transfer/${walletId}/${receiverWalletId}`,
+        `http://localhost:3000/transaction/transfer/${walletId}/${receiverWalletId}`,
         { amount },
         { headers: { Authorization: `Bearer ${token}` } }
       );

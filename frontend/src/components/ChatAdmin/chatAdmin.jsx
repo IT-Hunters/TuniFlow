@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import CoolSidebar from "../sidebar/Sidebar";
 import Navbar from "../navbar/Navbar";
-import { FaPaperPlane, FaSmile, FaPaperclip, FaEllipsisH, FaUser, FaSearch } from "react-icons/fa";
+import { FaPaperPlane, FaSmile, FaPaperclip, FaEllipsisH, FaUser, FaSearch, FaArrowLeft } from "react-icons/fa";
 import { jwtDecode } from "jwt-decode";
 import ChatService from "../../services/ChatService"; // Ajustez le chemin
 import axios from "axios";
@@ -20,8 +20,11 @@ const ChatAdmin = () => {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [unreadMessages, setUnreadMessages] = useState({});
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true); // État pour gérer la visibilité de la sidebar
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
+    const fileInputRef = useRef(null);
     const ADMIN_ID = "67bee9c72a104f8241d58e7d";
 
     useEffect(() => {
@@ -155,6 +158,11 @@ const ChatAdmin = () => {
         setSelectedUser(user);
         setError(null);
 
+        // Masquer la sidebar uniquement si on est sur mobile (≤ 768px)
+        if (window.innerWidth <= 768) {
+            setIsSidebarVisible(false);
+        }
+
         if (user.chatId) {
             setChatId(user.chatId);
             ChatService.joinChat(user.chatId);
@@ -169,6 +177,13 @@ const ChatAdmin = () => {
         }
     };
 
+    const showSidebar = () => {
+        setIsSidebarVisible(true); // Afficher la sidebar
+        setSelectedUser(null); // Désélectionner l’utilisateur pour revenir à la liste
+        setMessages([]); // Vider les messages
+        setChatId(""); // Réinitialiser le chatId
+    };
+
     const sendMessage = () => {
         if (!messageInput || !chatId || !senderId) {
             setError("Veuillez sélectionner un utilisateur et écrire un message");
@@ -177,6 +192,33 @@ const ChatAdmin = () => {
 
         ChatService.sendMessage(chatId, messageInput, senderId);
         setMessageInput("");
+    };
+
+    const handleFileUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file || !chatId) {
+            setError("Veuillez sélectionner un fichier et un chat");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("chatId", chatId);
+        formData.append("senderId", senderId);
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                "http://localhost:5000/chat/upload",
+                formData,
+                { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } }
+            );
+            console.log("Réponse de l'upload :", response.data);
+            scrollToBottom();
+        } catch (error) {
+            setError("Erreur lors de l'upload du fichier : " + error.message);
+            console.error("Erreur dans handleFileUpload:", error);
+        }
     };
 
     const handleTyping = (e) => {
@@ -196,6 +238,12 @@ const ChatAdmin = () => {
                 scrollToBottom();
             }
         }
+    };
+
+    const emojis = ["😊", "😂", "😍", "👍", "😢", "😡", "✨", "🎉"];
+    const addEmoji = (emoji) => {
+        setMessageInput((prev) => prev + emoji);
+        setShowEmojiPicker(false);
     };
 
     const filteredUsers = businessOwners.filter((user) =>
@@ -222,7 +270,7 @@ const ChatAdmin = () => {
             <div className="chat-main">
                 <Navbar notifications={notifications} />
                 <div className="chat-container">
-                    <div className="chat-sidebar">
+                    <div className={`chat-sidebar ${isSidebarVisible ? "visible" : "hidden"}`}>
                         <div className="chat-sidebar-header">
                             <h3>Conversations</h3>
                             <div className="search-container">
@@ -265,6 +313,10 @@ const ChatAdmin = () => {
                             <>
                                 <div className="chat-header">
                                     <div className="chat-header-user">
+                                        <FaArrowLeft
+                                            className="back-arrow"
+                                            onClick={showSidebar}
+                                        />
                                         <div className="chat-user-avatar">
                                             {selectedUser.picture ? (
                                                 <img src={selectedUser.picture} alt={selectedUser.fullname} />
@@ -287,11 +339,43 @@ const ChatAdmin = () => {
                                         >
                                             <div className="message-content">
                                                 <p>{msg.content}</p>
+                                                {msg.fileUrl && (
+                                                    <div className="file-content">
+                                                        {msg.fileUrl.match(/\.(png|jpg|jpeg|jfif)$/i) ? (
+                                                            <img
+                                                                src={`http://localhost:5000${msg.fileUrl}`}
+                                                                alt="Fichier envoyé"
+                                                                style={{ maxWidth: "200px", maxHeight: "200px" }}
+                                                                onError={(e) => (e.target.style.display = "none")}
+                                                            />
+                                                        ) : msg.fileUrl.match(/\.pdf$/i) ? (
+                                                            <a
+                                                                href={`http://localhost:5000${msg.fileUrl}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="file-link"
+                                                            >
+                                                                Voir le PDF
+                                                            </a>
+                                                        ) : (
+                                                            <a
+                                                                href={`http://localhost:5000${msg.fileUrl}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="file-link"
+                                                            >
+                                                                Télécharger le fichier
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                )}
                                                 <span className="message-time">
-                                                    {new Date(msg.timestamp).toLocaleTimeString([], {
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                    })}
+                                                    {msg.timestamp && !isNaN(new Date(msg.timestamp).getTime())
+                                                        ? new Date(msg.timestamp).toLocaleTimeString([], {
+                                                              hour: "2-digit",
+                                                              minute: "2-digit",
+                                                          })
+                                                        : "Heure indisponible"}
                                                 </span>
                                             </div>
                                         </div>
@@ -304,7 +388,17 @@ const ChatAdmin = () => {
                                     <div ref={messagesEndRef} />
                                 </div>
                                 <div className="chat-input">
-                                    <FaPaperclip className="input-icon" />
+                                    <FaPaperclip
+                                        className="input-icon"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    />
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        style={{ display: "none" }}
+                                        accept="image/png,image/jpeg,image/jpg,image/jfif,application/pdf"
+                                        onChange={handleFileUpload}
+                                    />
                                     <input
                                         type="text"
                                         placeholder="Écrire un message..."
@@ -312,7 +406,23 @@ const ChatAdmin = () => {
                                         onChange={handleTyping}
                                         onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                                     />
-                                    <FaSmile className="input-icon" />
+                                    <FaSmile
+                                        className="input-icon"
+                                        onClick={() => setShowEmojiPicker((prev) => !prev)}
+                                    />
+                                    {showEmojiPicker && (
+                                        <div className="emoji-picker">
+                                            {emojis.map((emoji, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="emoji"
+                                                    onClick={() => addEmoji(emoji)}
+                                                >
+                                                    {emoji}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                     <button onClick={sendMessage}>
                                         <FaPaperPlane />
                                     </button>
@@ -320,7 +430,7 @@ const ChatAdmin = () => {
                             </>
                         ) : (
                             <div className="no-chat-selected">
-                                <p>Sélectionnez un utilisateur pour commencer à discuter.</p>
+                                
                             </div>
                         )}
                     </div>

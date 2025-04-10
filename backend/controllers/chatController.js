@@ -118,7 +118,6 @@ const getChatHistory = async (req, res) => {
     }
 };
 
-// Nouvelle route pour récupérer tous les chats d'un utilisateur
 const getUserChats = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -132,9 +131,6 @@ const getUserChats = async (req, res) => {
     }
 };
 
-
-
-// Dans chatController.js
 const addMessage = async (req, res) => {
     try {
         const { chatId } = req.params;
@@ -154,7 +150,6 @@ const addMessage = async (req, res) => {
         chat.messages.push(newMessage);
         await chat.save();
 
-        // Émettre l'événement Socket.IO
         if (global.io) {
             global.io.to(chatId).emit("newMessage", newMessage);
         }
@@ -165,6 +160,7 @@ const addMessage = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
 const createChat = async (req, res) => {
     try {
         const { participants } = req.body;
@@ -172,7 +168,6 @@ const createChat = async (req, res) => {
             return res.status(400).json({ message: "Invalid participants" });
         }
 
-        // Vérifier si un chat existe déjà
         let chat = await Chat.findOne({
             participants: { $all: participants }
         });
@@ -181,7 +176,6 @@ const createChat = async (req, res) => {
             return res.status(200).json(chat);
         }
 
-        // Créer un nouveau chat
         chat = new Chat({
             participants,
             messages: [],
@@ -190,7 +184,6 @@ const createChat = async (req, res) => {
         });
         await chat.save();
 
-        // Émettre l'événement Socket.IO
         if (global.io) {
             global.io.emit("newChat", {
                 chatId: chat._id,
@@ -205,4 +198,51 @@ const createChat = async (req, res) => {
     }
 };
 
-module.exports = { startChat, sendMessage, getChatHistory, getUserChats,addMessage,createChat };
+// Nouvelle fonction pour gérer l'upload de fichiers
+const uploadFile = async (req, res) => {
+    try {
+        const { chatId, senderId } = req.body;
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ message: "Aucun fichier fourni" });
+        }
+
+        const fileUrl = `/images/${file.filename}`; // URL du fichier uploadé (relatif à /public/images)
+
+        let chat = await Chat.findById(chatId);
+        if (!chat) {
+            const adminId = "67bee9c72a104f8241d58e7d"; // ID de l'admin
+            chat = new Chat({
+                participants: [senderId, adminId],
+                messages: [],
+                createdBy: "System",
+                createdAt: new Date()
+            });
+        }
+
+        const newMessage = {
+            sender: senderId,
+            content: "Fichier envoyé",
+            fileUrl, // Ajouter l'URL du fichier au message
+            timestamp: new Date(),
+        };
+
+        chat.messages.push(newMessage);
+        await chat.save();
+
+        if (global.io) {
+            global.io.to(chat._id.toString()).emit("newMessage", {
+                chatId: chat._id,
+                ...newMessage
+            });
+        }
+
+        res.status(200).json({ message: "Fichier uploadé", chatId: chat._id, fileUrl });
+    } catch (error) {
+        console.error("Erreur lors de l'upload du fichier:", error);
+        res.status(500).json({ message: "Erreur serveur", error });
+    }
+};
+
+module.exports = { startChat, sendMessage, getChatHistory, getUserChats, addMessage, createChat, uploadFile };

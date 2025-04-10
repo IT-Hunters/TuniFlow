@@ -25,7 +25,7 @@ const Deposit = ({ goBack, walletId }) => {
       }
 
       const response = await axios.post(
-        `http://localhost:5000/transactions/deposit/${walletId}`,
+        `http://localhost:3000/transactions/deposit/${walletId}`,
         { amount: parseFloat(amount) },
         {
           headers: { Authorization: `Bearer ${token}` },
