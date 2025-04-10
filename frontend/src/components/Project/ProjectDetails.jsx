@@ -318,21 +318,7 @@ const ProjectDetails = () => {
                 </div>
               )}
 
-              {/* Employees Section */}
-              {project.employees?.length > 0 && (
-                <div className="detail-card">
-                  <h2 className="card-title">Employees</h2>
-                  <div className="grid-container">
-                    {project.employees.map(employee => (
-                      <div key={employee._id} className="info-card">
-                        <h3>{employee.fullname}</h3>
-                        <p>{employee.email}</p>
-                        {/* Add more employee details here if available */}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            
             </section>
 
             {/* Right Column: Team Members */}
