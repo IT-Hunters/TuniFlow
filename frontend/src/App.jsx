@@ -8,9 +8,9 @@ import HomePage from "./components/Homepage/HomePage";
 import ResetPassword from "./components/forgetpassword/resetpassword";
 import ForgotPassword from "./components/forgetpassword/forgetpassword";
 import AdminUsers from "./components/Admin/AdminUsers";
-import User  from "./components/User/User";
-import  Chat  from "./components/Chat/chat";
-import ChatAdmin  from "./components/ChatAdmin/chatAdmin";
+import User from "./components/User/User";
+import Chat from "./components/Chat/chat";
+import ChatAdmin from "./components/ChatAdmin/chatAdmin";
 import ProjectView from './components/Project/ProjectView';
 import ProjectDetails from './components/Project/ProjectDetails';
 import OwnerProjectsView from './components/Project/OwnerProjectsView';
@@ -33,6 +33,7 @@ import AddUser from "./components/Project/AddUser";
 import OwnerInvoices from "./components/Invoice/OwnerInvoices";
 import ManagerInvoices from "./components/Invoice/ManagerInvoices";
 import AddEmployee from "./components/Project/AddEmployee";
+
 function App() {         
   return (
     <Router>
@@ -40,15 +41,15 @@ function App() {
         <Route path="/login" element={<AuthPage />} />
         <Route path="/dashboard" element={<Dashbord />} />
         <Route path="/" element={<HomePage />} />
-        <Route path="/profile" element={<Profile  />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
-        <Route path="/Assets" element={<AssetsDashboard  />} />
+        <Route path="/Assets" element={<AssetsDashboard />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/Adminusers" element={<AdminUsers />} />
-        <Route path="/user" element={<User/>} />
-        <Route path="/chat" element={<Chat/>} />
-        <Route path="/chatadmin" element={<ChatAdmin  />} />
+        <Route path="/user" element={<User />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/chatadmin" element={<ChatAdmin />} />
         <Route path="/invoice" element={<CreateInvoice />} />
         <Route path="/owner-invoices" element={<OwnerInvoices />} />
         <Route path="/manager-invoices" element={<ManagerInvoices />} />
@@ -62,13 +63,13 @@ function App() {
         <Route path="/MyProject" element={<MyProject />} />
         <Route path="/ObjectiveManagement" element={<ObjectiveManagement />} />
         <Route path="/AddObjective" element={<AddObjective />} />
-        <Route path="/EditObjective" element={<EditObjective/>} />
+        <Route path="/EditObjective" element={<EditObjective />} />
         <Route path="/ObjectifDetails" element={<ObjectifDetails />} />
         <Route path="/CreateManager" element={<CreateManager />} />
         <Route path="/ManagerList" element={<ManagerList />} />
         <Route path="/AddUser" element={<AddUser />} />
-        <Route path="/projectview" element={<ProjectView  />} />
-        <Route path="/OwnerProjectsView" element={<OwnerProjectsView  />} />
+        <Route path="/projectview" element={<ProjectView />} />
+        <Route path="/OwnerProjectsView" element={<OwnerProjectsView />} />
         <Route path="/projects/:id" element={<ProjectDetails />} />
         <Route path="/add-employee" element={<AddEmployee />} />
       </Routes>

@@ -2,6 +2,8 @@
 .app-container {
   display: flex;
   min-height: 100vh;
+  width: 100%; /* Assure que le conteneur prend toute la largeur disponible */
+  max-width: none; /* Supprime toute limitation de largeur */
 }
 
 /* Sidebar */
@@ -13,27 +15,37 @@
 }
 
 /* Contenu principal */
-.main-content {
+.elyess-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-}
-
-/* Navbar */
-.navbar {
-  background-color: #34495e;
-  color: white;
-  padding: 10px;
+  width: 100%; /* Prend toute la largeur disponible après la sidebar */
+  max-width: none; /* Supprime toute limitation héritée */
 }
 
 /* Conteneur du portefeuille */
-.wallet-container {
-  max-width: 400px;
-  margin: 20px auto;
+.wallett-container {
+  max-width: 550px; /* Largeur maximale désirée */
+  min-height: 400px; /* Hauteur minimale augmentée */
+  margin: 20px auto; /* Centré horizontalement avec marge au-dessus */
   padding: 20px;
   background-color: #ffffff;
   border-radius: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%; /* S'étend jusqu'à la limite de max-width */
+  box-sizing: border-box; /* Inclut padding dans la largeur */
+}
+
+/* Conteneur pour les formulaires (Deposit, Withdraw, Transfer) */
+.form-wrapper {
+  max-width: 500px; /* Conservé pour les formulaires */
+  margin: 20px auto;
+  padding: -20px;
+  
+  border-radius: 15px;
+
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* En-tête du portefeuille */
@@ -205,7 +217,7 @@
 
 .submit-button {
   padding: 10px;
-  background-color: #007bff;
+  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 5px;
@@ -213,23 +225,9 @@
 }
 
 .submit-button:hover {
-  background-color: #0056b3;
+  background-color: #218838;
 }
 
-.back-button {
-  padding: 10px;
-  background-color: #f1f1f1;
-  color: #333;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.back-button:hover {
-  background-color: #ddd;
-}
-
-/* Bouton Retour */
 .back-button {
   padding: 8px 16px;
   background-color: #007bff;
@@ -243,19 +241,19 @@
   background-color: #0056b3;
 }
 
-/* Bouton Déposer */
-.submit-button {
-  padding: 10px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+/* Style pour les champs en lecture seule */
+.readonly-input {
+  background-color: #f1f1f1;
+  cursor: not-allowed;
 }
 
-.submit-button:hover {
-  background-color: #218838;
+/* Style pour les messages */
+.message {
+  text-align: center;
+  margin-top: 10px;
+  color: #333;
 }
+
 /* Information sur le wallet */
 .wallet-info {
   margin-bottom: 20px;
@@ -273,6 +271,7 @@
   color: #666;
   font-style: italic;
 }
+
 /* Boutons de filtre */
 .filter-buttons {
   display: flex;
@@ -300,6 +299,7 @@
   background-color: #007bff;
   color: white;
 }
+
 /* Conteneur des graphiques */
 .charts-container {
   margin: 20px 0;
@@ -349,6 +349,7 @@
   font-size: 14px;
   color: #333;
 }
+
 /* Conteneur pour l'icône des graphiques */
 .charts-toggle {
   display: flex;
@@ -381,4 +382,11 @@
   color: #333;
   margin-bottom: 10px;
   text-align: center;
+}
+
+/* Style pour les messages d'erreur */
+.error-message {
+  color: red;
+  text-align: center;
+  margin: 10px 0;
 }

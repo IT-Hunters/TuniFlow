@@ -2,7 +2,7 @@
 .language-selector {
     position: absolute;
     top: 20px;
-    right: 20px;
+    right: 400px;
   }
   
   .language-selector select {

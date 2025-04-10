@@ -69,51 +69,46 @@ const Transfer = ({ goBack, walletId }) => {
   };
 
   return (
-    <div className="app-container">
-      <div className="main-content">
-        <div className="wallet-container">
-          <div className="wallet-header">
-            <h2>Transfer</h2>
-            <button className="back-button" onClick={goBack}>
-              return
-            </button>
-          </div>
+    <div className="wallet-container">
+      <div className="wallet-header">
+        <h2>Transfer</h2>
+        <button className="back-button" onClick={goBack}>
+          Return
+        </button>
+      </div>
 
-          <div className="form-container">
-            {/* Afficher l'ID du wallet comme les autres champs */}
-            <label>
-              ID du wallet :
-              <input
-                type="text"
-                value={walletData ? walletData._id : "Chargement..."}
-                readOnly
-                className="readonly-input"
-              />
-            </label>
-            <label>
-              Montant :
-              <input
-                type="number"
-                placeholder="Entrez le montant"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </label>
-            <label>
-              ID du destinataire :
-              <input
-                type="text"
-                placeholder="Entrez l'ID du portefeuille"
-                value={receiverWalletId}
-                onChange={(e) => setReceiverWalletId(e.target.value)}
-              />
-            </label>
-            <button className="submit-button" onClick={handleTransfer}>
-              Transférer
-            </button>
-            {message && <p className="message">{message}</p>}
-          </div>
-        </div>
+      <div className="form-container">
+        <label>
+          ID du wallet :
+          <input
+            type="text"
+            value={walletData ? walletData._id : "Chargement..."}
+            readOnly
+            className="readonly-input"
+          />
+        </label>
+        <label>
+          Amount :
+          <input
+            type="number"
+            placeholder="Enter the amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </label>
+        <label>
+          ID Recipient :
+          <input
+            type="text"
+            placeholder="Entrez l'ID du portefeuille"
+            value={receiverWalletId}
+            onChange={(e) => setReceiverWalletId(e.target.value)}
+          />
+        </label>
+        <button className="submit-button" onClick={handleTransfer}>
+          Transfer
+        </button>
+        {message && <p className="message">{message}</p>}
       </div>
     </div>
   );

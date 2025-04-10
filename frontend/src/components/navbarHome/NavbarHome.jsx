@@ -1,22 +1,20 @@
-// src/components/navbarHome/NavbarHome.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaWallet, FaBell } from "react-icons/fa";
+import { FaBell } from "react-icons/fa";
 import ChatService from "../../services/ChatService"; // Ajustez le chemin
 import LanguageSelector from "../Language/LanguageSelector"; 
 import "./NavbarHome.css";
 
 const Navbar = ({ notifications: externalNotifications }) => {
   const [userData, setUserData] = useState(null);
-  const [walletData, setWalletData] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationMenuOpen, setNotificationMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState(externalNotifications || []);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserAndWallet = async () => {
+    const fetchUser = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
@@ -25,21 +23,12 @@ const Navbar = ({ notifications: externalNotifications }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(userResponse.data);
-
-       // const walletResponse = await axios.get(
-         // `http://localhost:3000/wallet/user/${userResponse.data._id}`,
-          //{
-           // headers: { Authorization: `Bearer ${token}` },
-          //}
-        //);
-        //setWalletData(walletResponse.data);
       } catch (error) {
         console.error("Erreur lors de la récupération :", error);
-        if (error.response?.status === 404) setWalletData(null);
       }
     };
 
-    fetchUserAndWallet();
+    fetchUser();
 
     // Initialiser le socket via ChatService
     ChatService.initializeSocket();
@@ -82,7 +71,6 @@ const Navbar = ({ notifications: externalNotifications }) => {
       );
       localStorage.removeItem("token");
       setUserData(null);
-      setWalletData(null);
       setNotifications([]);
       navigate("/");
     } catch (error) {
@@ -90,10 +78,6 @@ const Navbar = ({ notifications: externalNotifications }) => {
       localStorage.removeItem("token");
       navigate("/");
     }
-  };
-
-  const handleWalletClick = () => {
-    navigate("/Transaction");
   };
 
   return (
@@ -105,7 +89,7 @@ const Navbar = ({ notifications: externalNotifications }) => {
         <div className="search-bar">
           <input type="text" placeholder="Search Anything..." />
         </div>
-        <LanguageSelector /> {/* Ajouter le sélecteur de langue ici */}
+        <LanguageSelector />
         <div
           className="notification-menu"
           onClick={() => setNotificationMenuOpen(!notificationMenuOpen)}
@@ -126,9 +110,6 @@ const Navbar = ({ notifications: externalNotifications }) => {
               <p>Aucune notification</p>
             )}
           </div>
-        </div>
-        <div className="wallet-menu" onClick={handleWalletClick}>
-          <FaWallet className="wallet-icon" />
         </div>
         <div className="profile-menu" onClick={() => setMenuOpen(!menuOpen)}>
           <img

@@ -277,7 +277,7 @@ const ChatAdmin = () => {
                                 <FaSearch className="search-icon" />
                                 <input
                                     type="text"
-                                    placeholder="Rechercher..."
+                                    placeholder="research..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -401,7 +401,7 @@ const ChatAdmin = () => {
                                     />
                                     <input
                                         type="text"
-                                        placeholder="Écrire un message..."
+                                        placeholder="Please write a message"
                                         value={messageInput}
                                         onChange={handleTyping}
                                         onKeyPress={(e) => e.key === "Enter" && sendMessage()}

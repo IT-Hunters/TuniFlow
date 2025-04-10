@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine } from "react-icons/fa"; // Ajout de FaChartLine
+import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -19,7 +19,6 @@ import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 import "./Tessst.css";
 
-// Enregistrement des composants Chart.js
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend);
 
 const Wallet = () => {
@@ -29,7 +28,7 @@ const Wallet = () => {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [showCharts, setShowCharts] = useState(false); // État pour afficher/masquer les graphiques
+  const [showCharts, setShowCharts] = useState(false);
   const transactionsPerPage = 5;
 
   const fetchUserProfile = async (token) => {
@@ -96,23 +95,20 @@ const Wallet = () => {
     setActiveScreen("main");
   };
 
-  // Filtrer les transactions selon le type
   const filteredTransactions = walletData.transactions.filter((transaction) =>
     filter === "all" ? true : transaction.type === filter
   );
 
-  // Pagination
   const indexOfLastTransaction = currentPage * transactionsPerPage;
   const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
   const currentTransactions = filteredTransactions.slice(indexOfFirstTransaction, indexOfLastTransaction);
   const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
 
-  // Données pour le graphique en courbes (évolution du solde)
   const balanceData = {
     labels: walletData.transactions.map((t) => new Date(t.date).toLocaleDateString()),
     datasets: [
       {
-        label: "Solde",
+        label: "Balance",
         data: walletData.transactions.reduce((acc, t, i) => {
           const previousBalance = i === 0 ? walletData.balance : acc[i - 1];
           return [...acc, t.type === "income" ? previousBalance + t.amount : previousBalance - t.amount];
@@ -123,7 +119,6 @@ const Wallet = () => {
     ],
   };
 
-  // Données pour le diagramme circulaire (répartition income/expense)
   const pieData = {
     labels: ["Revenus", "Dépenses"],
     datasets: [
@@ -144,10 +139,10 @@ const Wallet = () => {
   return (
     <div className="app-container">
       <CoolSidebar />
-      <div className="main-content">
+      <div className="elyess-content">
         <Navbar />
         {activeScreen === "main" && (
-          <div className="wallet-container">
+          <div className="wallett-container">
             <div className="wallet-header">
               <h2>Wallet</h2>
               <p className="wallet-balance">
@@ -182,29 +177,27 @@ const Wallet = () => {
                 <FaHistory /> Recent Transactions
               </h3>
 
-              {/* Boutons de filtre */}
               <div className="filter-buttons">
                 <button
                   className={`filter-button ${filter === "all" ? "active" : ""}`}
                   onClick={() => setFilter("all")}
                 >
-                  Toutes
+                  All
                 </button>
                 <button
                   className={`filter-button ${filter === "income" ? "active" : ""}`}
                   onClick={() => setFilter("income")}
                 >
-                  Revenus
+                  Income
                 </button>
                 <button
                   className={`filter-button ${filter === "expense" ? "active" : ""}`}
                   onClick={() => setFilter("expense")}
                 >
-                  Dépenses
+                  Expense
                 </button>
               </div>
 
-              {/* Icône pour afficher/masquer les graphiques */}
               <div className="charts-toggle">
                 <FaChartLine
                   className="charts-icon"
@@ -213,12 +206,11 @@ const Wallet = () => {
                 />
               </div>
 
-              {/* Graphiques masquables */}
               {showCharts && (
                 <div className="charts-container">
-                  <h3>Évolution du solde</h3>
+                  <h3>Evolution the balance</h3>
                   <Line data={balanceData} options={{ responsive: true }} />
-                  <h3>Répartition Revenus/Dépenses</h3>
+                  <h3>Repartition Income/Expense</h3>
                   <Pie data={pieData} options={{ responsive: true }} />
                 </div>
               )}
@@ -250,7 +242,6 @@ const Wallet = () => {
                 <p className="no-transactions">Aucune transaction trouvée.</p>
               )}
 
-              {/* Contrôles de pagination */}
               {totalPages > 1 && (
                 <div className="pagination">
                   <button
@@ -274,9 +265,22 @@ const Wallet = () => {
           </div>
         )}
 
-        {activeScreen === "deposit" && <Deposit goBack={refreshWalletData} walletId={walletId} />}
-        {activeScreen === "withdraw" && <Withdraw goBack={refreshWalletData} walletId={walletId} />}
-        {activeScreen === "transfer" && <Transfer goBack={refreshWalletData} walletId={walletId} />}
+        {/* Ajout de .form-wrapper pour centrer les formulaires */}
+        {activeScreen === "deposit" && (
+          <div className="form-wrapper">
+            <Deposit goBack={refreshWalletData} walletId={walletId} />
+          </div>
+        )}
+        {activeScreen === "withdraw" && (
+          <div className="form-wrapper">
+            <Withdraw goBack={refreshWalletData} walletId={walletId} />
+          </div>
+        )}
+        {activeScreen === "transfer" && (
+          <div className="form-wrapper">
+            <Transfer goBack={refreshWalletData} walletId={walletId} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -103,7 +103,7 @@ const Chat = () => {
                 setMessages(history);
                 scrollToBottom();
             } else {
-                setError("Aucun chat avec l'Admin pour le moment. Vous pouvez commencer à écrire.");
+                setError("No chat with the Admin at the moment. You can start writing.");
             }
         } catch (error) {
             setError(`Erreur lors de l'initialisation du chat : ${error.message}`);
@@ -113,7 +113,7 @@ const Chat = () => {
 
     const sendMessage = async () => {
         if (!messageInput || !senderId) {
-            setError("Veuillez écrire un message.");
+            setError(" Please write a message message.");
             return;
         }
 
@@ -190,7 +190,7 @@ const Chat = () => {
         setShowEmojiPicker(false);
     };
 
-    if (error && error !== "Aucun chat avec l'Admin pour le moment. Vous pouvez commencer à écrire.") {
+    if (error && error !== "No chat with the Admin at the moment. You can start writing.") {
         return (
             <div className="chat-page">
                 <CoolSidebar />
@@ -211,7 +211,7 @@ const Chat = () => {
                 <Navbar notifications={notifications} />
                 <div className="chat-container">
                     <div className="chat-header">
-                        <h2>Chat avec l'Admin</h2>
+                        <h2>Chat with the Admin</h2>
                         <FaEllipsisH className="more-options" />
                     </div>
                     <div className="chat-messages" ref={messagesContainerRef}>
@@ -287,7 +287,7 @@ const Chat = () => {
                         />
                         <input
                             type="text"
-                            placeholder="Écrire un message..."
+                            placeholder="Write a message..."
                             value={messageInput}
                             onChange={handleTyping}
                             onKeyPress={(e) => e.key === "Enter" && sendMessage()}

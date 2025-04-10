@@ -41,32 +41,28 @@ const Withdraw = ({ goBack, walletId }) => {
   };
 
   return (
-    <div className="app-container">
-      <div className="main-content">
-        <div className="wallet-container">
-          <div className="wallet-header">
-            <h2>withdraw</h2>
-            <button className="back-button" onClick={goBack}>
-              Return
-            </button>
-          </div>
+    <div className="wallet-container">
+      <div className="wallet-header">
+        <h2>Withdraw</h2>
+        <button className="back-button" onClick={goBack}>
+          Return
+        </button>
+      </div>
 
-          <div className="form-container">
-            <label>
-              amount :
-              <input
-                type="number"
-                placeholder="Enter the amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </label>
-            <button className="submit-button" onClick={handleWithdraw}>
-              Withdraw
-            </button>
-            {message && <p className="message">{message}</p>}
-          </div>
-        </div>
+      <div className="form-container">
+        <label>
+          Amount :
+          <input
+            type="number"
+            placeholder="Enter the amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </label>
+        <button className="submit-button" onClick={handleWithdraw}>
+          Withdraw
+        </button>
+        {message && <p className="message">{message}</p>}
       </div>
     </div>
   );
