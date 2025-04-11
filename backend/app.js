@@ -34,7 +34,7 @@ mongoose.connect(connection.url)
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'], 
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
 }));
 
 // 🟢 View Engine Setup
@@ -51,7 +51,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/project', projectRouter);
-app.use('/invoices', invoiceRouter); 
+app.use('/invoices', invoiceRouter);
 app.use('/assetsactifs', assetsactifsRoutes);
 app.use('/assetspassifs', assetspassifsRoutes);
 app.use('/assetCalculation', assetCalculationRoutes);
@@ -83,7 +83,10 @@ const userModel = require('./model/user');
 const { startNotificationJob } = require('./jobs/notificationJob');
 
 // 🟢 Global Connected Users Set
-global.connectedUsers = new Set();
+if (!global.connectedUsers || !(global.connectedUsers instanceof Set)) {
+  global.connectedUsers = new Set();
+  console.log("✅ Initialized global.connectedUsers as a Set");
+}
 
 // 🟢 Socket.IO Events
 global.io.on("connection", (socket) => {
@@ -91,15 +94,23 @@ global.io.on("connection", (socket) => {
 
   socket.on("userOnline", (userId) => {
     socket.userId = userId;
-    global.connectedUsers.add(userId);
-    console.log('✅ Connected Users:', Array.from(global.connectedUsers));
-    global.io.emit("userOnline", Array.from(global.connectedUsers));
+    if (global.connectedUsers instanceof Set) {
+      global.connectedUsers.add(userId);
+      console.log('✅ Connected Users:', Array.from(global.connectedUsers));
+      global.io.emit("userOnline", Array.from(global.connectedUsers));
+    } else {
+      console.error("❌ global.connectedUsers is not a Set:", global.connectedUsers);
+    }
   });
 
   socket.on("userOffline", (userId) => {
-    global.connectedUsers.delete(userId);
-    console.log('❌ Updated Connected Users:', Array.from(global.connectedUsers));
-    global.io.emit("userOnline", Array.from(global.connectedUsers));
+    if (global.connectedUsers instanceof Set) {
+      global.connectedUsers.delete(userId);
+      console.log('❌ Updated Connected Users:', Array.from(global.connectedUsers));
+      global.io.emit("userOnline", Array.from(global.connectedUsers));
+    } else {
+      console.error("❌ global.connectedUsers is not a Set:", global.connectedUsers);
+    }
   });
 
   socket.on("joinChat", (chatId) => {
@@ -167,13 +178,19 @@ global.io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log(`🔴 Socket disconnected: ${socket.id}`);
     if (socket.userId) {
-      global.connectedUsers.delete(socket.userId);
-      console.log(`❌ User ${socket.userId} removed. Connected Users:`, Array.from(global.connectedUsers));
-      global.io.emit("userOnline", Array.from(global.connectedUsers));
+      if (global.connectedUsers instanceof Set) {
+        global.connectedUsers.delete(socket.userId);
+        console.log(`❌ User ${socket.userId} removed. Connected Users:`, Array.from(global.connectedUsers));
+        global.io.emit("userOnline", Array.from(global.connectedUsers));
+      } else {
+        console.error("❌ global.connectedUsers is not a Set in disconnect event:", global.connectedUsers);
+      }
     }
   });
 });
+
 startNotificationJob();
+
 // 🟢 Start Server
 const PORT = 5000;
 server.listen(PORT, () => {
