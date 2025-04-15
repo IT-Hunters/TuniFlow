@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const ProjectSchema = new Schema({
   status: { type: String },
   due_date: { type: Date, unique: false },
+  amount: { type: Number },
   businessManager: { type: Schema.Types.ObjectId, ref: "BusinessManager", unique: true },
   accountants: [{ type: Schema.Types.ObjectId, ref: "Accountant" }],
   financialManagers: [{ type: Schema.Types.ObjectId, ref: "FinancialManager" }],

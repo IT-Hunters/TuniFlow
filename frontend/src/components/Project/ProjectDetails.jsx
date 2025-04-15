@@ -66,20 +66,25 @@ const ProjectDetails = () => {
     fetchFullObjectives();
   }, [project?.objectifs]); 
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`${API_URL}/projects/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        navigate('/OwnerProjectsView', { state: { message: 'Project deleted successfully' } });
-      } catch (err) {
-        console.error('Error deleting project:', err);
-        setError('Failed to delete project');
+  const handleDelete = async (projectId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/project/deleteProjectById/${projectId}`, {
+        method: 'DELETE',
+      });
+  
+      if (response.ok) {
+        alert("Projet supprimé avec succès !");
+        navigate('/OwnerProjectsView'); // redirige après suppression
+      } else {
+        alert("Échec de la suppression !");
       }
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error);
+      alert("Une erreur est survenue.");
     }
   };
+  
+  
   const handleGenerateReport = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -157,9 +162,11 @@ const ProjectDetails = () => {
               <Link to={`/projects/${id}/edit`} className="action-btn edit-btn">
                 Edit Project
               </Link>
-              <button onClick={handleDelete} className="action-btn delete-btn">
-                Delete Project
-              </button>
+              <button onClick={() => handleDelete(project._id)} className="action-btn delete-btn">
+  Delete Project
+</button>
+
+
               <button 
   onClick={handleGenerateReport} 
   className="action-btn "
