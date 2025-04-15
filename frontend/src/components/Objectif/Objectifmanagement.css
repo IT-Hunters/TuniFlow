@@ -1,766 +1,789 @@
 :root {
-    /* Colors */
-    --color-white: #ffffff;
-    --color-black: #1a202c;
-    --color-gray-50: #f7fafc;
-    --color-gray-100: #edf2f7;
-    --color-gray-200: #e2e8f0;
-    --color-gray-300: #cbd5e0;
-    --color-gray-400: #a0aec0;
-    --color-gray-500: #718096;
-    --color-gray-600: #4a5568;
-    --color-gray-700: #2d3748;
-  
-    /* Modern Role Colors (for status/types) */
-    --color-red-50: #fff5f5;
-    --color-red-500: #f56565;
-    --color-green-50: #f0fff4;
-    --color-green-500: #48bb78;
-    --color-blue-50: #ebf8ff;
-    --color-blue-500: #4299e1;
-  
-    /* Accent Colors */
-    --color-primary-500: #5a67d8;
-    --color-primary-600: #4c51bf;
-    --color-success-500: #48bb78;
-    --color-success-600: #38a169;
-    --color-danger-500: #f56565;
-    --color-danger-600: #e53e3e;
-  
-    /* Spacing */
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 10px;
-    --space-4: 12px;
-    --space-5: 16px;
-    --space-6: 20px;
-    --space-8: 24px;
-  
-    /* Shadows */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  
-    /* Border Radius */
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-  
-    /* Font Sizes (Increased for better readability) */
-    --text-xs: 14px;  /* Increased from 11px */
-    --text-sm: 16px;  /* Increased from 12px */
-    --text-base: 18px; /* Increased from 14px */
-    --text-lg: 20px;  /* Increased from 16px */
-    --text-xl: 24px;  /* Increased from 20px */
-  
-    /* Transitions */
-    --transition-all: all 0.3s ease;
-  }
-  
-  /* ========== Alerts ========== */
-  .alert {
-    padding: var(--space-3);
-    margin-bottom: var(--space-5);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-sm);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .alert-success {
-    background-color: var(--color-green-50);
-    color: var(--color-green-500);
-    border: 1px solid var(--color-green-500);
-  }
-  
-  .alert-danger {
-    background-color: var(--color-red-50);
-    color: var(--color-red-500);
-    border: 1px solid var(--color-red-500);
-  }
-  
-  .alert ul {
-    margin: 0;
-    padding-left: var(--space-5);
-  }
-  
-  /* Field-specific error styles */
-  .field-error {
-    color: var(--color-red-500);
-    font-size: var(--text-sm);
-    margin-top: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    background-color: var(--color-red-50);
-    border: 1px solid var(--color-red-500);
-    border-radius: var(--radius-sm);
-  }
-  
-  /* ========== Loading Styles ========== */
-  .loading {
-    text-align: center;
-    color: var(--color-primary-500);
-    font-weight: 600;
-    font-size: var(--text-base);
-    padding: var(--space-5);
-  }
-  
-  /* ========== Project Selection Dropdown ========== */
-  .project-selection select {
-    width: 100%;
-    max-width: 250px;
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-gray-200);
-    border-radius: var(--radius-sm);
-    background-color: var(--color-white);
-    font-size: var(--text-sm);
-    cursor: pointer;
-    transition: var(--transition-all);
-    appearance: none;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0aec0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E")
-      no-repeat right 8px center;
-  }
-  
-  .project-selection select:hover {
-    border-color: var(--color-primary-500);
-  }
-  
-  .project-selection select:focus {
-    outline: none;
-    border-color: var(--color-primary-500);
-    box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
-  }
-  
-  /* ========== Objective Cards ========== */
-  .objectives-grid {
-    display: flex; /* Changed from grid to flex for horizontal layout */
-    flex-wrap: wrap; /* Allow wrapping if there’s not enough space */
-    gap: var(--space-4);
-    margin-top: var(--space-4);
-  }
-  
-  .objectif-card {
-    background: var(--color-white);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-all);
-    position: relative;
-    overflow: hidden;
-    flex: 1 1 280px; /* Ensure cards take up equal space, with a minimum width of 280px */
-    max-width: 300px; /* Limit the maximum width of each card */
-  }
-  
-  /* Ensure cards are displayed next to each other */
-  .objectives-grid .objectif-card {
-    margin-right: var(--space-4); /* Add spacing between cards */
-  }
-  
-  .objectives-grid .objectif-card:last-child {
-    margin-right: 0; /* Remove margin from the last card */
-  }
-  
-  .objectif-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-  }
-  
-  /* Status Bookmark */
-  .objectif-bookmark {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: var(--color-primary-500);
-    color: var(--color-white);
-    padding: var(--space-1) var(--space-3);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    text-transform: uppercase;
-    border-bottom-left-radius: var(--radius-md);
-  }
-  
-  /* Objective Title */
-  .objectif-text-title {
-    font-size: var(--text-lg);
-    font-weight: 600;
-    margin-bottom: var(--space-2);
-    color: var(--color-black);
-  }
-  
-  /* Objective Description */
-  .objectif-description {
-    font-size: var(--text-sm);
-    color: var(--color-gray-600);
-    margin-bottom: var(--space-3);
-    line-height: 1.5;
-  }
-  
-  /* Progress Section */
-  .progress-section {
-    margin: var(--space-3) 0;
-  }
-  
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: var(--text-sm);
-    font-weight: 500;
-    color: var(--color-gray-600);
-    margin-bottom: var(--space-1);
-  }
-  
-  .progress-bar {
-    width: 100%;
-    height: 6px;
-    background: var(--color-gray-200);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-600));
-    transition: width 0.3s ease;
-  }
-  
-  /* Due Date */
-  .due-date {
-    font-size: var(--text-sm);
-    color: var(--color-gray-600);
-  }
-  
-  .due-date span:first-child {
-    margin-right: var(--space-1);
-  }
-  
-  /* ========== Objective Details Page ========== */
-  .objectif-details-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: var(--space-6);
-    padding: var(--space-5);
-    max-width: 1200px;
-    margin: auto;
-  }
-  
-  .objectif-details-card {
-    background: var(--color-white);
-    margin-top: var(--space-4);
-    border-radius: var(--radius-md);
-    padding: var(--space-5);
-    box-shadow: var(--shadow-sm);
-    flex: 1;
-  }
-  
-  .objectif-details-title {
-    font-size: var(--text-xl);
-    font-weight: 600;
-    margin-bottom: var(--space-4);
-    color: var(--color-black);
-  }
-  
-  .objectif-details-progress-bar {
-    width: 100%;
-    height: 8px;
-    background: var(--color-gray-200);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: var(--space-3);
-  }
-  
-  .objectif-details-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-600));
-    transition: width 0.3s ease;
-  }
-  
-  .objectif-details-content p {
-    font-size: var(--text-base);
-    color: var(--color-gray-600);
-    margin-bottom: var(--space-2);
-  }
-  
-  /* ========== Edit Objective Page ========== */
-  .create-objective-section {
-    background: var(--color-white);
-    padding: var(--space-5);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    max-width: 600px;
-    margin: auto;
-  }
-  
-  .create-objective-section form {
-    display: grid;
-    gap: var(--space-4);
-  }
-  
-  .form-group {
-    margin-bottom: var(--space-4);
-  }
-  
-  .form-group label {
-    display: block;
-    font-size: var(--text-sm);
-    font-weight: 500;
-    color: var(--color-gray-700);
-    margin-bottom: var(--space-1);
-  }
-  
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
-    width: 100%;
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-gray-200);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-sm);
-    transition: var(--transition-all);
-  }
-  
-  .form-group textarea {
-    height: 120px;
-    resize: vertical;
-  }
-  
-  .form-group input:focus,
-  .form-group textarea:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: var(--color-primary-500);
-    box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
-  }
-  
-  /* Progress Slider */
-  .PB-range-slider {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 6px;
-    border-radius: 5px;
-    background: var(--color-gray-200);
-    outline: none;
-    transition: opacity 0.3s ease;
-  }
-  
-  .PB-range-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    background: var(--color-primary-500);
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .PB-range-slidervalue {
-    text-align: center;
-    font-weight: 600;
-    font-size: var(--text-sm);
-    color: var(--color-gray-700);
-    margin-top: var(--space-2);
-  }
-  
-  /* ========== Buttons ========== */
-  .objective-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-2) var(--space-4);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    border: none;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: var(--transition-all);
-    text-transform: capitalize;
-  }
-  
-  .add-objective-button {
-    background: var(--color-success-500);
-    color: var(--color-white);
-  }
-  
-  .add-objective-button:hover {
-    background: var(--color-success-600);
-    transform: translateY(-1px);
-  }
-  
-  /* Primary Button */
-  .primary-btn {
-    background: var(--color-primary-500);
-    color: var(--color-white);
-  }
-  
-  .primary-btn:hover {
-    background: var(--color-primary-600);
-    transform: translateY(-1px);
-  }
-  
-  /* Secondary Button */
-  .secondary-btn {
-    background: var(--color-gray-200);
-    color: var(--color-gray-700);
-  }
-  
-  .secondary-btn:hover {
-    background: var(--color-gray-300);
-    transform: translateY(-1px);
-  }
-  
-  /* Danger (Delete, Fail) */
-  .danger-btn {
-    background: var(--color-danger-500);
-    color: var(--color-white);
-  }
-  
-  .danger-btn:hover {
-    background: var(--color-danger-600);
-    transform: translateY(-1px);
-  }
-  
-  /* Success (Complete, Confirm) */
-  .success-btn {
-    background: var(--color-success-500);
-    color: var(--color-white);
-  }
-  
-  .success-btn:hover {
-    background: var(--color-success-600);
-    transform: translateY(-1px);
-  }
-  
-  /* Disabled Button */
-  button:disabled,
-  .objective-button:disabled,
-  .objectif-details-tab:disabled {
-    background: var(--color-gray-300);
-    color: var(--color-gray-500);
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-  
-  /* Button Group */
-  .button-group {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-3);
-    margin-top: var(--space-4);
-  }
-  
-  .button-group button {
-    padding: var(--space-2) var(--space-4);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: var(--transition-all);
-  }
-  
-  .button-group button[type="submit"] {
-    background-color: var(--color-success-500);
-    color: var(--color-white);
-  }
-  
-  .button-group button[type="submit"]:hover {
-    background-color: var(--color-success-600);
-    transform: translateY(-1px);
-  }
-  
-  .button-group button[type="button"] {
-    background-color: var(--color-gray-200);
-    color: var(--color-gray-700);
-  }
-  
-  .button-group button[type="button"]:hover {
-    background-color: var(--color-gray-300);
-    transform: translateY(-1px);
-  }
-  
-  /* ========== Objective Status & Type (More Visible) ========== */
-  .objectif-details-status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-3);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-sm);
-    background: var(--color-blue-50);
-    border: 1px solid var(--color-blue-500);
-    color: var(--color-blue-500);
-    width: fit-content;
-    margin: var(--space-5) auto;
-    text-transform: uppercase;
-  }
-  
-  /* Type Label */
-  .objectif-details-type {
-    background: var(--color-primary-500);
-    color: var(--color-white);
-    padding: var(--space-1) var(--space-3);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    border-radius: 16px;
-  }
-  
-  /* Status Label */
-  .objectif-details-status-label {
-    background: var(--color-gray-200);
-    padding: var(--space-1) var(--space-3);
-    border-radius: 16px;
-    font-size: var(--text-xs);
-    font-weight: 500;
-    text-transform: uppercase;
-  }
-  
-  /* Different Colors for Status */
-  .objectif-details-status-label.Completed {
-    background: var(--color-green-50);
-    color: var(--color-green-500);
-  }
-  
-  .objectif-details-status-label.Failed {
-    background: var(--color-red-50);
-    color: var(--color-red-500);
-  }
-  
-  /* ========== Make "Mark as Completed" & "Mark as Failed" Buttons More Visible ========== */
-  .objectif-details-tabs {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-4);
-    margin-top: var(--space-5);
-  }
-  
-  .objectif-details-tab {
-    padding: var(--space-2) var(--space-4);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: var(--transition-all);
-    text-transform: uppercase;
-    border: none;
-  }
-  
-  /* Mark as Completed */
-  .objectif-details-tab.completed {
-    background: var(--color-green-50);
-    color: var(--color-green-500);
-  }
-  
-  .objectif-details-tab.completed:hover {
-    background: var(--color-green-100);
-    transform: translateY(-1px);
-  }
-  
-  /* Mark as Failed */
-  .objectif-details-tab.failed {
-    background: var(--color-red-50);
-    color: var(--color-red-500);
-  }
-  
-  .objectif-details-tab.failed:hover {
-    background: var(--color-red-100);
-    transform: translateY(-1px);
-  }
-  
-  /* ========== Bottom Buttons (More Prominent) ========== */
-  .objectif-details-buttons {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-3);
-    margin-top: var(--space-6);
-  }
-  
-  .objectif-details-edit-objective-btn,
-  .objectif-details-back-btn {
-    padding: var(--space-2) var(--space-4);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    border-radius: var(--radius-sm);
-    border: none;
-    cursor: pointer;
-    transition: var(--transition-all);
-    min-width: 120px;
-  }
-  
-  /* Edit Button */
-  .objectif-details-edit-objective-btn {
-    background: var(--color-primary-500);
-    color: var(--color-white);
-  }
-  
-  .objectif-details-edit-objective-btn:hover {
-    background: var(--color-primary-600);
-    transform: translateY(-1px);
-  }
-  
-  /* Back Button */
-  .objectif-details-back-btn {
-    background: var(--color-gray-200);
-    color: var(--color-gray-700);
-  }
-  
-  .objectif-details-back-btn:hover {
-    background: var(--color-gray-300);
-    transform: translateY(-1px);
-  }
-  
-  /* ========== Pagination Styles (Already Present) ========== */
-  .pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    margin-top: var(--space-4);
-  }
-  
-  .pagination-numbers {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-  }
-  
-  .pagination-prev,
-  .pagination-next,
-  .pagination-number {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    height: 32px;
-    padding: 0 var(--space-2);
-    border: 1px solid var(--color-gray-200);
-    border-radius: var(--radius-sm);
-    background-color: var(--color-white);
-    color: var(--color-gray-700);
-    font-size: var(--text-sm);
-    cursor: pointer;
-    transition: var(--transition-all);
-  }
-  
-  .pagination-prev:hover,
-  .pagination-next:hover,
-  .pagination-number:hover {
-    background-color: var(--color-gray-100);
-    transform: translateY(-1px);
-  }
-  
-  .pagination-number.active {
-    background-color: var(--color-primary-500);
-    border-color: var(--color-primary-500);
-    color: var(--color-white);
-  }
-  
-  .pagination-ellipsis {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    height: 32px;
-    color: var(--color-gray-500);
-  }
-  
-  .pagination-prev.disabled,
-  .pagination-next.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-  
-  /* Responsive Styles */
-  @media (max-width: 768px) {
-    .objectives-grid {
-      flex-direction: column; /* Stack cards vertically on mobile */
-    }
-  
-    .objectif-card {
-      max-width: 100%; /* Allow cards to take full width on mobile */
-      margin-right: 0; /* Remove margin on mobile */
-    }
-  
-    .project-selection select {
-      max-width: 100%;
-    }
-  
-    .objectif-details-container {
-      flex-direction: column;
-      padding: var(--space-4);
-    }
-  
-    .objectif-details-buttons {
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-  
-    .objectif-details-edit-objective-btn,
-    .objectif-details-back-btn {
-      width: 100%;
-    }
-  
-    .objectif-details-tabs {
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-  
-    .objectif-details-tab {
-      width: 100%;
-    }
-  
-    .button-group {
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-  
-    .button-group button {
-      width: 100%;
-    }
-  
-    .pagination {
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .form_content{
-        padding: 30px;
-        max-width: 1280px;    }
+  /* Colors */
+  --color-white: #ffffff;
+  --color-black: #1a202c;
+  --color-gray-50: #f7fafc;
+  --color-gray-100: #edf2f7;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e0;
+  --color-gray-400: #a0aec0;
+  --color-gray-500: #718096;
+  --color-gray-600: #4a5568;
+  --color-gray-700: #2d3748;
 
-/* Add to the bottom of Objectifmanagement.css */
+  /* Modern Role Colors (for status/types) */
+  --color-red-50: #fff5f5;
+  --color-red-500: #f56565;
+  --color-green-50: #f0fff4;
+  --color-green-500: #48bb78;
+  --color-blue-50: #ebf8ff;
+  --color-blue-500: #4299e1;
 
+  /* Accent Colors */
+  --color-primary-500: #5a67d8;
+  --color-primary-600: #4c51bf;
+  --color-success-500: #48bb78;
+  --color-success-600: #38a169;
+  --color-danger-500: #f56565;
+  --color-danger-600: #e53e3e;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 10px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-8: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Font Sizes (Increased for better readability) */
+  --text-xs: 14px;  /* Increased from 11px */
+  --text-sm: 16px;  /* Increased from 12px */
+  --text-base: 18px; /* Increased from 14px */
+  --text-lg: 20px;  /* Increased from 16px */
+  --text-xl: 24px;  /* Increased from 20px */
+
+  /* Transitions */
+  --transition-all: all 0.3s ease;
+}
+
+/* ========== Alerts ========== */
+.alert {
+  padding: var(--space-3);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.alert-success {
+  background-color: var(--color-green-50);
+  color: var(--color-green-500);
+  border: 1px solid var(--color-green-500);
+}
+
+.alert-danger {
+  background-color: var(--color-red-50);
+  color: var(--color-red-500);
+  border: 1px solid var(--color-red-500);
+}
+
+.alert ul {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+/* Field-specific error styles */
+.field-error {
+  color: var(--color-red-500);
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-red-50);
+  border: 1px solid var(--color-red-500);
+  border-radius: var(--radius-sm);
+}
+
+/* ========== Loading Styles ========== */
+.loading {
+  text-align: center;
+  color: var(--color-primary-500);
+  font-weight: 600;
+  font-size: var(--text-base);
+  padding: var(--space-5);
+}
+
+/* ========== Project Selection Dropdown ========== */
+.project-selection select {
+  width: 100%;
+  max-width: 250px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-white);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: var(--transition-all);
+  appearance: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0aec0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E")
+    no-repeat right 8px center;
+}
+
+.project-selection select:hover {
+  border-color: var(--color-primary-500);
+}
+
+.project-selection select:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
+}
+
+/* ========== Objective Cards ========== */
+.objectives-grid {
+  display: flex; /* Changed from grid to flex for horizontal layout */
+  flex-wrap: wrap; /* Allow wrapping if there’s not enough space */
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.objectif-card {
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-all);
+  position: relative;
+  overflow: hidden;
+  flex: 1 1 280px; /* Ensure cards take up equal space, with a minimum width of 280px */
+  max-width: 300px; /* Limit the maximum width of each card */
+}
+
+/* Ensure cards are displayed next to each other */
+.objectives-grid .objectif-card {
+  margin-right: var(--space-4); /* Add spacing between cards */
+}
+
+.objectives-grid .objectif-card:last-child {
+  margin-right: 0; /* Remove margin from the last card */
+}
+
+.objectif-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Status Bookmark */
+.objectif-bookmark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--color-primary-500);
+  color: var(--color-white);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  border-bottom-left-radius: var(--radius-md);
+}
+
+/* Objective Title */
+.objectif-text-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  color: var(--color-black);
+}
+
+/* Objective Description */
+.objectif-description {
+  font-size: var(--text-sm);
+  color: var(--color-gray-600);
+  margin-bottom: var(--space-3);
+  line-height: 1.5;
+}
+
+/* Progress Section */
+.progress-section {
+  margin: var(--space-3) 0;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-gray-600);
+  margin-bottom: var(--space-1);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-gray-200);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-600));
+  transition: width 0.3s ease;
+}
+
+/* Due Date */
+.due-date {
+  font-size: var(--text-sm);
+  color: var(--color-gray-600);
+}
+
+.due-date span:first-child {
+  margin-right: var(--space-1);
+}
+
+/* ========== Objective Details Page ========== */
+.objectif-details-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--space-6);
+  padding: var(--space-5);
+  max-width: 1200px;
+  margin: auto;
+}
+
+.objectif-details-card {
+  background: var(--color-white);
+  margin-top: var(--space-4);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  flex: 1;
+}
+
+.objectif-details-title {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  color: var(--color-black);
+}
+
+.objectif-details-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--color-gray-200);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: var(--space-3);
+}
+
+.objectif-details-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-600));
+  transition: width 0.3s ease;
+}
+
+.objectif-details-content p {
+  font-size: var(--text-base);
+  color: var(--color-gray-600);
+  margin-bottom: var(--space-2);
+}
+
+/* ========== Edit Objective Page ========== */
+.create-objective-section {
+  background: var(--color-white);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  max-width: 600px;
+  margin: auto;
+}
+
+.create-objective-section form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+.form-group label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-gray-700);
+  margin-bottom: var(--space-1);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  transition: var(--transition-all);
+}
+
+.form-group textarea {
+  height: 120px;
+  resize: vertical;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
+}
+
+/* Progress Slider */
+.PB-range-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 5px;
+  background: var(--color-gray-200);
+  outline: none;
+  transition: opacity 0.3s ease;
+}
+
+.PB-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--color-primary-500);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.PB-range-slidervalue {
+  text-align: center;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--color-gray-700);
+  margin-top: var(--space-2);
+}
+
+/* ========== Buttons ========== */
+.objective-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-all);
+  text-transform: capitalize;
+}
+
+.add-objective-button {
+  background: var(--color-success-500);
+  color: var(--color-white);
+}
+
+.add-objective-button:hover {
+  background: var(--color-success-600);
+  transform: translateY(-1px);
+}
+
+/* Primary Button */
+.primary-btn {
+  background: var(--color-primary-500);
+  color: var(--color-white);
+}
+
+.primary-btn:hover {
+  background: var(--color-primary-600);
+  transform: translateY(-1px);
+}
+
+/* Secondary Button */
+.secondary-btn {
+  background: var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+.secondary-btn:hover {
+  background: var(--color-gray-300);
+  transform: translateY(-1px);
+}
+
+/* Danger (Delete, Fail) */
+.danger-btn {
+  background: var(--color-danger-500);
+  color: var(--color-white);
+}
+
+.danger-btn:hover {
+  background: var(--color-danger-600);
+  transform: translateY(-1px);
+}
+
+/* Success (Complete, Confirm) */
+.success-btn {
+  background: var(--color-success-500);
+  color: var(--color-white);
+}
+
+.success-btn:hover {
+  background: var(--color-success-600);
+  transform: translateY(-1px);
+}
+
+/* Disabled Button */
+button:disabled,
+.objective-button:disabled,
+.objectif-details-tab:disabled {
+  background: var(--color-gray-300);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.button-group button {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.button-group button[type="submit"] {
+  background-color: var(--color-success-500);
+  color: var(--color-white);
+}
+
+.button-group button[type="submit"]:hover {
+  background-color: var(--color-success-600);
+  transform: translateY(-1px);
+}
+
+.button-group button[type="button"] {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+.button-group button[type="button"]:hover {
+  background-color: var(--color-gray-300);
+  transform: translateY(-1px);
+}
+
+/* ========== Objective Status & Type (More Visible) ========== */
+.objectif-details-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-blue-50);
+  border: 1px solid var(--color-blue-500);
+  color: var(--color-blue-500);
+  width: fit-content;
+  margin: var(--space-5) auto;
+  text-transform: uppercase;
+}
+
+/* Type Label */
+.objectif-details-type {
+  background: var(--color-primary-500);
+  color: var(--color-white);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  border-radius: 16px;
+}
+
+/* Status Label */
+.objectif-details-status-label {
+  background: var(--color-gray-200);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 16px;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* Different Colors for Status */
+.objectif-details-status-label.Completed {
+  background: var(--color-green-50);
+  color: var(--color-green-500);
+}
+
+.objectif-details-status-label.Failed {
+  background: var(--color-red-50);
+  color: var(--color-red-500);
+}
+
+/* ========== Make "Mark as Completed" & "Mark as Failed" Buttons More Visible ========== */
+.objectif-details-tabs {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.objectif-details-tab {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-all);
+  text-transform: uppercase;
+  border: none;
+}
+
+/* Mark as Completed */
+.objectif-details-tab.completed {
+  background: var(--color-green-50);
+  color: var(--color-green-500);
+}
+
+.objectif-details-tab.completed:hover {
+  background: var(--color-green-100);
+  transform: translateY(-1px);
+}
+
+/* Mark as Failed */
+.objectif-details-tab.failed {
+  background: var(--color-red-50);
+  color: var(--color-red-500);
+}
+
+.objectif-details-tab.failed:hover {
+  background: var(--color-red-100);
+  transform: translateY(-1px);
+}
+
+/* ========== Bottom Buttons (More Prominent) ========== */
+.objectif-details-buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.objectif-details-edit-objective-btn,
+.objectif-details-back-btn,
+.objectif-details-analytics-btn {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-all);
+  min-width: 120px;
+}
+
+/* Edit Button */
+.objectif-details-edit-objective-btn {
+  background: var(--color-primary-500);
+  color: var(--color-white);
+}
+
+.objectif-details-edit-objective-btn:hover {
+  background: var(--color-primary-600);
+  transform: translateY(-1px);
+}
+
+/* Back Button */
+.objectif-details-back-btn {
+  background: var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+.objectif-details-back-btn:hover {
+  background: var(--color-gray-300);
+  transform: translateY(-1px);
+}
+
+/* Analytics Button */
+.objectif-details-analytics-btn {
+  background: var(--color-blue-500);
+  color: var(--color-white);
+}
+
+.objectif-details-analytics-btn:hover {
+  background: var(--color-blue-600);
+  transform: translateY(-1px);
+}
+
+/* ========== Pagination Styles (Already Present) ========== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.pagination-numbers {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.pagination-prev,
+.pagination-next,
+.pagination-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-white);
+  color: var(--color-gray-700);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.pagination-prev:hover,
+.pagination-next:hover,
+.pagination-number:hover {
+  background-color: var(--color-gray-100);
+  transform: translateY(-1px);
+}
+
+.pagination-number.active {
+  background-color: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-white);
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  color: var(--color-gray-500);
+}
+
+.pagination-prev.disabled,
+.pagination-next.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ========== Analytics Dashboard ========== */
 .analytics-dashboard {
-    background: var(--color-white);
-    padding: var(--space-5);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    margin-top: var(--space-5);
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .analytics-dashboard h2 {
-    font-size: var(--text-xl);
-    font-weight: 600;
-    color: var(--color-black);
-    margin-bottom: var(--space-4);
-  }
-  
-  .analytics-content p {
-    font-size: var(--text-base);
-    color: var(--color-gray-600);
-    margin-bottom: var(--space-3);
-  }
-  
-  .progress-chart {
-    margin-top: var(--space-4);
-  }
-  
-  .progress-chart h3 {
-    font-size: var(--text-lg);
-    font-weight: 500;
-    color: var(--color-gray-700);
-    margin-bottom: var(--space-3);
+  background: var(--color-white);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-top: var(--space-6);
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.analytics-slide-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.analytics-dashboard h2 {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-black);
+  margin-bottom: var(--space-5);
+}
+
+.analytics-content p {
+  font-size: var(--text-lg);
+  color: var(--color-gray-600);
+  margin-bottom: var(--space-4);
+}
+
+.progress-chart {
+  margin-top: var(--space-5);
+}
+
+.progress-chart h3 {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-gray-700);
+  margin-bottom: var(--space-4);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .objectives-grid {
+    flex-direction: column; /* Stack cards vertically on mobile */
   }
 
-
-
+  .objectif-card {
+    max-width: 100%; /* Allow cards to take full width on mobile */
+    margin-right: 0; /* Remove margin on mobile */
   }
+
+  .project-selection select {
+    max-width: 100%;
+  }
+
+  .objectif-details-container {
+    flex-direction: column;
+    padding: var(--space-4);
+  }
+
+  .objectif-details-buttons {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .objectif-details-edit-objective-btn,
+  .objectif-details-back-btn,
+  .objectif-details-analytics-btn {
+    width: 100%;
+  }
+
+  .objectif-details-tabs {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .objectif-details-tab {
+    width: 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .button-group button {
+    width: 100%;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .form_content {
+    padding: 30px;
+    max-width: 1280px;
+  }
+
+  .analytics-dashboard {
+    padding: var(--space-4);
+  }
+}

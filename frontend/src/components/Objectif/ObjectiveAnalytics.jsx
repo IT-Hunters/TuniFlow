@@ -50,19 +50,32 @@ const ObjectiveAnalytics = ({ objectiveId }) => {
       x: { type: 'time', time: { unit: 'day' } },
       y: { min: 0, max: 100, title: { display: true, text: 'Progress (%)' } },
     },
+    plugins: {
+      legend: {
+        labels: {
+          font: {
+            size: 16, // Larger font for clarity
+          },
+        },
+      },
+      tooltip: {
+        bodyFont: {
+          size: 14,
+        },
+      },
+    },
   };
 
   return (
-    <div className="analytics-dashboard">
+    <div className="analytics-dashboard analytics-slide-in">
       <h2>Objective Analytics</h2>
       <div className="analytics-content">
-        <p>Success Rate of Similar Objectives: {analytics.successRate.toFixed(2)}%</p>
-        <p>Time Remaining: {analytics.timeRemaining} days</p>
-        <p>Failure Risk: <span style={{ color: analytics.failureRisk === 'High' ? '#f56565' : '#48bb78' }}>{analytics.failureRisk}</span></p>
+        <p><strong>Time Remaining:</strong> {analytics.timeRemaining} days</p>
+        <p><strong>Failure Risk:</strong> <span style={{ color: analytics.failureRisk === 'High' ? '#f56565' : '#48bb78' }}>{analytics.failureRisk}</span></p>
         {analytics.progressHistory.length > 0 && (
           <div className="progress-chart">
             <h3>Progress Over Time</h3>
-            <Line data={chartData} options={chartOptions} />
+            <Line data={chartData} options={chartOptions} height={400} /> {/* Increased height for clarity */}
           </div>
         )}
       </div>

@@ -34,6 +34,7 @@ import OwnerInvoices from "./components/Invoice/OwnerInvoices";
 import ManagerInvoices from "./components/Invoice/ManagerInvoices";
 import AddEmployee from "./components/Project/AddEmployee";
 import UpdateProject from "./components/Project/UpadateProject"
+import ObjectiveAnalytics from "./components/Objectif/ObjectiveAnalytics";
 function App() {         
   return (
     <Router>
@@ -73,6 +74,7 @@ function App() {
         <Route path="/projects/:id" element={<ProjectDetails />} />
         <Route path="/add-employee" element={<AddEmployee />} />
         <Route path="/projects/:id/edit" element={<UpdateProject />} />
+        <Route path="/ObjectiveAnalytics" element={<ObjectiveAnalytics />} />
       </Routes>
     </Router>
   );

@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './Objectifmanagement.css';
 import axios from 'axios';
 import ObjectiveAnalytics from '../Objectif/ObjectiveAnalytics';
+
 // API base URL (replace with your backend URL)
 const API_URL = 'http://localhost:3000/objectif';
 
@@ -16,6 +17,7 @@ const ObjectifDetails = () => {
   const { objective, selectedProject } = location.state || {};
   const [loading, setLoading] = useState(false);
   const [objectiveStatus, setObjectiveStatus] = useState(objective?.status || 'Pending');
+  const [showAnalytics, setShowAnalytics] = useState(false); // State to toggle analytics
 
   // Retrieve JWT token from localStorage (replace with your token storage method)
   const token = localStorage.getItem('token');
@@ -30,7 +32,7 @@ const ObjectifDetails = () => {
             <h1 className="objectif-details-heading">Objective Details</h1>
             <p>No objective data available</p>
             <button 
-              className="objectif-details-back-btn"
+              className="objectif-details-back-btn objective-button"
               onClick={() => navigate('/ObjectiveManagement')}
             >
               Back to Objectives
@@ -47,7 +49,6 @@ const ObjectifDetails = () => {
 
   const handleUpdateProgress = () => {
     // Placeholder for update progress functionality
-    // You can navigate to a progress update page or open a modal
     console.log('Update progress clicked');
   };
 
@@ -109,6 +110,10 @@ const ObjectifDetails = () => {
     }
   };
 
+  const toggleAnalytics = () => {
+    setShowAnalytics(!showAnalytics);
+  };
+
   return (
     <div className="container">
       <Sidebar />
@@ -127,20 +132,19 @@ const ObjectifDetails = () => {
               <span className="objectif-details-type">{objective.objectivetype}</span>
               <span className="objectif-details-status-label">{objectiveStatus}</span>
             </div>
-          
           </div>
           
           <h1 className="objectif-details-heading">{objective.name}</h1>
           <div className="objectif-details-tabs">
             <button 
-              className="objectif-details-tab objective-button"
+              className="objectif-details-tab objective-button completed"
               onClick={handleMarkAsCompleted}
               disabled={loading || objectiveStatus === 'Completed'}
             >
               {loading && objectiveStatus !== 'Failed' ? 'Marking...' : 'Mark as Completed'}
             </button>
             <button 
-              className="objectif-details-tab objective-button"
+              className="objectif-details-tab objective-button failed"
               onClick={handleMarkAsFailed}
               disabled={loading || objectiveStatus === 'Failed'}
             >
@@ -148,7 +152,6 @@ const ObjectifDetails = () => {
             </button>
           </div>
           <div className="objectif-details-cards">
-            
             {/* Timeline Card */}
             <div className="objectif-details-card">
               <div className="objectif-details-card-header">
@@ -200,9 +203,19 @@ const ObjectifDetails = () => {
             <h3>Description</h3>
             <p>{objective.description}</p>
           </div>
-          <ObjectiveAnalytics objectiveId={objective._id} />
+
+          {/* Analytics Section (Toggled) */}
+          {showAnalytics && <ObjectiveAnalytics objectiveId={objective._id} />}
+
           {/* Buttons */}
-          <div className="objectif-details-buttons ">
+          <div className="objectif-details-buttons">
+            <button 
+              className="objectif-details-analytics-btn objective-button"
+              onClick={toggleAnalytics}
+              disabled={loading}
+            >
+              {showAnalytics ? 'Hide Analytics' : 'Show Analytics'}
+            </button>
             <button 
               className="objectif-details-edit-objective-btn objective-button"
               onClick={handleEditObjective}
@@ -218,9 +231,6 @@ const ObjectifDetails = () => {
               Back to Objectives
             </button>
           </div>
-
-          {/* Tabs (Updated with API calls) */}
-          
         </div>
       </div>
       <ToastContainer />

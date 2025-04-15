@@ -112,7 +112,7 @@ const startNotificationJob = () => {
   console.log('🔔 Starting notification job setup...');
 
   // Schedule the job to run daily at midnight
-  cron.schedule('0 0 * * *', async () => {
+  cron.schedule('* * * * *', async () => {
     await runNotificationJob();
   }, {
     scheduled: true,
