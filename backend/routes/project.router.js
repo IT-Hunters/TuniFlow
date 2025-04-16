@@ -1,13 +1,19 @@
 var express = require('express');
 var router = express.Router();
-const { addProject,assignAccountantToProject,assignFinancialManagerToProject,assignRHManagerToProject } = require("../controllers/projectController");
+const authorizeRole = require('../middleware/autorizedrole');
+const { addProject,assignAccountantToProject,assignFinancialManagerToProject,assignRHManagerToProject,
+    unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById,getMyProject,
+    getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,updateproject,deleteProjectById
+} = require("../controllers/projectController");
 const { authenticateJWT } = require('../config/autorisation');
-
-router.post("/addproject/:businessManagerName", authenticateJWT, async (req, res) => {
+router.get("/getAllAccountantsofproject",authenticateJWT,getAllAccountantsofproject)
+router.get("/getAllHRsOfProject",authenticateJWT,getAllHRsOfProject)
+router.get("/getAllFinancialManagersOfProject",authenticateJWT,getAllFinancialManagersOfProject)
+router.post("/addproject/:businessManagerId", authenticateJWT, async (req, res) => {
     try {
         console.log("Requête reçue :", req.body);
 
-        const { businessManagerName } = req.params; // Récupérer le nom ou l'ID du BusinessManager
+        const { businessManagerId } = req.params; // Récupérer l'ID du BusinessManager
         const projectData = req.body; // Récupérer les données du projet
 
         // Ajouter le token JWT à projectData
@@ -15,7 +21,7 @@ router.post("/addproject/:businessManagerName", authenticateJWT, async (req, res
         console.log("Token ajouté à projectData :", projectData.token);
 
         // Appeler la fonction addProject
-        const result = await addProject(businessManagerName, projectData);
+        const result = await addProject(businessManagerId, projectData);
 
         // Réponse réussie
         res.status(201).json(result);
@@ -25,35 +31,19 @@ router.post("/addproject/:businessManagerName", authenticateJWT, async (req, res
         res.status(500).json({ message: error.message });
     }
 });
-router.post("/assignAccountantToProject/:projectId/:accountantId", async (req, res) => {
-    try {
-        const { projectId, accountantId } = req.params;
-        const result = await assignAccountantToProject(projectId, accountantId);
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-router.post("/assignFinancialManagerToProject/:projectId/:financialManagerId", async (req, res) => {
-    try {
-        const { projectId, financialManagerId } = req.params;
-        const result = await assignFinancialManagerToProject(projectId, financialManagerId);
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// Route pour assigner un RH Manager à un projet
-router.post("/assignRHManagerToProject/:projectId/:rhId", async (req, res) => {
-    try {
-        const { projectId, rhId } = req.params;
-        const result = await assignRHManagerToProject(projectId, rhId);
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
+router.post("/assignAccountantToProject/:accountantId", authenticateJWT, assignAccountantToProject);
+router.post("/assignFinancialManagerToProject/:financialManagerId", authenticateJWT, assignFinancialManagerToProject);
+router.post("/assignRHManagerToProject/:rhId", authenticateJWT, assignRHManagerToProject);
+router.post("/unassignaccountant/:accountantId", authenticateJWT, unassignAccountantFromProject);
+router.post("/unassignfinancialmanager/:financialManagerId", authenticateJWT, unassignFinancialManagerFromProject);
+router.post("/unassignrh/:rhId", authenticateJWT, unassignRHManagerFromProject);
+router.get("/getProject/:id",authenticateJWT, getProjectById);
+router.delete("/deleteProjectById/:id",authenticateJWT, deleteProjectById);
+router.put("/updateproject/:id",authenticateJWT, updateproject);
+router.get("/my-project", 
+    authenticateJWT, 
+    authorizeRole(["BUSINESS_MANAGER"]), 
+    getMyProject
+  );
+  router.get("/getbyid/:id", getbyid);
 module.exports = router;

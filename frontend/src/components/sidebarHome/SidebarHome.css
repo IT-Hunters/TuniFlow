@@ -1,0 +1,150 @@
+.sidebar-home {
+  min-height: calc(100vh - 97px);
+  width: 16%;
+  background: linear-gradient(135deg, #1e3a8a, #1e90ff);
+  color: white;
+  transition: width 0.3s ease;
+}
+
+.sidebar-home.collapsed {
+  width: 4%;
+}
+
+.sidebar-home-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-home-header h1 {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: bold;
+}
+
+.user-role {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.sidebar-home-nav {
+  flex-grow: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.sidebar-home-nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-home-nav li {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-home-nav a {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-home-nav a:hover,
+.sidebar-home-nav a.active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-home-nav a svg {
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.badge {
+  background-color: #ff4757;
+  color: white;
+  border-radius: 50%;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  margin-left: auto;
+}
+
+.sidebar-home-footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+}
+
+.logout-btn svg {
+  margin-right: 0.5rem;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-home {
+    position: fixed;
+    z-index: 1000;
+    transform: translateX(-100%);
+  }
+
+  .sidebar-home.collapsed {
+    transform: translateX(0);
+  }
+}
+
+

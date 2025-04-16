@@ -1,0 +1,137 @@
+.chat-page {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chat-container {
+    width: 50%; /* Réduction de la taille à 50% de l'écran */
+    max-width: 600px; /* Limite maximale pour rester compact */
+    margin: 20px auto; /* Centré avec marges */
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .chat-header {
+    padding: 10px 15px;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .chat-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1c2526;
+  }
+  
+  .more-options {
+    font-size: 1.2rem;
+    color: #65676b;
+    cursor: pointer;
+  }
+  
+  .chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f0f2f5; /* Couleur de fond similaire à Messenger */
+  }
+  
+  .message {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 70%;
+    font-size: 0.95rem;
+    position: relative;
+  }
+  
+  .message.received {
+    background-color: #e4e6eb;
+    color: #1c2526;
+    align-self: flex-start;
+  }
+  
+  .message.sent {
+    background-color: #0084ff; /* Bleu Messenger */
+    color: white;
+    align-self: flex-end;
+    margin-left: auto;
+  }
+  
+  .message p {
+    margin: 0;
+    word-wrap: break-word;
+  }
+  
+  .message span {
+    font-size: 0.7rem;
+    color: #999;
+    display: block;
+    text-align: right;
+    margin-top: 2px;
+  }
+  
+  .chat-input {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #e5e5e5;
+  }
+  
+  .chat-input input {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 20px;
+    background: #f0f2f5;
+    outline: none;
+    font-size: 0.9rem;
+  }
+  
+  .chat-input .input-icon {
+    font-size: 1.2rem;
+    color: #65676b;
+    margin: 0 10px;
+    cursor: pointer;
+  }
+  
+  .chat-input button {
+    padding: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .chat-input button svg {
+    font-size: 1.2rem;
+    color: #0084ff;
+    transition: color 0.3s ease;
+  }
+  
+  .chat-input button:hover svg {
+    color: #005bb5;
+  }
+  .chat-start {
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+  }
+  .chat-start select, .chat-start button {
+    padding: 8px;
+    border-radius: 5px;
+  }

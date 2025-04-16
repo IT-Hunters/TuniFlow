@@ -1,0 +1,118 @@
+/* Conteneur global de la page */
+.create-invoice-page {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+  }
+  
+  /* Contenu principal à droite de la sidebar */
+  .create-invoice-main {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  /* Conteneur du formulaire */
+  .invoice-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Titre du formulaire */
+  .invoice-header {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  /* Formulaire */
+  .invoice-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* Champs de saisie (input et select) */
+  .invoice-input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    color: #555;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  /* Style au focus pour les champs */
+  .invoice-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  
+  /* Placeholder */
+  .invoice-input::placeholder {
+    color: #999;
+  }
+  
+  /* Style spécifique pour le select */
+  .invoice-input[type="select"] {
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23555" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 35px;
+  }
+  
+  /* Bouton de soumission */
+  .invoice-button {
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  /* Effet hover sur le bouton */
+  .invoice-button:hover:not(:disabled) {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+  
+  /* Bouton désactivé */
+  .invoice-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .create-invoice-main {
+      padding: 10px;
+    }
+  
+    .invoice-container {
+      margin: 20px auto;
+      padding: 20px;
+    }
+  
+    .invoice-header {
+      font-size: 20px;
+    }
+  
+    .invoice-input,
+    .invoice-button {
+      font-size: 14px;
+    }
+  }

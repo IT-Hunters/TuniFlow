@@ -3,3 +3,113 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
+
+  div#chat-container
+    h2 Chat en temps réel
+    div
+      label(for="chatId") Chat ID:
+      input#chatId(type="text", placeholder="Entrez l'ID du chat")
+      button#joinChat Rejoindre le chat
+    div
+      label(for="senderId") Votre ID:
+      input#senderId(type="text", placeholder="Entrez votre ID utilisateur")
+    div
+      label(for="message") Message:
+      input#message(type="text", placeholder="Tapez votre message")
+      button#sendMessage Envoyer
+    div#messages
+      p Messages apparaîtront ici...
+    div#typing-indicator
+      p#typing-text // Indicateur de typage apparaîtra ici
+    div#notifications
+      p Notifications apparaîtront ici...
+      
+
+  script(src="/socket.io/socket.io.js")
+  script.
+    const socket = io('http://localhost:5000');
+    const chatIdInput = document.getElementById('chatId');
+    const senderIdInput = document.getElementById('senderId');
+    const joinChatButton = document.getElementById('joinChat');
+    const messageInput = document.getElementById('message');
+    const sendButton = document.getElementById('sendMessage');
+    const messagesDiv = document.getElementById('messages');
+    const notificationsDiv = document.getElementById('notifications');
+    const typingText = document.getElementById('typing-text');
+
+    joinChatButton.addEventListener('click', () => {
+      const chatId = chatIdInput.value.trim();
+      if (chatId) {
+        socket.emit('joinChat', chatId);
+        messagesDiv.innerHTML += `<p>Vous avez rejoint le chat: ${chatId}</p>`;
+      } else {
+        alert('Veuillez entrer un chatId valide');
+      }
+    });
+
+    sendButton.addEventListener('click', () => {
+      const chatId = chatIdInput.value.trim();
+      const content = messageInput.value.trim();
+      const senderId = senderIdInput.value.trim();
+
+      if (chatId && content && senderId) {
+        socket.emit('sendMessage', { chatId, content, senderId });
+        socket.emit('stopTyping', { chatId, senderId }); // Arrêter l'indicateur
+        messageInput.value = '';
+      } else {
+        alert('Veuillez entrer un chatId, un message et votre ID');
+      }
+    });
+
+    // Gestion de l'écriture en temps réel
+    messageInput.addEventListener('input', () => {
+      const chatId = chatIdInput.value.trim();
+      const senderId = senderIdInput.value.trim();
+      const content = messageInput.value.trim();
+
+      if (chatId && senderId) {
+        if (content.length > 0) {
+          socket.emit('typing', { chatId, senderId });
+        } else {
+          socket.emit('stopTyping', { chatId, senderId });
+        }
+      }
+    });
+
+    socket.on('newMessage', (message) => {
+      const messageElement = document.createElement('p');
+      messageElement.textContent = `${message.sender}: ${message.content} (${new Date(message.timestamp).toLocaleTimeString()})`;
+      messagesDiv.appendChild(messageElement);
+      typingText.textContent = ''; // Réinitialiser l'indicateur quand un message est reçu
+    });
+
+    socket.on('newNotification', (notification) => {
+      const currentUserId = senderIdInput.value.trim();
+      if (currentUserId === notification.recipientId) {
+        const notificationElement = document.createElement('p');
+        notificationElement.textContent = `Notification: ${notification.message}`;
+        notificationElement.style.color = 'red';
+        notificationsDiv.appendChild(notificationElement);
+        alert(notification.message);
+      }
+    });
+
+    socket.on('userTyping', (data) => {
+      const currentUserId = senderIdInput.value.trim();
+      if (currentUserId === data.recipientId) {
+        typingText.textContent = `${data.senderName} est en train d'écrire...`;
+        typingText.style.color = 'gray';
+        typingText.style.fontStyle = 'italic';
+      }
+    });
+
+    socket.on('userStoppedTyping', (data) => {
+      const currentUserId = senderIdInput.value.trim();
+      if (currentUserId !== data.senderId) {
+        typingText.textContent = '';
+      }
+    });
+
+    socket.on('error', (data) => {
+      alert(`Erreur: ${data.message}`);
+    });

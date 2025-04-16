@@ -5,13 +5,15 @@ const User = require("./user"); // Importer le modèle User
 // Définir le schéma BusinessOwner
 const BusinessOwnerSchema = new Schema({
   companyName: { type: String },
-  registrationNumber: { type: String, },
+  registrationNumber: { type: Number, },
   industry: { type: String,  },
   salary: { type: Number, },
   createdAt: { type: Date, default: Date.now },
   picture: { type: String },
   autorization: { type: Boolean, default: false },
-  projects: [{ type: Schema.Types.ObjectId, ref: "Project" }] // Utiliser Schema
+  evidence: { type: String },
+  projects: [{ type: Schema.Types.ObjectId, ref: "Project" }] ,// Utiliser Schema
+  wallet: { type: Schema.Types.ObjectId, ref: "Wallet" }
 });
 
 // Ajouter une méthode au schéma

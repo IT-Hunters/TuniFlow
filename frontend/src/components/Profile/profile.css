@@ -1,0 +1,481 @@
+.profile-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-cards-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+  width: 100%;
+}
+
+.profile-card {
+  width: 190px;
+  height: 254px;
+  background: #07182E;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  width: 100px;
+  background-image: linear-gradient(180deg, rgb(11, 76, 102), rgb(18, 188, 226));
+  height: 130%;
+  animation: rotBGimg 3s linear infinite;
+  transition: all 0.2s linear;
+}
+
+@keyframes rotBGimg {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.profile-card:hover:before {
+  background-image: linear-gradient(180deg, rgb(181, 28, 31), purple);
+  animation: rotBGimg 3.5s linear infinite;
+}
+
+.profile-img-card {
+  width: 170px;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease;
+  margin-bottom: 0;
+  top: -10px;
+}
+
+.profile-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.profile-card:hover .profile-card-inner {
+  transform: rotateY(180deg);
+}
+
+.profile-card-front,
+.profile-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding-top: 20px;
+}
+
+.profile-card-back {
+  transform: rotateY(180deg);
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.profile-user-info-card {
+  position: relative;
+  grid-column: 1 / 3;
+  grid-row: 2 / 3;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+  font-size: 18px;
+  width: 570px;
+  height: 700px;
+  font-weight: bold;
+}
+
+.profile-user-info-card h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.profile-user-info-card p {
+  color: #555;
+  font-size: 16px;
+}
+
+.profile-Btn {
+  position: absolute;
+  right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100px;
+  height: 40px;
+  border: none;
+  padding: 0px 20px;
+  background-color: #081c37;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 5px 5px 0px #0a2951;
+  transition-duration: 0.3s;
+}
+
+.profile-svg {
+  width: 13px;
+  position: absolute;
+  right: 0;
+  margin-right: 20px;
+  fill: white;
+  transition-duration: 0.3s;
+}
+
+.profile-Btn:hover {
+  color: transparent;
+}
+
+.profile-Btn:hover .profile-svg {
+  right: 43%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  transition-duration: 0.3s;
+}
+
+.profile-Btn:active {
+  transform: translate(3px, 3px);
+  transition-duration: 0.3s;
+  box-shadow: 2px 2px 0px #081c37;
+}
+
+.profile-balance-card-new {
+  padding: 1rem;
+  background-color: #fff;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-width: 320px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.profile-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.profile-title span {
+  position: relative;
+  padding: 0.5rem;
+  background-color: #10B981;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+}
+
+.profile-title span svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ffffff;
+  height: 1rem;
+}
+
+.profile-title-text {
+  margin-left: 0.5rem;
+  color: #374151;
+  font-size: 18px;
+}
+
+.profile-data p {
+  color: #1F2937;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  font-weight: 700;
+  text-align: left;
+  margin: 0;
+}
+
+.profile-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.profile-projects-card {
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-width: 320px;
+}
+
+.profile-project-list {
+  margin-top: 1rem;
+}
+
+.profile-project-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.profile-project-item:last-child {
+  border-bottom: none;
+}
+
+.profile-project-item h4 {
+  margin: 0 0 0.5rem 0;
+  color: #1F2937;
+}
+
+.profile-project-item p {
+  margin: 0;
+  color: #6B7280;
+  font-size: 0.9rem;
+}
+
+
+
+.balance-card {
+  font-family: Arial, sans-serif;
+  width: 310px;
+  padding: 32px;
+  border-radius: 24px;
+  background: linear-gradient(to bottom right, #60a5fa, #081c37);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.balance-card::before,
+.balance-card::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+
+.balance-card::before {
+  width: 160px;
+  height: 160px;
+  top: -80px;
+  right: -80px;
+}
+
+.balance-card::after {
+  width: 128px;
+  height: 128px;
+  bottom: -64px;
+  left: -64px;
+}
+
+.balance-card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.balance {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 0 0 12px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.balance-account {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  margin-bottom: 22px;
+}
+
+.balance-account svg {
+  margin-right: 8px;
+}
+
+.balance-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.balance-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+
+.balance-button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.balance-button svg {
+  margin-right: 8px;
+}
+
+.button-transfer {
+  background-color: rgb(253, 253, 253);
+  color: #3b82f6;
+  margin-right: 16px;
+  z-index: 2;
+}
+
+.button-save {
+  background-color: #2c73ce;
+  color: white;
+}
+
+.balance-dollar-sign {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  opacity: 0.5;
+}
+
+
+
+.project-card {
+  width: 310px;
+  height: 350px;
+  background: #E8EAEA;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.project-title, .project-more {
+  padding: 10px 15px;
+}
+
+.project-user {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+}
+
+.project-user__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.project-user__container {
+  display: flex;
+  flex-direction: column;
+}
+
+.project-title {
+  font-weight: 900;
+  font-size: 1.3em;
+}
+
+.project-name {
+  font-weight: 800;
+}
+
+.project-username {
+  font-size: .9em;
+  color: #64696e;
+}
+
+.project-image {
+  width: 60px;
+  height: 60px;
+  background: rgb(22,19,70);
+  background: linear-gradient(295deg, rgba(22,19,70,1) 41%, rgba(89,177,237,1) 100%);
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.project-follow {
+  border: none;
+  border-radius: 25px;
+  background-color: #0f1113;
+  color: white;
+  padding: 8px 15px;
+  font-weight: 700;
+}
+
+.project-more {
+  display: block;
+  text-decoration: none;
+  color: rgb(29, 155, 240);
+  font-weight: 800;
+}
+
+.project-user:hover {
+  background-color: #b3b6b6;
+}
+
+.project-more:hover {
+  background-color: #b3b6b6;
+  border-radius: 0px 0px 15px 15px;
+}
+
+.project-follow:hover {
+  background-color: #2c3136;
+}
+
+
+
+.profile-user-info-list {
+  list-style: none; /* Remove default bullet points */
+  padding: 0; /* Remove default padding */
+  margin: 0; /* Remove default margin */
+}
+
+.profile-user-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee; /* Add a separator between items */
+}
+
+.profile-user-info-item:last-child {
+  border-bottom: none; /* Remove border for the last item */
+}
+
+.profile-user-info-label {
+  font-weight: bold;
+  color: #333; /* Darker color for labels */
+  font-size: 16px;
+}
+
+.profile-user-info-value {
+  color: #555; /* Lighter color for values */
+  font-size: 16px;
+}

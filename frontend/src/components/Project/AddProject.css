@@ -1,0 +1,361 @@
+/* styles.css */
+:root {
+  --primary: #007bff;
+  --primary-hover: #0056b3;
+  --secondary: #6c757d;
+  --secondary-hover: #5a6268;
+  --background: #f4f7fa;
+  --card-bg: #ffffff;
+  --text: #212529;
+  --text-muted: #6c757d;
+  --error: #dc3545;
+  --success: #28a745;
+  --shadow: 0 8px 16px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.1);
+  --border: #dee2e6;
+  --gradient: linear-gradient(135deg, #007bff, #00c4ff);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+.content {
+  padding: 30px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 40px;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--gradient);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--secondary-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+/* Manager List */
+.manager-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+  max-width: 100%;
+}
+
+.manager-card {
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  border-left: 4px solid var(--primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.manager-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+  background: linear-gradient(to right, #fff, #f8f9fa);
+}
+
+.manager-info {
+  flex: 1;
+}
+
+.manager-name {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.manager-email {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.manager-status {
+  font-size: 0.9rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Forms */
+.form-container {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  max-width: 700px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+.form-container:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.form-group {
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+  background: #fff;
+  outline: none;
+}
+
+.form-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Alerts */
+.alert {
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+}
+
+.alert-error {
+  background-color: #fff1f2;
+  color: var(--error);
+}
+
+.alert-success {
+  background-color: #e6ffe6;
+  color: var(--success);
+}
+
+.field-error {
+  color: var(--error);
+  font-size: 0.9rem;
+  margin-top: 8px;
+  display: block;
+  font-weight: 500;
+}
+
+/* Manager List Specifics */
+.loading-text {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  margin: 40px 0;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  margin: 40px auto;
+  max-width: 500px;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.empty-state p {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+}
+
+svg {
+  vertical-align: middle;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.pagination-btn {
+  padding: 8px 16px; /* Smaller than regular buttons */
+  font-size: 0.95rem;
+  border-radius: 6px;
+  min-width: 40px; /* Consistent width for numbers */
+}
+
+.pagination-btn:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.pagination-btn.btn-primary {
+  background: var(--gradient); /* Active page uses gradient */
+  color: white;
+}
+
+.pagination-btn.btn-secondary {
+  background-color: var(--secondary);
+  color: white;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  transform: translateY(-2px); /* Slightly less lift than other buttons */
+  box-shadow: var(--shadow-hover);
+}
+
+.pagination-btn.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.pagination-btn.btn-secondary:hover:not(:disabled) {
+  background-color: var(--secondary-hover);
+}
+/* Ajoutez ces styles à votre fichier CSS existant */
+
+.managerrr-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actionnn-icons {
+  display: flex;
+  gap: 12px;
+}
+
+.edittt-icon {
+  color: #4a89dc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.edittt-icon:hover {
+  color: #3b7dd8;
+}
+
+.deleteee-icon {
+  color: #e74c3c;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.deleteee-icon:hover {
+  color: #c0392b;
+}

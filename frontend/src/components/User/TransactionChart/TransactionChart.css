@@ -1,0 +1,102 @@
+.chart-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: auto; /* Fixed width */
+  height: auto; /* Fixed height */
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.chart-description {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 16px 0;
+}
+
+.chart-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+
+.tab-button {
+  padding: 8px 16px;
+  background-color: #f8fafc;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.tab-button:hover {
+  background-color: #f1f5f9;
+}
+
+.tab-button.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.chart-content {
+  padding: 24px;
+}
+
+.chart-container {
+  height: 300px;
+  width: 100%;
+  position: relative;
+}
+
+.chart-bars {
+  display: flex;
+  height: 100%;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.chart-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.chart-bar {
+  width: 100%;
+  background-color: #3b82f6;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.5s ease;
+}
+
+.chart-label {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.chart-loading {
+  display: flex;
+  height: 300px;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+}
+

@@ -1,0 +1,258 @@
+/* Conteneur principal de l'application */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #2c3e50;
+  color: white;
+  padding: 20px;
+}
+
+/* Contenu principal */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #34495e;
+  color: white;
+  padding: 10px;
+}
+
+/* Conteneur du portefeuille */
+.wallet-container {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* En-tête du portefeuille */
+.wallet-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.wallet-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.wallet-balance {
+  margin: 10px 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* Actions du portefeuille */
+.wallet-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.action {
+  text-align: center;
+  cursor: pointer;
+}
+
+.action-icon {
+  width: 50px;
+  height: 50px;
+  background-color: #f1f1f1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+.action-icon svg {
+  font-size: 20px;
+  color: #007bff;
+}
+
+.action p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Historique des transactions */
+.transaction-history {
+  margin-top: 20px;
+}
+
+.transaction-history h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.transaction-history h3 svg {
+  color: #007bff;
+}
+
+.transaction-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.transaction-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #f1f1f1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.transaction-icon svg {
+  font-size: 18px;
+}
+
+.transaction-icon .income {
+  color: #28a745; /* Vert pour les revenus */
+}
+
+.transaction-icon .expense {
+  color: #dc3545; /* Rouge pour les dépenses */
+}
+
+.transaction-icon .transfer {
+  color: #007bff; /* Bleu pour les transferts */
+}
+
+.transaction-details {
+  flex: 1;
+  margin-left: 10px;
+}
+
+.transaction-description {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.transaction-date {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.transaction-amount {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.transaction-amount.income {
+  color: #28a745; /* Vert pour les revenus */
+}
+
+.transaction-amount.expense {
+  color: #dc3545; /* Rouge pour les dépenses */
+}
+
+.transaction-amount.transfer {
+  color: #007bff; /* Bleu pour les transferts */
+}
+
+.no-transactions {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Styles pour les écrans de dépôt, retrait et transfert */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-container label {
+  font-size: 14px;
+  color: #333;
+}
+
+.form-container input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.submit-button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}
+
+.back-button {
+  padding: 10px;
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #ddd;
+}
+
+/* Bouton Retour */
+.back-button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #0056b3;
+}
+
+/* Bouton Déposer */
+.submit-button {
+  padding: 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background-color: #218838;
+}

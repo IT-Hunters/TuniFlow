@@ -1,0 +1,212 @@
+/* Basic Reset & Body */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* Apply styles to the body only when inside the auth component */
+.auth-page {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+
+/* Main container: 900x550, with two "boxes" inside (form + blue) */
+.auth-container {
+  width: 900px;
+  height: 550px;
+  position: relative;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* We will move each box with transform for a smooth slide */
+.auth-form-box,
+.auth-blue-box {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  transition: transform 0.6s ease; /* Smooth animation */
+}
+.auth-image {
+  transition: transform 0.6s ease; /* Smooth animation */
+}
+
+/* By default (Sign Up mode):
+   - auth-form-box is on the left (left: 0)
+   - auth-blue-box is on the right (left: 50%) */
+.auth-form-box {
+  left: 0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-blue-box {
+  left: 50%;
+  background: #081c37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* When user clicks "Already have an account?" => .auth-login-mode
+   We'll slide the auth-form-box to the right and the auth-blue-box to the left. */
+.auth-container.auth-login-mode .auth-form-box {
+  transform: translateX(100%);
+}
+.auth-container.auth-login-mode .auth-blue-box {
+  transform: translateX(-100%);
+}
+
+/* The two forms inside .auth-form-box:
+   We animate them with the same state, using auth-sign-up-form as default, auth-sign-in-form hidden. */
+.auth-sign-up-form,
+.auth-sign-in-form {
+  position: absolute;
+  width: 80%;
+  max-width: 320px;
+  transition: all 0.6s ease;
+  opacity: 0;
+  transform: translateX(100%); /* hide off to the right by default */
+}
+
+/* SIGN UP FORM is visible by default */
+.auth-sign-up-form {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* In .auth-login-mode, auth-sign-up-form slides out to the left, auth-sign-in-form slides in from the right */
+.auth-container.auth-login-mode .auth-sign-up-form {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+.auth-container.auth-login-mode .auth-sign-in-form {
+  transform: translateX(0);
+  opacity: 1;
+}
+.auth-file-input {
+  display: none; /* Cache l'input natif */
+}
+
+.auth-file-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #007bff; /* Bleu dynamique */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.auth-file-label:hover {
+  background-color: #0056b3; /* Bleu plus foncé au survol */
+}
+
+.auth-file-name {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+}
+
+/* Form styling */
+h2 {
+  margin-bottom: 1rem;
+}
+.auth-input-field {
+  margin-bottom: 0.5rem;
+}
+.auth-input-field input {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.auth-btn {
+  margin-top: 0.5rem;
+  background: #081c37;
+  color: #fff;
+  border: none;
+  padding: 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.auth-switch-text {
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+.auth-toggle-link {
+  color: #081c37;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Blue box image */
+.auth-blue-image {
+  max-width: 300px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.auth-input-field {
+  position: relative;
+}
+
+.auth-input-field input {
+  width: 100%;
+  padding-right: 40px; /* Space for eye icon */
+}
+
+.auth-eye-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+}
+/* Add these styles to your existing AuthPage.css file */
+
+.auth-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  color: white;
+}
+
+.auth-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+

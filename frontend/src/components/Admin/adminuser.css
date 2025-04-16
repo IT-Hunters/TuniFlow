@@ -1,0 +1,315 @@
+/* Styles de base et styles modaux précédents */
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+  transition: all 0.3s ease;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  position: relative;
+  width: 90%;
+  height: 90%;
+  max-width: 1200px;
+  max-height: 800px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal Header */
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.5rem;
+  width: 100%;
+  text-align: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Close Button */
+.close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s ease;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.close:hover {
+  color: #000;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* PDF Viewer Styles */
+.pdf-modal {
+  padding: 15px 15px 25px 15px;
+}
+
+.pdf-modal .evidence-pdf {
+  width: 100%;
+  height: calc(100% - 60px);
+  border: none;
+  border-radius: 4px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
+}
+
+/* Image Styles */
+.evidence-image {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: calc(100% - 80px);
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Nouveaux styles pour la recherche et le tableau */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.search-container {
+  position: relative;
+  width: 300px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border: 1px solid #e0e0e0;
+  border-radius: 25px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 16px;
+}
+
+.table-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.users-table th {
+  background-color: #f5f7fa;
+  padding: 15px;
+  text-align: left;
+  color: #495057;
+  font-weight: 600;
+  border-bottom: 2px solid #e9ecef;
+  position: sticky;
+  top: 0;
+}
+
+.users-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e9ecef;
+  color: #333;
+  vertical-align: middle;
+}
+
+.users-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.evidence-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.no-evidence {
+  color: #999;
+  font-style: italic;
+}
+
+.no-results {
+  text-align: center;
+  color: #999;
+}
+
+.no-results td {
+  padding: 30px;
+  font-style: italic;
+}
+
+/* Action Buttons Styles */
+.view-evidence-btn,
+.download-evidence-btn,
+.approve-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.view-evidence-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.view-evidence-btn:hover {
+  background-color: #3e8e41;
+}
+
+.download-evidence-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.download-evidence-btn:hover {
+  background-color: #0056b3;
+}
+
+.approve-btn {
+  background-color: #FF9800;
+  color: white;
+  width: 100%;
+  justify-content: center;
+}
+
+.approve-btn:hover {
+  background-color: #e68a00;
+}
+
+/* Status Styles */
+.status {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.approved {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+}
+
+.pending {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: #ef6c00;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .search-container {
+    width: 100%;
+  }
+  
+  .users-table {
+    font-size: 13px;
+  }
+  
+  .users-table th:nth-child(1),
+  .users-table td:nth-child(1) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    height: 95%;
+    padding: 15px;
+  }
+  
+  .evidence-buttons {
+    flex-direction: column;
+  }
+  
+  .users-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .approve-btn,
+  .view-evidence-btn,
+  .download-evidence-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}

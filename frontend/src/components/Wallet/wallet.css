@@ -1,0 +1,140 @@
+/* Conteneur principal */
+.wallet-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* En-tête du portefeuille */
+.wallet-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.wallet-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.wallet-header p {
+  margin: 5px 0;
+  font-size: 18px;
+  color: #666;
+}
+
+/* Actions du portefeuille */
+.wallet-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.action-btn span {
+  margin: 5px 0;
+}
+
+.action-btn.deposit {
+  background-color: #28a745; /* Vert */
+}
+
+.action-btn.withdraw {
+  background-color: #dc3545; /* Rouge */
+}
+
+.action-btn.transfer {
+  background-color: #007bff; /* Bleu */
+}
+
+.action-btn:hover {
+  opacity: 0.9;
+}
+
+/* Historique des transactions */
+.transaction-history {
+  margin-top: 20px;
+}
+
+.transaction-history h3 {
+  margin-bottom: 10px;
+  font-size: 20px;
+  color: #333;
+}
+
+.transaction-history ul {
+  list-style-type: none;
+  padding: 0;
+  max-height: 300px; /* Hauteur maximale avant défilement */
+  overflow-y: auto; /* Active le défilement vertical */
+  background-color: white; /* Fond blanc pour cohérence */
+  border-radius: 5px; /* Coins arrondis */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre légère */
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: white;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.transaction-date {
+  flex: 1;
+  color: #666;
+}
+
+.transaction-amount {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+}
+
+.transaction-amount.income {
+  color: #28a745; /* Vert pour les revenus */
+}
+
+.transaction-amount.expense {
+  color: #dc3545; /* Rouge pour les dépenses */
+}
+
+.transaction-description {
+  flex: 2;
+  text-align: right;
+  color: #666;
+}
+
+.no-transactions {
+  text-align: center;
+  color: #666;
+}
+
+/* Messages d'erreur et de chargement */
+.loading, .error {
+  text-align: center;
+  font-size: 18px;
+  color: #333;
+  margin-top: 20px;
+}
+
+.error {
+  color: #dc3545;
+}

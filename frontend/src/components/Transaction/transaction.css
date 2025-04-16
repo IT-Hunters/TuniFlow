@@ -1,0 +1,111 @@
+.transaction-container {
+    background: linear-gradient(135deg, #1E3A8A, #1E90FF 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    width: 700px;
+    margin: 2rem auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    color: #FFFFFF;
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  
+  .transaction-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+  
+  .transaction-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .filter-select, .filter-date {
+    padding: 0.75rem;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .filter-select:focus, .filter-date:focus {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 8px rgba(19, 181, 234, 0.5);
+  }
+  
+  .transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    transition: transform 0.2s ease, background 0.3s ease;
+  }
+  
+  .transaction-item:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .txn-info {
+    flex: 1;
+  }
+  
+  .txn-amount {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #E6F0FA;
+    margin: 0;
+  }
+  
+  .txn-type {
+    font-size: 1rem;
+    color: #FFFFFF;
+    margin: 0.2rem 0;
+  }
+  
+  .txn-status {
+    font-size: 0.9rem;
+    color: #E6F0FA;
+    margin: 0.2rem 0;
+  }
+  
+  .txn-date {
+    font-size: 0.85rem;
+    color: #E6F0FA;
+    margin: 0.2rem 0;
+  }
+  
+  .txn-desc {
+    font-size: 0.9rem;
+    color: #FFFFFF;
+    margin: 0.2rem 0;
+  }
+  
+  .txn-action {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background: #EF4444;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  .txn-action:hover {
+    background: #DC2626;
+    transform: translateY(-1px);
+  }

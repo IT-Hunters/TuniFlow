@@ -1,125 +1,172 @@
 const bcryptjs = require("bcryptjs");
 const userModel = require("../model/user");
 const validateRegister = require("../validation/registerValidation");
-const validateLogin= require("../validation/login.validator");
+const validateLogin = require("../validation/login.validator");
 const mongoose = require("mongoose");
 require('dotenv').config();
-const jwt=require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 // Import des modèles discriminants
 const FinancialManager = require("../model/FinancialManager");
 const BusinessOwner = require("../model/BusinessOwner");
 const Accountant = require("../model/Accountant");
+const taxe=require("../model/TaxeModels/Taxes")
 const { getBusinessOwnerFromToken } = require("./auth");
 const RH = require("../model/RH");
-
-
+const assets_actif=require("../model/AssetActif/AssetActif")
 const Project = require("../model/Project");
 const BusinessManager = require("../model/BusinessManager");
 
-async function addProject(businessManagerName, projectData) {
+async function addProject(businessManagerId, projectData) {
     try {
-        console.log("Début de la fonction addProject");
+        console.log("Starting addProject function");
 
-        // Récupérer le token de l'en-tête de la requête
+        // Retrieve the token from the request headers
         const token = projectData.token;
         if (!token) {
-            throw new Error("Token manquant");
+            throw new Error("Token missing");
         }
-        console.log("Token récupéré :", token);
+        console.log("Token retrieved:", token);
 
-        // Récupérer le BusinessOwner à partir du token
+        // Retrieve the BusinessOwner from the token
         const businessOwner = await getBusinessOwnerFromToken(token);
-        console.log("BusinessOwner récupéré :", businessOwner);
+        console.log("BusinessOwner retrieved:", businessOwner);
 
-        // 🔎 Rechercher le BusinessManager par son ID ou nom
-        const manager = await BusinessManager.findOne({ fullname: businessManagerName }); // ou findOne({ fullname: businessManagerName })
+        // 🔎 Find the BusinessManager by ID
+        const manager = await BusinessManager.findById(businessManagerId);
         if (!manager) {
-            throw new Error("BusinessManager non trouvé");
+            throw new Error("BusinessManager not found");
         }
-        console.log("BusinessManager récupéré :", manager);
+        console.log("BusinessManager retrieved:", manager);
 
-        // 🚨 Vérifier si le BusinessManager a déjà un projet
+        // 🚨 Check if the BusinessManager already has a project
         if (manager.project) {
-            throw new Error("Ce BusinessManager a déjà un projet assigné");
+            throw new Error("This BusinessManager already has an assigned project");
         }
-        console.log("BusinessManager n'a pas de projet assigné");
-
-        // ✅ Créer un nouveau projet
+        console.log("BusinessManager has no assigned project");
+        const wallet = new Wallet();
+        await wallet.save();
+        // ✅ Create a new project
         const project = new Project({
             amount: projectData.amount,
             status: projectData.status,
             due_date: projectData.due_date,
-            businessManager: manager._id, // Associer le projet au BusinessManager
-            businessOwner: businessOwner._id, // Associer le projet au BusinessOwner
+            businessManager: manager._id, // Associate the project with the BusinessManager
+            businessOwner: businessOwner._id, // Associate the project with the BusinessOwner
             accountants: projectData.accountants,
             financialManagers: projectData.financialManagers,
             rhManagers: projectData.rhManagers,
+            wallet: wallet
         });
-        console.log("Projet créé :", project);
+        console.log("Project created:", project);
 
-        await project.save(); // Sauvegarder le projet
-        console.log("Projet sauvegardé");
+        await project.save(); // Save the project
+        console.log("Project saved");
 
-        // 🔗 Associer le projet au BusinessManager
+        // 🔗 Associate the project with the BusinessManager
         manager.project = project._id;
         await manager.save();
-        console.log("Projet associé au BusinessManager");
+        console.log("Project associated with BusinessManager");
 
-        // 🔗 Ajouter le projet à la liste des projets du BusinessOwner
+        // 🔗 Add the project to the BusinessOwner's project list
         businessOwner.projects.push(project._id);
         await businessOwner.save();
-        console.log("Projet ajouté à la liste des projets du BusinessOwner");
+        console.log("Project added to BusinessOwner's project list");
 
-        // Retourner le résultat
-        return { message: "Projet créé et lié au BusinessManager", project };
+        // Return the result
+        return { message: "Project created and linked to BusinessManager", project };
     } catch (error) {
-        console.error("Erreur dans addProject :", error.message);
-        throw error; // L'erreur sera gérée dans le contrôleur
+        console.error("Error in addProject:", error.message);
+        throw error; // The error will be handled in the controller
     }
 }
 
-async function assignAccountantToProject(projectId, accountantId) {
+async function assignAccountantToProject(req, res) {
     try {
-        const project = await Project.findById(projectId);
-        if (!project) {
-            throw new Error("Projet non trouvé");
+        const accountantId = req.params.accountantId;
+        const userId = req.user.userId; // Retrieve the logged-in user's ID
+
+        // Check if the user has associated projects
+        const user = await userModel.findById(userId);
+        if (!user || !user.project || user.project.length === 0) {
+            return res.status(404).json({ message: "No project found for this user" });
         }
 
+        // Retrieve the first project associated with this user
+        const projectId = user.project;
+        const project = await Project.findById(projectId);
+
+        if (!project) {
+            return res.status(404).json({ message: "No project found for this user" });
+        }
+
+        // Check if the accountant exists
         const accountant = await Accountant.findById(accountantId);
         if (!accountant) {
-            throw new Error("Accountant non trouvé");
+            return res.status(404).json({ message: "Accountant not found" });
         }
 
         if (accountant.project) {
-            throw new Error("Cet Accountant est déjà assigné à un projet");
+            return res.status(400).json({ message: "This accountant is already assigned to a project" });
         }
 
+        // Assign the accountant to the project
         project.accountants.push(accountant._id);
         await project.save();
 
         accountant.project = project._id;
         await accountant.save();
 
-        return { message: "Accountant ajouté au projet avec succès", project };
+        return res.status(200).json({ message: "Accountant assigned to project successfully", project });
     } catch (error) {
-        throw error;
+        console.error("Error during assignment:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
-
-async function assignFinancialManagerToProject(projectId, financialManagerId) {
+async function getbyid(req, res) {
     try {
+        const data = await Project.findById(req.params.id)
+            .populate('businessManager', 'fullname email') // Peuple le businessManager avec seulement fullname et email
+            .populate('accountants', 'fullname email')    // Peuple les accountants
+            .populate('financialManagers', 'fullname email') // Peuple les financialManagers
+            .populate('businessOwner', 'fullname email')    // Peuple le businessOwner
+            .populate('rhManagers', 'fullname email')      // Peuple les rhManagers
+            .populate('taxes')                             // Peuple toutes les taxes
+            .populate('assets_actif')                      // Peuple tous les assets_actif
+            .exec();
+
+        if (!data) {
+            return res.status(404).send({ message: "Project not found" });
+        }
+
+        res.send(data);
+    } catch (err) {
+        console.error("Error fetching project:", err);
+        res.status(500).send({ message: "Server error", error: err.message });
+    }
+}
+async function assignFinancialManagerToProject(req, res) {
+    try {
+        const financialManagerId = req.params.financialManagerId;
+        const userId = req.user.userId;
+
+        const user = await userModel.findById(userId);
+        if (!user || !user.project || user.project.length === 0) {
+            return res.status(404).json({ message: "No project found for this user" });
+        }
+
+        const projectId = user.project;
         const project = await Project.findById(projectId);
         if (!project) {
-            throw new Error("Projet non trouvé");
+            return res.status(404).json({ message: "Project not found" });
         }
 
         const financialManager = await FinancialManager.findById(financialManagerId);
         if (!financialManager) {
-            throw new Error("FinancialManager non trouvé");
+            return res.status(404).json({ message: "Financial Manager not found" });
         }
 
         if (financialManager.project) {
-            throw new Error("Ce FinancialManager est déjà assigné à un projet");
+            return res.status(400).json({ message: "This Financial Manager is already assigned to a project" });
         }
 
         project.financialManagers.push(financialManager._id);
@@ -128,27 +175,36 @@ async function assignFinancialManagerToProject(projectId, financialManagerId) {
         financialManager.project = project._id;
         await financialManager.save();
 
-        return { message: "FinancialManager ajouté au projet avec succès", project };
+        return res.status(200).json({ message: "Financial Manager assigned to project successfully", project });
     } catch (error) {
-        throw error;
+        console.error("Error during assignment:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
-// Fonction pour affecter un RH à un Project
-async function assignRHManagerToProject(projectId, rhId) {
+async function assignRHManagerToProject(req, res) {
     try {
+        const rhId = req.params.rhId;
+        const userId = req.user.userId;
+
+        const user = await userModel.findById(userId);
+        if (!user || !user.project || user.project.length === 0) {
+            return res.status(404).json({ message: "No project found for this user" });
+        }
+
+        const projectId = user.project;
         const project = await Project.findById(projectId);
         if (!project) {
-            throw new Error("Projet non trouvé");
+            return res.status(404).json({ message: "Project not found" });
         }
 
         const rh = await RH.findById(rhId);
         if (!rh) {
-            throw new Error("RH Manager non trouvé");
+            return res.status(404).json({ message: "RH Manager not found" });
         }
 
         if (rh.project) {
-            throw new Error("Ce RH est déjà assigné à un projet");
+            return res.status(400).json({ message: "This RH Manager is already assigned to a project" });
         }
 
         project.rhManagers.push(rh._id);
@@ -157,12 +213,322 @@ async function assignRHManagerToProject(projectId, rhId) {
         rh.project = project._id;
         await rh.save();
 
-        return { message: "RH Manager ajouté au projet avec succès", project };
+        return res.status(200).json({ message: "RH Manager assigned to project successfully", project });
     } catch (error) {
-        throw error;
+        console.error("Error during assignment:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
+async function unassignAccountantFromProject(req, res) {
+    try {
+        const accountantId = req.params.accountantId;
+        const userId = req.user.userId;
 
+        const user = await userModel.findById(userId);
+        if (!user || !user.project || user.project.length === 0) {
+            return res.status(404).json({ message: "No project found for this user" });
+        }
 
-module.exports = { addProject,assignAccountantToProject,assignRHManagerToProject,assignFinancialManagerToProject };
+        const projectId = user.project;
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const accountant = await Accountant.findById(accountantId);
+        if (!accountant) {
+            return res.status(404).json({ message: "Accountant not found" });
+        }
+
+        if (!accountant.project || accountant.project.toString() !== project._id.toString()) {
+            return res.status(400).json({ message: "This accountant is not assigned to this project" });
+        }
+
+        // Remove the assignment
+        project.accountants = project.accountants.filter(id => id.toString() !== accountantId);
+        await project.save();
+
+        accountant.project = null;
+        await accountant.save();
+
+        return res.status(200).json({ message: "Accountant removed from project successfully", project });
+    } catch (error) {
+        console.error("Error during unassignment:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+async function unassignFinancialManagerFromProject(req, res) {
+    try {
+        const financialManagerId = req.params.financialManagerId;
+        const userId = req.user.userId;
+
+        const user = await userModel.findById(userId);
+        if (!user || !user.project || user.project.length === 0) {
+            return res.status(404).json({ message: "No project found for this user" });
+        }
+
+        const projectId = user.project;
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const financialManager = await FinancialManager.findById(financialManagerId);
+        if (!financialManager) {
+            return res.status(404).json({ message: "Financial Manager not found" });
+        }
+
+        if (!financialManager.project || financialManager.project.toString() !== project._id.toString()) {
+            return res.status(400).json({ message: "This Financial Manager is not assigned to this project" });
+        }
+
+        // Remove the assignment
+        project.financialManagers = project.financialManagers.filter(id => id.toString() !== financialManagerId);
+        await project.save();
+
+        financialManager.project = null;
+        await financialManager.save();
+
+        return res.status(200).json({ message: "Financial Manager removed from project successfully", project });
+    } catch (error) {
+        console.error("Error during unassignment:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+async function unassignRHManagerFromProject(req, res) {
+    try {
+        const rhId = req.params.rhId;
+        const userId = req.user.userId;
+
+        const user = await userModel.findById(userId);
+        if (!user || !user.project || user.project.length === 0) {
+            return res.status(404).json({ message: "No project found for this user" });
+        }
+
+        const projectId = user.project;
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const rh = await RH.findById(rhId);
+        if (!rh) {
+            return res.status(404).json({ message: "RH Manager not found" });
+        }
+
+        if (!rh.project || rh.project.toString() !== project._id.toString()) {
+            return res.status(400).json({ message: "This RH Manager is not assigned to this project" });
+        }
+
+        // Remove the assignment
+        project.rhManagers = project.rhManagers.filter(id => id.toString() !== rhId);
+        await project.save();
+
+        rh.project = null;
+        await rh.save();
+
+        return res.status(200).json({ message: "RH Manager removed from project successfully", project });
+    } catch (error) {
+        console.error("Error during unassignment:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+async function getProjectById(req, res) {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) return res.status(404).json({ message: 'Project not found' });
+        res.status(200).json(project);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+async function getMyProject(req, res) {
+    try {
+        const project = await Project.findOne({ businessManager: req.user.userId })
+            .populate('businessOwner', 'fullname lastname');
+        if (!project) {
+            return res.status(404).json({ message: "Project not found for this Business Manager" });
+        }
+        res.status(200).json(project);
+    } catch (error) {
+        console.error("Error retrieving project:", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+}
+const getAllAccountantsofproject = async (req, res) => {
+    try {
+        // Récupérer l'ID du Business Manager connecté
+        const userId = req.user.userId;
+
+        // Trouver le projet associé
+        const project = await Project.findOne({ businessManager: userId }).populate("accountants");
+
+        console.log("Projet trouvé :", project); // Vérifier si un projet est trouvé
+
+        // Comptables liés au projet
+        const projectAccountants = project ? project.accountants : [];
+
+        console.log("Comptables liés au projet :", projectAccountants);
+
+        // Comptables qui n'ont pas de projet (ajouter null et undefined pour éviter les erreurs)
+        const accountantsWithoutProject = await userModel.find({ 
+            role: "ACCOUNTANT", 
+            $or: [{ project: { $exists: false } }, { project: null }]
+        });
+
+        console.log("Comptables sans projet :", accountantsWithoutProject);
+
+        // Fusionner les deux listes
+        const allAccountants = [...projectAccountants, ...accountantsWithoutProject];
+
+        return res.status(200).json({ accountants: allAccountants });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des comptables :", error);
+        return res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+const getAllHRsOfProject = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Récupérer le projet associé
+        const project = await Project.findOne({ businessManager: userId }).populate("rhManagers");
+
+        const projectHRs = project ? project.rhManagers : [];
+
+        // Récupérer les HRs qui n'ont pas de projet
+        const hrsWithoutProject = await userModel.find({ 
+            role: "HR", 
+            $or: [{ project: { $exists: false } }, { project: null }]
+        });
+
+        // Fusionner les deux listes
+        const rhManagers = [...projectHRs, ...hrsWithoutProject];
+
+        return res.status(200).json({ rhManagers: rhManagers });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des HRs :", error);
+        return res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+const getAllFinancialManagersOfProject = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Récupérer le projet associé
+        const project = await Project.findOne({ businessManager: userId }).populate("financialManagers");
+
+        const projectFinancialManagers = project ? project.financialManagers : [];
+
+        // Récupérer les Financial Managers qui n'ont pas de projet
+        const financialManagersWithoutProject = await userModel.find({ 
+            role: "FINANCIAL_MANAGER", 
+            $or: [{ project: { $exists: false } }, { project: null }]
+        });
+
+        // Fusionner les deux listes
+        const allFinancialManagers = [...projectFinancialManagers, ...financialManagersWithoutProject];
+
+        return res.status(200).json({ financialManagers: allFinancialManagers });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des Financial Managers :", error);
+        return res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+const updateproject = async (req, res) => {
+    const projectID = req.params.id;
+    // Récupérer les nouveaux champs du contact à partir du body de la requête
+  
+    try {
+      // Recherche du contact à modifier et mise à jour
+      const updatedproject = await Project.findByIdAndUpdate(projectID, req.body, { new: true });
+  
+      if (!updatedproject) {
+        return res.status(404).json({ message: 'pays non trouvé' });
+      }
+  
+      res.status(200).json({ message: 'project mis à jour avec succès', project: updatedproject });
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour du project:', err);
+      res.status(500).json({ message: 'Erreur interne', error: err });
+    }
+  };
+  
+  const deleteProjectById = async (req, res) => {
+    try {
+        const { id: projectId } = req.params;
+
+        // 1. Vérifier l'existence du projet
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Projet non trouvé" });
+        }
+
+        // 2. Désaffectation des utilisateurs (en parallèle)
+        await Promise.all([
+            // Désaffectation des managers
+            BusinessManager.updateOne({ _id: project.businessManager }, { $unset: { project: "" } }),
+            BusinessOwner.updateOne({ _id: project.businessOwner }, { $unset: { project: "" } }),
+            
+            // Retrait des références dans les tableaux
+            Accountant.updateMany({ _id: { $in: project.accountants } }, { $pull: { projects: projectId } }),
+            FinancialManager.updateMany({ _id: { $in: project.financialManagers } }, { $pull: { projects: projectId } }),
+            RH.updateMany({ _id: { $in: project.rhManagers } }, { $pull: { projects: projectId } })
+        ]);
+
+        // 3. Nettoyage des taxes (deux options au choix)
+        // OPTION A: Désassociation
+        await taxe.updateMany({ projet: projectId }, { $unset: { projet: "" } });
+        
+        // OPTION B: Suppression (décommentez si nécessaire)
+        // await Taxes.deleteMany({ projet: projectId });
+
+        // 4. Gestion des assets_actif (deux options)
+        // OPTION A: Désassociation
+        await assets_actif.updateMany({ _id: { $in: project.assets_actif } }, { $unset: { projet_id: "" } });
+        
+        // OPTION B: Suppression (décommentez si nécessaire)
+        // await AssetActif.deleteMany({ _id: { $in: project.assets_actif } });
+
+        // 5. Suppression finale du projet
+        await Project.findByIdAndDelete(projectId);
+
+        res.status(200).json({ 
+            success: true,
+            message: "Projet supprimé avec nettoyage complet des références",
+            details: {
+                project: projectId,
+                taxes_processed: true,
+                assets_processed: true,
+                users_updated: true
+            }
+        });
+
+    } catch (error) {
+        console.error("[ERREUR] Suppression projet:", error);
+        res.status(500).json({
+            success: false,
+            message: "Échec de la suppression du projet",
+            error: process.env.NODE_ENV === 'development' ? {
+                message: error.message,
+                stack: error.stack
+            } : undefined
+        });
+    }
+};
+module.exports = {
+    addProject,
+    assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,
+    assignRHManagerToProject,updateproject,
+    assignFinancialManagerToProject,
+    unassignRHManagerFromProject,deleteProjectById,
+    unassignFinancialManagerFromProject,
+    unassignAccountantFromProject,
+    getProjectById,
+    getMyProject,getbyid
+};
