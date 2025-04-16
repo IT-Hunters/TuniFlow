@@ -1343,9 +1343,49 @@ const getAllRoles = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+const getAvailableAndAssignedBusinessManagers = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const businessOwnerId = req.user._id;
+        const user = await userModel.findById(userId).populate('projects');
+
+        // récupérer les projets du businessOwner connecté
+        const projects = user.projects;
+        console.log(projects);
+
+        // extraire les IDs des BusinessManagers affectés à ces projets
+        const assignedBMIds = projects
+            .filter(p => p.businessManager) // éviter les null
+            .map(p => p.businessManager.toString());
+
+        // récupérer tous les BusinessManagers
+        const allBusinessManagers = await userModel.find({ userType: "BusinessManager" });
+
+        // filtrer ceux affectés aux projets du BusinessOwner
+        const assignedBusinessManagers = allBusinessManagers.filter(bm =>
+            assignedBMIds.includes(bm._id.toString())
+        );
+
+        // filtrer ceux qui n'ont aucun projet
+        const unassignedBusinessManagers = allBusinessManagers.filter(bm =>
+            !bm.project // champ vide ou non défini
+        );
+        const businessManagers = [
+            ...assignedBusinessManagers.map(bm => ({ ...bm.toObject(), status: 'assigned' })),
+            ...unassignedBusinessManagers.map(bm => ({ ...bm.toObject(), status: 'unassigned' }))
+        ];
+
+        res.status(200).json({ businessManagers });
+
+    } catch (error) {
+        console.error("Error retrieving Business Managers:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 
 module.exports = {
-    Register, Login, getAll,
+    Register, Login, getAll,getAvailableAndAssignedBusinessManagers,
     findMyProfile, deleteprofilbyid, deletemyprofile,
     acceptAutorisation, updateProfile, AddPicture, getBusinessOwnerFromToken,
     getAllBusinessManagers, getAllAccountants, getAllFinancialManagers, getAllRH, findMyProject, Registerwithproject,

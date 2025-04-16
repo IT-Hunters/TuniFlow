@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import './MyProject.css';
+import { Edit, Trash2 } from 'react-feather';
 
 const API_URL = 'http://localhost:3000/users';
 const API_Project = 'http://localhost:3000/project';
@@ -79,6 +80,25 @@ const MyProject = () => {
       setAssignmentError(err.response?.data?.message || 'Failed to assign user: ' + err.message);
     } finally {
       setAssignmentLoading(false);
+    }
+  };
+  const handleEditUser = (userId) => {
+    navigate(`/Updatebymanager/${userId}`);
+  };
+  
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`${API_URL}/deletbyid/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        // Rafraîchir les données après suppression
+        await Promise.all([fetchMyProject(), fetchAvailableUsers()]);
+        setAssignmentSuccess('User deleted successfully');
+      } catch (err) {
+        setAssignmentError(err.response?.data?.message || 'Failed to delete user');
+      }
     }
   };
 
@@ -159,7 +179,7 @@ const MyProject = () => {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Assigned Project</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -170,23 +190,35 @@ const MyProject = () => {
                       <td>{user.email}</td>
                       <td>{user.project ? 'Assigned' : 'Not Assigned'}</td>
                       <td>
-                        {user.project ? (
-                          <button
-                            className="btn btn-danger MyProject-unassign-btn"
-                            onClick={() => handleUnassignUser(user._id, 'Accountant')}
-                            disabled={assignmentLoading}
-                          >
-                            {assignmentLoading ? 'Unassigning...' : 'Unassign'}
-                          </button>
-                        ) : (
-                          <button
-                            className="btn btn-primary"
-                            onClick={() => handleAssignUser(user._id, 'Accountant')}
-                            disabled={assignmentLoading}
-                          >
-                            {assignmentLoading ? 'Assigning...' : 'Assign'}
-                          </button>
-                        )}
+                        <div className="MyProject-action-buttons">
+                          {user.project ? (
+                            <button
+                              className="btn btn-danger MyProject-unassign-btn"
+                              onClick={() => handleUnassignUser(user._id, 'Accountant')}
+                              disabled={assignmentLoading}
+                            >
+                              {assignmentLoading ? 'Unassigning...' : 'Unassign'}
+                            </button>
+                          ) : (
+                            <button
+                              className="btn btn-primary"
+                              onClick={() => handleAssignUser(user._id, 'Accountant')}
+                              disabled={assignmentLoading}
+                            >
+                              {assignmentLoading ? 'Assigning...' : 'Assign'}
+                            </button>
+                          )}
+                          <Edit 
+                            size={16} 
+                            className="MyProject-edit-icon" 
+                            onClick={() => handleEditUser(user._id)} 
+                          />
+                          <Trash2 
+                            size={16} 
+                            className="MyProject-delete-icon" 
+                            onClick={() => handleDeleteUser(user._id)} 
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -197,23 +229,35 @@ const MyProject = () => {
                       <td>{user.email}</td>
                       <td>{user.project ? 'Assigned' : 'Not Assigned'}</td>
                       <td>
-                        {user.project ? (
-                          <button
-                            className="btn btn-danger MyProject-unassign-btn"
-                            onClick={() => handleUnassignUser(user._id, 'FinancialManager')}
-                            disabled={assignmentLoading}
-                          >
-                            {assignmentLoading ? 'Unassigning...' : 'Unassign'}
-                          </button>
-                        ) : (
-                          <button
-                            className="btn btn-primary"
-                            onClick={() => handleAssignUser(user._id, 'FinancialManager')}
-                            disabled={assignmentLoading}
-                          >
-                            {assignmentLoading ? 'Assigning...' : 'Assign'}
-                          </button>
-                        )}
+                        <div className="MyProject-action-buttons">
+                          {user.project ? (
+                            <button
+                              className="btn btn-danger MyProject-unassign-btn"
+                              onClick={() => handleUnassignUser(user._id, 'FinancialManager')}
+                              disabled={assignmentLoading}
+                            >
+                              {assignmentLoading ? 'Unassigning...' : 'Unassign'}
+                            </button>
+                          ) : (
+                            <button
+                              className="btn btn-primary"
+                              onClick={() => handleAssignUser(user._id, 'FinancialManager')}
+                              disabled={assignmentLoading}
+                            >
+                              {assignmentLoading ? 'Assigning...' : 'Assign'}
+                            </button>
+                          )}
+                          <Edit 
+                            size={16} 
+                            className="MyProject-edit-icon" 
+                            onClick={() => handleEditUser(user._id)} 
+                          />
+                          <Trash2 
+                            size={16} 
+                            className="MyProject-delete-icon" 
+                            onClick={() => handleDeleteUser(user._id)} 
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -224,28 +268,38 @@ const MyProject = () => {
                       <td>{user.email}</td>
                       <td>{user.project ? 'Assigned' : 'Not Assigned'}</td>
                       <td>
-                        {user.project ? (
-                          <button
-                            className="btn btn-danger MyProject-unassign-btn"
-                            onClick={() => handleUnassignUser(user._id, 'RH')}
-                            disabled={assignmentLoading}
-                          >
-                            {assignmentLoading ? 'Unassigning...' : 'Unassign'}
-                          </button>
-                        ) : (
-                          <button
-                            className="btn btn-primary"
-                            onClick={() => handleAssignUser(user._id, 'RH')}
-                            disabled={assignmentLoading}
-                          >
-                            {assignmentLoading ? 'Assigning...' : 'Assign'}
-                          </button>
-                        )}
+                        <div className="MyProject-action-buttons">
+                          {user.project ? (
+                            <button
+                              className="btn btn-danger MyProject-unassign-btn"
+                              onClick={() => handleUnassignUser(user._id, 'RH')}
+                              disabled={assignmentLoading}
+                            >
+                              {assignmentLoading ? 'Unassigning...' : 'Unassign'}
+                            </button>
+                          ) : (
+                            <button
+                              className="btn btn-primary"
+                              onClick={() => handleAssignUser(user._id, 'RH')}
+                              disabled={assignmentLoading}
+                            >
+                              {assignmentLoading ? 'Assigning...' : 'Assign'}
+                            </button>
+                          )}
+                          <Edit 
+                            size={16} 
+                            className="MyProject-edit-icon" 
+                            onClick={() => handleEditUser(user._id)} 
+                          />
+                          <Trash2 
+                            size={16} 
+                            className="MyProject-delete-icon" 
+                            onClick={() => handleDeleteUser(user._id)} 
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}
-                  
-                  
                 </tbody>
               </table>
             </div>

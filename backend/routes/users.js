@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation
+const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation,getAvailableAndAssignedBusinessManagers
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,findMyProjectsOwner,updateFirstLogin,
   getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,deleteById,
   getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,getAllRoles,findMyPicture,logout,getbyid,updateById} = require('../controllers/auth');
@@ -14,6 +14,7 @@ router.get('/', function(req, res, next) {
 });
 router.get("/findmypicture",authenticateJWT, findMyPicture);
 router.post('/upload-employees', multerExcel.single('file'), addEmployeesFromExcel);
+router.get("/getBusinessManagersByOwner", authenticateJWT, getAvailableAndAssignedBusinessManagers);
 router.post('/addemployee', addEmployee)
 router.post("/register", multerImageAndPdf.single("evidence"), Register);
 router.post("/login",Login)

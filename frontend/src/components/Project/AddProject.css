@@ -327,3 +327,35 @@ svg {
 .pagination-btn.btn-secondary:hover:not(:disabled) {
   background-color: var(--secondary-hover);
 }
+/* Ajoutez ces styles à votre fichier CSS existant */
+
+.managerrr-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actionnn-icons {
+  display: flex;
+  gap: 12px;
+}
+
+.edittt-icon {
+  color: #4a89dc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.edittt-icon:hover {
+  color: #3b7dd8;
+}
+
+.deleteee-icon {
+  color: #e74c3c;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.deleteee-icon:hover {
+  color: #c0392b;
+}
