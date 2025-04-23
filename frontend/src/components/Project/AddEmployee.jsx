@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './AddEmployee.css'; // Créez ce fichier CSS pour le style
+import CoolSidebar from '../sidebarHome/newSidebar';
+import Navbar from '../navbarHome/NavbarHome';
+import './AddEmployee.css'; // Tu peux créer ce fichier à partir de UpdateProject.css
 
 const AddEmployee = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'employee' // Valeur par défaut
+    role: 'employee'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -17,10 +19,7 @@ const AddEmployee = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -36,7 +35,7 @@ const AddEmployee = () => {
         return;
       }
 
-      const response = await axios.post(
+      await axios.post(
         'http://localhost:3000/users/addemployee',
         formData,
         {
@@ -48,103 +47,113 @@ const AddEmployee = () => {
       );
 
       setSuccess(true);
-      // Réinitialiser le formulaire après succès
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        role: 'employee'
-      });
-      
-      // Redirection après 2 secondes
-      setTimeout(() => {
-        navigate('/projectview');
-      }, 2000);
-      
+      setFormData({ name: '', email: '', password: '', role: 'employee' });
+
+      setTimeout(() => navigate('/projectview'), 2000);
     } catch (err) {
-      console.error('Error adding employee:', err);
-      setError(err.response?.data?.message || 'Erreur lors de l\'ajout de l\'employé');
+      setError(err.response?.data?.message || "Erreur lors de l'ajout");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="add-employee-container">
-      <h2>Add New Epmoye</h2>
-      
-      {success && (
-        <div className="alert alert-success">
-          Employé added successfuly
-        </div>
-      )}
-      
-      {error && (
-        <div className="alert alert-error">
-          {error}
-        </div>
-      )}
+    <div className="container">
+      <CoolSidebar />
+      <div className="main">
+        <Navbar />
+        <div className="update-project-wrapper">
+          <header className="project-header">
+            <h1 className="project-title">Add New Employee</h1>
+          </header>
 
-      <form onSubmit={handleSubmit} className="employee-form">
-        <div className="form-group">
-          <label htmlFor="name">Full Name</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
+          <section className="update-form">
+            <div className="detail-card">
+              <h2 className="card-title">Employee Details</h2>
 
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
+              {success && (
+                <div className="alert alert-success">
+                  Employee added successfully.
+                </div>
+              )}
 
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            minLength="6"
-          />
-        </div>
+              {error && (
+                <div className="alert alert-error">
+                  {error}
+                </div>
+              )}
 
-        <div className="form-group">
-          <label htmlFor="role">ROle</label>
-          <select
-            id="role"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            required
-          >
-            <option value="employee">Employe</option>
-            
-          </select>
-        </div>
+              <form onSubmit={handleSubmit} className="project-form">
+                <div className="form-group">
+                  <label htmlFor="name" className="label">Full Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                  />
+                </div>
 
-        <button 
-          type="submit" 
-          className="submit-btn"
-          disabled={loading}
-        >
-          {loading ? 'En cours...' : 'ADD Employe'}
-        </button>
-      </form>
+                <div className="form-group">
+                  <label htmlFor="email" className="label">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="password" className="label">Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    minLength={6}
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="role" className="label">Role</label>
+                  <select
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    className="form-input"
+                  >
+                    <option value="employee">Employee</option>
+                  </select>
+                </div>
+
+                <div className="form-actions">
+                  <button type="submit" className="action-btn submit-btn" disabled={loading}>
+                    {loading ? 'Adding...' : 'Add Employee'}
+                  </button>
+                  <button
+                    type="button"
+                    className="action-btn cancel-btn"
+                    onClick={() => navigate('/projectview')}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
   );
 };

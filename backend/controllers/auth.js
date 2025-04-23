@@ -112,6 +112,45 @@ const Register = async (req, res) => {
             default:
                 return res.status(400).json({ role: "Invalid role" });
         }
+        // 1️⃣1️⃣ Envoyer un e-mail de bienvenue avec le mot de passe en clair
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: req.body.email,
+            subject: "👋 Welcome to our platform!",
+            html: `
+              <div style="background-color: #f4f4f4; padding: 20px; font-family: Arial, sans-serif;">
+                  <div style="max-width: 600px; background: #fff; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center;">
+                      
+                      <!-- Logo -->
+                      <div style="text-align: center; margin-bottom: 20px;">
+                          <img src="https://www.futuronomics.com/wp-content/uploads/2024/07/best-1024x576.png" 
+                               alt="TuniFlow Logo" style="max-width: 150px; border-radius: 10px;">
+                      </div>
+                  
+                      <h2 style="color: #333;">🎉 Welcome to our platform!</h2>
+                      <p style="color: #555;">Hello ${req.body.fullname},</p>
+                      <p style="color: #555;">Your account has been successfully created as <strong>${req.body.role}</strong>.</p>
+                      <p style="color: #555;">Here are your login details:</p>
+                      <p style="color: #555;"><strong>Email:</strong> ${req.body.email}</p>
+                      <p style="color: #555;"><strong>Password:</strong> ${req.body.password}</p>
+                      <p style="color: #555;">We recommend changing your password after your first login.</p>
+                  
+                      <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+                      <p style="color: #999; font-size: 12px;">© ${new Date().getFullYear()} TuniFlow - All rights reserved.</p>
+                  </div>
+              </div>
+          `,
+        };
+
+        await transporter.sendMail(mailOptions);
 
         // 5️⃣ Sauvegarde de l'utilisateur
         const result = await userType.save();
@@ -1273,8 +1312,11 @@ const RegisterManger = async (req, res) => {
             return res.status(403).json({ message: "Access denied. Only a Business Owner can register users" });
         }
 
+        // Sauvegarder le mot de passe en clair pour l'email avant de le hacher
+        const plainPassword = req.body.password;
+
         // 4️⃣ Hachage du mot de passe
-        const hashedPassword = await bcryptjs.hash(req.body.password, 10);
+        const hashedPassword = await bcryptjs.hash(plainPassword, 10);
 
         // 5️⃣ Création du Business Manager
         const businessManager = new BusinessManager({
@@ -1310,13 +1352,13 @@ const RegisterManger = async (req, res) => {
                       <p style="color: #555;">Your account has been successfully created as <strong>${req.body.role}</strong>.</p>
                       <p style="color: #555;">Here are your login details:</p>
                       <p style="color: #555;"><strong>Email:</strong> ${req.body.email}</p>
-                      <p style="color: #555;"><strong>Password:</strong> ${req.body.password}</p>
+                      <p style="color: #555;"><strong>Password:</strong> ${plainPassword}</p>
                       <p style="color: #555;">We recommend changing your password after your first login.</p>
                       <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
                       <p style="color: #999; font-size: 12px;">© ${new Date().getFullYear()} TuniFlow - All rights reserved.</p>
                   </div>
               </div>
-          `,
+            `,
         };
 
         await transporter.sendMail(mailOptions);

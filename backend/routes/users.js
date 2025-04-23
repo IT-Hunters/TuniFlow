@@ -34,6 +34,7 @@ router.get("/getAllBusinessOwners",authenticateJWT,getAllBusinessOwners)
 router.get("/getAllAccountants",authenticateJWT,getAllAccountants)
 router.get("/getAllFinancialManagers",authenticateJWT,getAllFinancialManagers)
 router.get("/getAllRH",authenticateJWT,getAllRH)
+router.get("/getempl",getAllempl)
 router.get('/findMyProject', authenticateJWT, findMyProject);
 router.get('/findMyProjectsOwner', authenticateJWT, findMyProjectsOwner);
 router.post("/send-code", sendVerificationCode);
