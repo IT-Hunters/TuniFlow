@@ -142,8 +142,10 @@ const MyProject = () => {
     <div className="container">
       <CoolSidebar />
       <div className="main">
+        
         <Navbar />
         <div className="content">
+         
           <h1>My Project</h1>
           <div className="MyProject-project-details card">
             <h2>Project Details</h2>

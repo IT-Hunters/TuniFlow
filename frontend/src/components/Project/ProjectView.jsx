@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import './ProjectView.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
+import GoogleTranslate from './GoogleTranslate';
 
 const API_URL = 'http://localhost:3000/users';
 
@@ -187,6 +188,7 @@ const ProjectView = () => {
         <Navbar />
         <div className="project-details-wrapper">
           <header className="project-header">
+          <GoogleTranslate/>
             <h1 className="project-title">
               {project.name || `Projet ${project.id?.slice(-4) || 'Sans nom'}`}
             </h1>
@@ -240,6 +242,13 @@ const ProjectView = () => {
               >
                 generate Rapport
               </button>
+              <button 
+        onClick={() => navigate('/findemploye')} 
+        className="action-btn show-employees-btn"
+        style={{ backgroundColor: '#2196F3', color: 'white' }}
+      >
+        Show Employees
+      </button>
             </div>
           </header>
         

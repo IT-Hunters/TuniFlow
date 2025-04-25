@@ -36,7 +36,9 @@ import AddEmployee from "./components/Project/AddEmployee";
 import UpdateProject from "./components/Project/UpadateProject"
 import ObjectiveAnalytics from "./components/Objectif/ObjectiveAnalytics";
 import UserUpdate from "./components/Project/UserUpdate"
+import EmployeeTable from "./components/Project/EmployeeTable"
 import Updatebymanager from "./components/Project/Updatebymanager"
+ 
 function App() {         
   return (
     <Router>
@@ -79,6 +81,7 @@ function App() {
         <Route path="/ObjectiveAnalytics" element={<ObjectiveAnalytics />} />
         <Route path="/edit-manager/:id" element={<UserUpdate />} />
         <Route path="/Updatebymanager/:id" element={<Updatebymanager />} />
+        <Route path="/findemploye" element={<EmployeeTable />} />
       </Routes>
     </Router>
   );
