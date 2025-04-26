@@ -233,3 +233,9 @@ body {
   background-color: #d4edda;
   border-color: #c3e6cb;
 }
+.MyProject-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}

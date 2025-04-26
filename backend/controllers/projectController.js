@@ -18,6 +18,7 @@ const BusinessManager = require("../model/BusinessManager");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const Wallet =require("../model/wallet")
+const { createNotification } = require("../controllers/NotificationController")
 // Assurez-vous que le chemin est correct
 
 
@@ -93,23 +94,21 @@ async function addProject(businessManagerId, projectData) {
 async function assignAccountantToProject(req, res) {
     try {
         const accountantId = req.params.accountantId;
-        const userId = req.user.userId; // Retrieve the logged-in user's ID
+        const userId = req.user.userId; // ID de l'utilisateur connecté
 
-        // Check if the user has associated projects
+        // Vérifier si l'utilisateur a un projet associé
         const user = await userModel.findById(userId);
         if (!user || !user.project || user.project.length === 0) {
             return res.status(404).json({ message: "No project found for this user" });
         }
 
-        // Retrieve the first project associated with this user
         const projectId = user.project;
         const project = await Project.findById(projectId);
-
         if (!project) {
             return res.status(404).json({ message: "No project found for this user" });
         }
 
-        // Check if the accountant exists
+        // Vérifier si le comptable existe
         const accountant = await Accountant.findById(accountantId);
         if (!accountant) {
             return res.status(404).json({ message: "Accountant not found" });
@@ -119,12 +118,25 @@ async function assignAccountantToProject(req, res) {
             return res.status(400).json({ message: "This accountant is already assigned to a project" });
         }
 
-        // Assign the accountant to the project
+        // Assigner le comptable au projet
         project.accountants.push(accountant._id);
         await project.save();
 
         accountant.project = project._id;
         await accountant.save();
+
+        // 🎯 Créer une notification pour informer le comptable
+        const message = `Vous avez été affecté au projet ${project.name || project._id}`;
+        await createNotification(accountant._id, message, project._id);
+
+        // 🎯 Émettre l'événement Socket.IO aussi pour le comptable
+        if (global.io) {
+            global.io.to(accountant._id.toString()).emit("newNotification", {
+                message,
+                projectId: project._id,
+                timestamp: new Date()
+            });
+        }
 
         return res.status(200).json({ message: "Accountant assigned to project successfully", project });
     } catch (error) {
@@ -132,6 +144,7 @@ async function assignAccountantToProject(req, res) {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
 async function getbyid(req, res) {
     try {
         const data = await Project.findById(req.params.id)
@@ -184,6 +197,19 @@ async function assignFinancialManagerToProject(req, res) {
 
         financialManager.project = project._id;
         await financialManager.save();
+         // 🎯 Créer une notification pour informer le comptable
+         const message = `Vous avez été affecté au projet ${project.name || project._id}`;
+         await createNotification(financialManager._id, message, project._id);
+ 
+         // 🎯 Émettre l'événement Socket.IO aussi pour le comptable
+         if (global.io) {
+             global.io.to(financialManager._id.toString()).emit("newNotification", {
+                 message,
+                 projectId: project._id,
+                 timestamp: new Date()
+             });
+         }
+ 
 
         return res.status(200).json({ message: "Financial Manager assigned to project successfully", project });
     } catch (error) {
@@ -222,6 +248,20 @@ async function assignRHManagerToProject(req, res) {
 
         rh.project = project._id;
         await rh.save();
+         
+         // 🎯 Créer une notification pour informer le comptable
+         const message = `Vous avez été affecté au projet ${project.name || project._id}`;
+         await createNotification(rh._id, message, project._id);
+ 
+         // 🎯 Émettre l'événement Socket.IO aussi pour le comptable
+         if (global.io) {
+             global.io.to(rh._id.toString()).emit("newNotification", {
+                 message,
+                 projectId: project._id,
+                 timestamp: new Date()
+             });
+         }
+ 
 
         return res.status(200).json({ message: "RH Manager assigned to project successfully", project });
     } catch (error) {
@@ -261,6 +301,7 @@ async function unassignAccountantFromProject(req, res) {
 
         accountant.project = null;
         await accountant.save();
+         
 
         return res.status(200).json({ message: "Accountant removed from project successfully", project });
     } catch (error) {
@@ -301,6 +342,8 @@ async function unassignFinancialManagerFromProject(req, res) {
         financialManager.project = null;
         await financialManager.save();
 
+         
+
         return res.status(200).json({ message: "Financial Manager removed from project successfully", project });
     } catch (error) {
         console.error("Error during unassignment:", error);
@@ -339,6 +382,8 @@ async function unassignRHManagerFromProject(req, res) {
 
         rh.project = null;
         await rh.save();
+
+       
 
         return res.status(200).json({ message: "RH Manager removed from project successfully", project });
     } catch (error) {
@@ -420,7 +465,7 @@ const getAllHRsOfProject = async (req, res) => {
 
         // Récupérer les HRs qui n'ont pas de projet
         const hrsWithoutProject = await userModel.find({ 
-            role: "HR", 
+            role: "RH", 
             $or: [{ project: { $exists: false } }, { project: null }]
         });
 

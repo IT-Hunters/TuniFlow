@@ -19,6 +19,8 @@ const MyProject = () => {
   const [assignmentLoading, setAssignmentLoading] = useState(false);
   const [assignmentError, setAssignmentError] = useState(null);
   const [assignmentSuccess, setAssignmentSuccess] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 10;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,7 +30,7 @@ const MyProject = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found. Please log in.');
-      const response = await axios.get(`${API_Project}/my-project`, { // Fixed endpoint
+      const response = await axios.get(`${API_Project}/my-project`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProject(response.data);
@@ -50,15 +52,15 @@ const MyProject = () => {
         axios.get(`${API_Project}/getAllHRsOfProject`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       
-      // Extrait les tableaux des réponses
       setAccountants(accountantResponse.data.accountants || []);
       setFinancialManagers(financialManagerResponse.data.financialManagers || []);
-      setRhManagers(rhManagerResponse.data.rhManagers || []); // Supposons que la clé est "rhManagers"
+      setRhManagers(rhManagerResponse.data.rhManagers || []);
     } catch (err) {
       console.error('Fetch Users Error:', err.response?.data || err.message);
       setError(err.response?.data?.message || 'Failed to fetch users: ' + err.message);
     }
   };
+
   const handleAssignUser = async (userId, userType) => {
     setAssignmentLoading(true);
     setAssignmentError(null);
@@ -82,10 +84,11 @@ const MyProject = () => {
       setAssignmentLoading(false);
     }
   };
+
   const handleEditUser = (userId) => {
     navigate(`/Updatebymanager/${userId}`);
   };
-  
+
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
@@ -93,7 +96,6 @@ const MyProject = () => {
         await axios.delete(`${API_URL}/deletbyid/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        // Rafraîchir les données après suppression
         await Promise.all([fetchMyProject(), fetchAvailableUsers()]);
         setAssignmentSuccess('User deleted successfully');
       } catch (err) {
@@ -138,14 +140,32 @@ const MyProject = () => {
     }
   }, [location.state]);
 
+  const allUsers = [
+    ...accountants.map(user => ({ ...user, userType: 'Accountant' })),
+    ...financialManagers.map(user => ({ ...user, userType: 'FinancialManager' })),
+    ...rhManagers.map(user => ({ ...user, userType: 'RH' })),
+  ];
+
+  // Pagination
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = allUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(allUsers.length / usersPerPage);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
   return (
     <div className="container">
       <CoolSidebar />
       <div className="main">
-        
         <Navbar />
         <div className="content">
-         
           <h1>My Project</h1>
           <div className="MyProject-project-details card">
             <h2>Project Details</h2>
@@ -162,6 +182,7 @@ const MyProject = () => {
               </div>
             )}
           </div>
+
           {!loading && !error && project && (
             <div className="MyProject-assignment-section card">
               <h2>Assign Users to Project</h2>
@@ -174,6 +195,7 @@ const MyProject = () => {
               </button>
               {assignmentError && <div className="alert alert-error">{assignmentError}</div>}
               {assignmentSuccess && <div className="alert alert-success">{assignmentSuccess}</div>}
+
               <table className="MyProject-assignment-table">
                 <thead>
                   <tr>
@@ -185,9 +207,9 @@ const MyProject = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {accountants.map((user) => (
+                  {currentUsers.map((user) => (
                     <tr key={user._id}>
-                      <td>Accountant</td>
+                      <td>{user.userType}</td>
                       <td>{user.fullname} {user.lastname}</td>
                       <td>{user.email}</td>
                       <td>{user.project ? 'Assigned' : 'Not Assigned'}</td>
@@ -196,7 +218,7 @@ const MyProject = () => {
                           {user.project ? (
                             <button
                               className="btn btn-danger MyProject-unassign-btn"
-                              onClick={() => handleUnassignUser(user._id, 'Accountant')}
+                              onClick={() => handleUnassignUser(user._id, user.userType)}
                               disabled={assignmentLoading}
                             >
                               {assignmentLoading ? 'Unassigning...' : 'Unassign'}
@@ -204,85 +226,7 @@ const MyProject = () => {
                           ) : (
                             <button
                               className="btn btn-primary"
-                              onClick={() => handleAssignUser(user._id, 'Accountant')}
-                              disabled={assignmentLoading}
-                            >
-                              {assignmentLoading ? 'Assigning...' : 'Assign'}
-                            </button>
-                          )}
-                          <Edit 
-                            size={16} 
-                            className="MyProject-edit-icon" 
-                            onClick={() => handleEditUser(user._id)} 
-                          />
-                          <Trash2 
-                            size={16} 
-                            className="MyProject-delete-icon" 
-                            onClick={() => handleDeleteUser(user._id)} 
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {financialManagers.map((user) => (
-                    <tr key={user._id}>
-                      <td>Financial Manager</td>
-                      <td>{user.fullname} {user.lastname}</td>
-                      <td>{user.email}</td>
-                      <td>{user.project ? 'Assigned' : 'Not Assigned'}</td>
-                      <td>
-                        <div className="MyProject-action-buttons">
-                          {user.project ? (
-                            <button
-                              className="btn btn-danger MyProject-unassign-btn"
-                              onClick={() => handleUnassignUser(user._id, 'FinancialManager')}
-                              disabled={assignmentLoading}
-                            >
-                              {assignmentLoading ? 'Unassigning...' : 'Unassign'}
-                            </button>
-                          ) : (
-                            <button
-                              className="btn btn-primary"
-                              onClick={() => handleAssignUser(user._id, 'FinancialManager')}
-                              disabled={assignmentLoading}
-                            >
-                              {assignmentLoading ? 'Assigning...' : 'Assign'}
-                            </button>
-                          )}
-                          <Edit 
-                            size={16} 
-                            className="MyProject-edit-icon" 
-                            onClick={() => handleEditUser(user._id)} 
-                          />
-                          <Trash2 
-                            size={16} 
-                            className="MyProject-delete-icon" 
-                            onClick={() => handleDeleteUser(user._id)} 
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {rhManagers.map((user) => (
-                    <tr key={user._id}>
-                      <td>RH Manager</td>
-                      <td>{user.fullname} {user.lastname}</td>
-                      <td>{user.email}</td>
-                      <td>{user.project ? 'Assigned' : 'Not Assigned'}</td>
-                      <td>
-                        <div className="MyProject-action-buttons">
-                          {user.project ? (
-                            <button
-                              className="btn btn-danger MyProject-unassign-btn"
-                              onClick={() => handleUnassignUser(user._id, 'RH')}
-                              disabled={assignmentLoading}
-                            >
-                              {assignmentLoading ? 'Unassigning...' : 'Unassign'}
-                            </button>
-                          ) : (
-                            <button
-                              className="btn btn-primary"
-                              onClick={() => handleAssignUser(user._id, 'RH')}
+                              onClick={() => handleAssignUser(user._id, user.userType)}
                               disabled={assignmentLoading}
                             >
                               {assignmentLoading ? 'Assigning...' : 'Assign'}
@@ -304,6 +248,28 @@ const MyProject = () => {
                   ))}
                 </tbody>
               </table>
+
+              {/* Pagination */}
+              <div className="MyProject-pagination">
+                <button 
+                  onClick={handlePrevPage} 
+                  disabled={currentPage === 1}
+                  className="btn btn-secondary"
+                >
+                  Previous
+                </button>
+                <span style={{ margin: '0 10px' }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button 
+                  onClick={handleNextPage} 
+                  disabled={currentPage === totalPages}
+                  className="btn btn-secondary"
+                >
+                  Next
+                </button>
+              </div>
+
             </div>
           )}
         </div>
