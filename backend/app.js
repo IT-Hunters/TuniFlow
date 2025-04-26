@@ -20,6 +20,8 @@ var transactionRoutes = require('./routes/transactionRoutes');
 var walletRoutes = require('./routes/walletRoutes');
 var chatRouter = require('./routes/chatRoutes');
 var userLogsRoutes = require('./routes/UserLogsRoutes');
+const salarySchedulerRoutes = require('./routes/salarySchedulerRoutes');
+require('./jobs/salaryProcessor');
 
 var app = express();
 var mongoose = require("mongoose");
@@ -61,6 +63,7 @@ app.use('/transactions', transactionRoutes);
 app.use('/objectif', ObjectifRouter);
 app.use('/chat', chatRouter);
 app.use('/userLogs', userLogsRoutes);
+app.use('/salary-scheduler', salarySchedulerRoutes);
 
 // 🟢 Test API
 app.get('/api/test', (req, res) => {

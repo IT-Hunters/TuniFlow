@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendarAlt } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -15,6 +15,7 @@ import {
 import Deposit from "./Depossit";
 import Withdraw from "./Withdraw";
 import Transfer from "./Transfer";
+import SalaryScheduler from "./SalaryScheduler";
 import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 import "./Tessst.css";
@@ -170,6 +171,12 @@ const Wallet = () => {
                 </div>
                 <p>Transfer</p>
               </div>
+              <div className="action" onClick={() => setActiveScreen("salary")}>
+                <div className="action-icon">
+                  <FaCalendarAlt />
+                </div>
+                <p>Salary Schedule</p>
+              </div>
             </div>
 
             <div className="transaction-history">
@@ -279,6 +286,11 @@ const Wallet = () => {
         {activeScreen === "transfer" && (
           <div className="form-wrapper">
             <Transfer goBack={refreshWalletData} walletId={walletId} />
+          </div>
+        )}
+        {activeScreen === "salary" && (
+          <div className="form-wrapper">
+            <SalaryScheduler goBack={refreshWalletData} walletId={walletId} />
           </div>
         )}
       </div>
