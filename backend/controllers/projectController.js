@@ -64,7 +64,7 @@ async function addProject(businessManagerId, projectData) {
             accountants: projectData.accountants,
             financialManagers: projectData.financialManagers,
             rhManagers: projectData.rhManagers,
-            wallet: wallet._id, // Associer le portefeuille au projet
+            wallet: wallet._id,
         });
         console.log("Project created:", project);
 
@@ -81,13 +81,22 @@ async function addProject(businessManagerId, projectData) {
         await businessOwner.save();
         console.log("Project added to BusinessOwner's project list");
 
+        // ✅ ✅ Créer une notification pour le BusinessManager
+        const message = `Un nouveau projet vous a été assigné : ${project._id}`;
+        const notification = await createNotification(manager._id, message, project._id);
+
+        // ✅ ✅ Émettre la notification via Socket.IO en temps réel
+        if (global.io) {
+            global.io.to(manager._id.toString()).emit("newNotification", notification);
+            console.log("✅ Notification envoyée au BusinessManager via Socket.IO");
+        }
+
         return { message: "Project created and linked to BusinessManager", project };
     } catch (error) {
         console.error("Error in addProject:", error.message);
         throw error;
     }
 }
-
 
 
 
@@ -301,7 +310,19 @@ async function unassignAccountantFromProject(req, res) {
 
         accountant.project = null;
         await accountant.save();
-         
+
+        // ✅ Créer une notification
+        const message = `Vous avez été retiré du projet ${project.name || project._id}`;
+        await createNotification(accountant._id, message, project._id);
+
+        // ✅ Émettre la notification via Socket.IO
+        if (global.io) {
+            global.io.to(accountant._id.toString()).emit("newNotification", {
+                message,
+                projectId: project._id,
+                timestamp: new Date()
+            });
+        }
 
         return res.status(200).json({ message: "Accountant removed from project successfully", project });
     } catch (error) {
@@ -309,7 +330,6 @@ async function unassignAccountantFromProject(req, res) {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-
 async function unassignFinancialManagerFromProject(req, res) {
     try {
         const financialManagerId = req.params.financialManagerId;
@@ -342,7 +362,18 @@ async function unassignFinancialManagerFromProject(req, res) {
         financialManager.project = null;
         await financialManager.save();
 
-         
+        // ✅ Créer une notification
+        const message = `Vous avez été retiré du projet ${project.name || project._id}`;
+        await createNotification(financialManager._id, message, project._id);
+
+        // ✅ Émettre la notification via Socket.IO
+        if (global.io) {
+            global.io.to(financialManager._id.toString()).emit("newNotification", {
+                message,
+                projectId: project._id,
+                timestamp: new Date()
+            });
+        }
 
         return res.status(200).json({ message: "Financial Manager removed from project successfully", project });
     } catch (error) {
@@ -350,7 +381,6 @@ async function unassignFinancialManagerFromProject(req, res) {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-
 async function unassignRHManagerFromProject(req, res) {
     try {
         const rhId = req.params.rhId;
@@ -383,7 +413,18 @@ async function unassignRHManagerFromProject(req, res) {
         rh.project = null;
         await rh.save();
 
-       
+        // ✅ Créer une notification
+        const message = `Vous avez été retiré du projet ${project.name || project._id}`;
+        await createNotification(rh._id, message, project._id);
+
+        // ✅ Émettre la notification via Socket.IO
+        if (global.io) {
+            global.io.to(rh._id.toString()).emit("newNotification", {
+                message,
+                projectId: project._id,
+                timestamp: new Date()
+            });
+        }
 
         return res.status(200).json({ message: "RH Manager removed from project successfully", project });
     } catch (error) {
@@ -391,6 +432,7 @@ async function unassignRHManagerFromProject(req, res) {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
 
 // Dans votre controller (backend)
 const getProjectById = async (req, res) => {

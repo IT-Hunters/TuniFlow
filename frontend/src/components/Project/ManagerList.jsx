@@ -76,7 +76,7 @@ const ManagerList = () => {
       <div className="main">
         <Navbar />
         <div className="content">
-        <GoogleTranslate/>
+        
           <h1>Business Managers</h1>
           <div className="button-group">
             <button className="btn btn-primary" onClick={() => navigate('/Createmanager')}>

@@ -155,19 +155,15 @@ const Register = async (req, res) => {
         // 5️⃣ Sauvegarde de l'utilisateur
         const result = await userType.save();
 
-        // Créer une notification si l'utilisateur est affecté à un projet
-        if (req.body.projectId) {
-            const message = `Vous avez été affecté au projet ${req.body.projectId}`;
-            await createNotification(result._id, message, req.body.projectId);
-            
-            // Émettre l'événement Socket.IO
-            if (global.io) {
-                global.io.emit(`notification:${result._id}`, {
-                    message,
-                    projectId: req.body.projectId
-                });
-            }
-        }
+      // ✅ Créer une notification si l'utilisateur est affecté à un projet
+if (req.body.projectId) {
+    const message = `Vous avez été affecté au projet ${req.body.projectId}`;
+    const notification = await createNotification(result._id, message, req.body.projectId);
+    
+    // ✅ Émettre la notification au bon utilisateur via Socket.IO
+    if (global.io) {
+        global.io.to(result._id.toString()).emit("newNotification", notification);
+    }}
 
         // 6️⃣ Création automatique d'un wallet
         if (["BUSINESS_OWNER", "BUSINESS_MANAGER", "ACCOUNTANT", "FINANCIAL_MANAGER"].includes(req.body.role)) {
@@ -1191,15 +1187,56 @@ async function getbyid(req, res) {
 
 async function deleteById(req, res) {
     try {
-        const data = await userModel.findByIdAndDelete(req.params.id);
-        if (!data) {
+        const userId = req.params.id;
+
+        // 1️⃣ Trouver l'utilisateur
+        const user = await userModel.findById(userId);
+        if (!user) {
             return res.status(404).send({ message: "User not found" });
         }
-        res.send({ message: "User deleted successfully", data });
+
+        // 2️⃣ Vérifier s'il a un projet
+        if (user.project) {
+            const project = await Project.findById(user.project);
+            if (project) {
+                // Retirer l'utilisateur du projet selon son rôle
+                switch (user.role) {
+                    case "ACCOUNTANT":
+                        project.accountants = project.accountants.filter(id => id.toString() !== userId);
+                        break;
+                    case "FINANCIAL_MANAGER":
+                        project.financialManagers = project.financialManagers.filter(id => id.toString() !== userId);
+                        break;
+                    case "RH":
+                        project.rhManagers = project.rhManagers.filter(id => id.toString() !== userId);
+                        break;
+                    case "BUSINESS_OWNER":
+                        if (project.businessOwner && project.businessOwner.toString() === userId) {
+                            project.businessOwner = null;
+                        }
+                        break;
+                    case "BUSINESS_MANAGER":
+                        if (project.businessManager && project.businessManager.toString() === userId) {
+                            project.businessManager = null;
+                        }
+                        break;
+                }
+
+                await project.save(); // Sauvegarder le projet après modification
+            }
+        }
+
+        // 3️⃣ Supprimer l'utilisateur
+        const deletedUser = await userModel.findByIdAndDelete(userId);
+
+        res.send({ message: "User deleted successfully", data: deletedUser });
+
     } catch (err) {
-        res.status(500).send(err);
+        console.error("Error during user deletion:", err);
+        res.status(500).send({ message: "Internal server error", error: err.message });
     }
 }
+
 
 async function updateById(req, res) {
     try {
