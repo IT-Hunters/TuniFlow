@@ -11,7 +11,7 @@ require('dotenv').config();
 const jwt = require("jsonwebtoken");
 const xlsx = require('xlsx');
 // Import des modèles discriminants
-
+const { createNotification } = require('../controllers/NotificationController');
 const walletController = require("../controllers/walletcontroller");
 const FinancialManager = require("../model/FinancialManager");
 const BusinessOwner = require("../model/BusinessOwner");
@@ -155,6 +155,20 @@ const Register = async (req, res) => {
         // 5️⃣ Sauvegarde de l'utilisateur
         const result = await userType.save();
 
+        // Créer une notification si l'utilisateur est affecté à un projet
+        if (req.body.projectId) {
+            const message = `Vous avez été affecté au projet ${req.body.projectId}`;
+            await createNotification(result._id, message, req.body.projectId);
+            
+            // Émettre l'événement Socket.IO
+            if (global.io) {
+                global.io.emit(`notification:${result._id}`, {
+                    message,
+                    projectId: req.body.projectId
+                });
+            }
+        }
+
         // 6️⃣ Création automatique d'un wallet
         if (["BUSINESS_OWNER", "BUSINESS_MANAGER", "ACCOUNTANT", "FINANCIAL_MANAGER"].includes(req.body.role)) {
             const walletData = {
@@ -223,7 +237,6 @@ if (req.body.role === "BUSINESS_OWNER") {
         res.status(500).json({ message: "Internal server error", error });
     }
 };
-
 const Login = async (req, res) => {
     const { errors, isValid } = validateLogin(req.body);
 
@@ -1006,6 +1019,20 @@ const Registerwithproject = async (req, res) => {
         // 9️⃣ Sauvegarde de l'utilisateur
         const result = await userType.save();
 
+        // Créer une notification pour l'utilisateur
+        const message = `Vous avez été affecté au projet ${projectId}`;
+        await createNotification(result._id, message, projectId);
+        
+        // Émettre l'événement Socket.IO
+        if (global.io) {
+            global.io.to(result._id.toString()).emit("newNotification", {
+                message,
+                projectId,
+                timestamp: new Date()
+            });
+        }
+        
+
         // 🔟 Ajouter l'utilisateur au projet
         switch (req.body.role) {
             case "BUSINESS_OWNER":
@@ -1071,8 +1098,7 @@ const Registerwithproject = async (req, res) => {
         console.error("Error during registration:", error);
         res.status(500).json({ message: "Internal server error", error });
     }
-};
-
+}; 
 // Ajouter des employés à partir d'un fichier Excel
 const addEmployeesFromExcel = async (req, res) => {
     try {

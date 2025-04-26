@@ -6,7 +6,32 @@ const { addProject,assignAccountantToProject,assignFinancialManagerToProject,ass
     getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,updateproject,
     deleteProjectById,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner
 } = require("../controllers/projectController");
+const {createNotification,getUserNotifications,markNotificationAsRead} =require("../controllers/NotificationController")
 const { authenticateJWT } = require('../config/autorisation');
+
+// Routes de notification
+router.post('/notifications', authenticateJWT, async (req, res) => {
+    try {
+        const { userId, message, projectId } = req.body;
+        const notification = await createNotification(userId, message, projectId);
+        
+        // Émettre la notification via Socket.IO
+        if (global.io) {
+            global.io.emit(`notification:${userId}`, notification);
+        }
+        
+        res.status(201).json(notification);
+    } catch (error) {
+        console.error('Error creating notification:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.get('/notifications', authenticateJWT, getUserNotifications);
+
+
+router.put('/notifications/:notificationId/mark-as-read', authenticateJWT, markNotificationAsRead);
+
 router.get("/getAllAccountantsofproject",authenticateJWT,getAllAccountantsofproject)
 router.get("/getAllHRsOfProject",authenticateJWT,getAllHRsOfProject)
 router.get("/getAllFinancialManagersOfProject",authenticateJWT,getAllFinancialManagersOfProject)

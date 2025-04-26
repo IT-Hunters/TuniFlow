@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaBell } from "react-icons/fa";
@@ -12,7 +12,43 @@ const Navbar = ({ notifications: externalNotifications }) => {
   const [notificationMenuOpen, setNotificationMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState(externalNotifications || []);
   const navigate = useNavigate();
+  const notificationRef = useRef(null);
 
+  // Fonction pour charger les notifications
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      const response = await axios.get('http://localhost:5000/project/notifications', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log('Notifications fetched in NavbarHome:', response.data);
+      if (response.data.notifications && Array.isArray(response.data.notifications)) {
+        // Filtrer pour ne garder que les notifications non lues
+        const unreadNotifications = response.data.notifications.filter((notif) => !notif.isRead);
+        setNotifications(unreadNotifications);
+      } else {
+        console.warn('Aucune notification trouvée dans la réponse:', response.data);
+        setNotifications([]);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des notifications:', err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+    }
+  };
+
+  // Charger les notifications au montage du composant
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  // Charger les données utilisateur et gérer Socket.IO
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -36,12 +72,32 @@ const Navbar = ({ notifications: externalNotifications }) => {
     // Écouter les notifications
     const handleNewNotification = (notification) => {
       console.log("New notification in NavbarHome:", notification);
-      if (notification.recipientId === userData?._id) {
-        setNotifications((prev) => [...prev, notification]);
+      if (notification.userId === userData?._id || notification.userId?._id === userData?._id) {
+        // Ajouter la nouvelle notification uniquement si elle est non lue
+        if (!notification.isRead) {
+          setNotifications((prev) => [...prev, notification]);
+        }
+      }
+    };
+
+    // Écouter les mises à jour des notifications (par exemple, marquage comme lu)
+    const handleNotificationUpdated = (updatedNotification) => {
+      console.log("Notification updated in NavbarHome:", updatedNotification);
+      // Si la notification est marquée comme lue, la supprimer de la liste
+      if (updatedNotification.isRead) {
+        setNotifications((prev) => prev.filter((notif) => notif._id !== updatedNotification._id));
+      } else {
+        // Si elle est mise à jour mais toujours non lue, la mettre à jour
+        setNotifications((prev) =>
+          prev.map((notif) =>
+            notif._id === updatedNotification._id ? updatedNotification : notif
+          )
+        );
       }
     };
 
     ChatService.on("newNotification", handleNewNotification);
+    ChatService.on("notificationUpdated", handleNotificationUpdated);
 
     // Émettre userOnline
     if (userData?._id) {
@@ -50,14 +106,67 @@ const Navbar = ({ notifications: externalNotifications }) => {
 
     return () => {
       ChatService.off("newNotification", handleNewNotification);
+      ChatService.off("notificationUpdated", handleNotificationUpdated);
     };
   }, [userData?._id]);
 
   useEffect(() => {
     if (externalNotifications) {
-      setNotifications(externalNotifications);
+      // Filtrer pour ne garder que les notifications non lues
+      const unreadNotifications = externalNotifications.filter((notif) => !notif.isRead);
+      setNotifications(unreadNotifications);
     }
   }, [externalNotifications]);
+
+  // Gestion des clics extérieurs pour fermer le menu des notifications
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setNotificationMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Gérer le clic sur l'icône de notification
+  const handleNotificationClick = () => {
+    setNotificationMenuOpen(!notificationMenuOpen);
+    fetchNotifications();
+  };
+
+  // Gérer le marquage d'une notification comme lue
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      const response = await axios.put(
+        `http://localhost:5000/project/notifications/${notificationId}/mark-as-read`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      console.log('Notification marked as read:', response.data);
+      // Supprimer la notification de l'état local
+      setNotifications((prev) => prev.filter((notif) => notif._id !== notificationId));
+    } catch (err) {
+      console.error('Erreur lors du marquage comme lu:', err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+    }
+  };
+
+  // Compter les notifications non lues pour le badge
+  const unreadNotificationsCount = notifications.filter((notif) => !notif.isRead).length;
 
   const handleLogout = async () => {
     try {
@@ -92,22 +201,31 @@ const Navbar = ({ notifications: externalNotifications }) => {
         <LanguageSelector />
         <div
           className="notification-menu"
-          onClick={() => setNotificationMenuOpen(!notificationMenuOpen)}
+          ref={notificationRef}
+          onClick={handleNotificationClick}
         >
           <FaBell className="notification-icon" />
-          {notifications.length > 0 && (
-            <span className="notification-badge">{notifications.length}</span>
+          {unreadNotificationsCount > 0 && (
+            <span className="notification-badge">{unreadNotificationsCount}</span>
           )}
           <div className={`notification-dropdown ${notificationMenuOpen ? "active" : ""}`}>
             <h3>Notifications</h3>
             {notifications.length > 0 ? (
               notifications.map((notif, index) => (
-                <p key={index}>
-                  {notif.message} - {new Date(notif.timestamp).toLocaleTimeString()}
-                </p>
+                <div key={index} className="notification-item">
+                  <p>
+                    {notif.message} - {new Date(notif.createdAt).toLocaleTimeString()}
+                  </p>
+                  <button
+                    className="mark-as-read-btn"
+                    onClick={() => handleMarkAsRead(notif._id)}
+                  >
+                    Marquer comme lu
+                  </button>
+                </div>
               ))
             ) : (
-              <p>Aucune notification</p>
+              <p>Aucune notification non lue</p>
             )}
           </div>
         </div>
