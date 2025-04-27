@@ -15,6 +15,7 @@ var assetsactifsRoutes = require('./routes/assetActifRoutes');
 var assetspassifsRoutes = require('./routes/assetPassifRoutes');
 var assetCalculationRoutes = require('./routes/AssetRoutes');
 var projectRouter = require('./routes/project.router');
+var projectConversationRouter = require('./routes/projectConversationRoutes');
 var taxeRoutes = require('./routes/taxeRoutes');
 var transactionRoutes = require('./routes/transactionRoutes');
 var walletRoutes = require('./routes/walletRoutes');
@@ -35,8 +36,11 @@ mongoose.connect(connection.url)
 // 🟢 Enable CORS
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'X-Requested-With', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Headers'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 // 🟢 View Engine Setup
@@ -53,6 +57,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/project', projectRouter);
+app.use('/project-conversations', projectConversationRouter);
 app.use('/invoices', invoiceRouter);
 app.use('/assetsactifs', assetsactifsRoutes);
 app.use('/assetspassifs', assetspassifsRoutes);
@@ -76,8 +81,14 @@ const server = http.createServer(app);
 global.io = new Server(server, {
   cors: {
     origin: ["http://localhost:5173", "http://localhost:5000"],
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"],
+    credentials: true,
+    transports: ['websocket', 'polling']
   },
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 // 🟢 Import Models
@@ -188,6 +199,38 @@ global.io.on("connection", (socket) => {
       } else {
         console.error("❌ global.connectedUsers is not a Set in disconnect event:", global.connectedUsers);
       }
+    }
+  });
+
+  // Rejoindre une conversation de projet
+  socket.on("joinProjectConversation", (projectId) => {
+    socket.join(projectId);
+    console.log(`User ${socket.id} joined project conversation: ${projectId}`);
+  });
+
+  // Quitter une conversation de projet
+  socket.on("leaveProjectConversation", (projectId) => {
+    socket.leave(projectId);
+    console.log(`User ${socket.id} left project conversation: ${projectId}`);
+  });
+
+  // Écouter les nouveaux messages de projet
+  socket.on("newProjectMessage", async ({ projectId, senderId, content }) => {
+    try {
+      const sender = await userModel.findById(senderId, 'fullname');
+      const message = {
+        sender: senderId,
+        senderName: sender.fullname,
+        content,
+        timestamp: new Date()
+      };
+
+      global.io.to(projectId).emit('newProjectMessage', {
+        projectId,
+        message
+      });
+    } catch (error) {
+      console.error("❌ Error sending project message:", error);
     }
   });
 });

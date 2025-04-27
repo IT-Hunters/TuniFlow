@@ -21,9 +21,13 @@ import "./SidebarHome.css";
 import { findMyProfile, logout } from "../../services/UserService";
 import { useNavigate } from "react-router-dom";
 
+
+
 const CoolSidebar = () => {
   const [userData, setUserData] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [showConversation, setShowConversation] = useState(false);
+
   const [activeItem, setActiveItem] = useState("Dashboard");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -43,6 +47,7 @@ const CoolSidebar = () => {
     { title: "Manager List", icon: FaUserFriends, href: "/ManagerList" },
     { title: "ProjectView", icon: FaUserFriends, href: "/ProjectView" },
     { title: "OwnerProjectsView", icon: FaUserFriends, href: "/OwnerProjectsView" },
+    { title: "Conversation Du Projet", icon: FaUserFriends, href: "/conversation" },
   ];
 
   // Filter nav items based on user role
@@ -88,6 +93,10 @@ const CoolSidebar = () => {
       navigate(item.href);
     }
   };
+  const toggleConversation = () => {
+    setShowConversation(prev => !prev);
+  };
+  
 
   useEffect(() => {
     const fetchUser = async () => {

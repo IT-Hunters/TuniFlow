@@ -38,6 +38,7 @@ import ObjectiveAnalytics from "./components/Objectif/ObjectiveAnalytics";
 import UserUpdate from "./components/Project/UserUpdate"
 import EmployeeTable from "./components/Project/EmployeeTable"
 import Updatebymanager from "./components/Project/Updatebymanager"
+import Conversation from "./components/Project/Conversation";
  
 function App() {         
   return (
@@ -82,6 +83,7 @@ function App() {
         <Route path="/edit-manager/:id" element={<UserUpdate />} />
         <Route path="/Updatebymanager/:id" element={<Updatebymanager />} />
         <Route path="/findemploye" element={<EmployeeTable />} />
+        <Route path="/conversation" element={<Conversation />} />
       </Routes>
     </Router>
   );
