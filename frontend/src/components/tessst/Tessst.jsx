@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendar } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -12,9 +12,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import Deposit from "./Depossit";
+import Deposit from "./Depossit"; // Note: Fix typo in filename if needed (Depossit → Deposit)
 import Withdraw from "./Withdraw";
 import Transfer from "./Transfer";
+import SalaryScheduler from "./SalaryScheduler"; // Import SalaryScheduler
 import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 import "./Tessst.css";
@@ -33,7 +34,7 @@ const Wallet = () => {
 
   const fetchUserProfile = async (token) => {
     try {
-      const response = await axios.get("http://localhost:3000/users/findMyProfile", {
+      const response = await axios.get("http://localhost:5000/users/findMyProfile", {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data._id;
@@ -42,20 +43,39 @@ const Wallet = () => {
     }
   };
 
+  const createWallet = async (userId, token) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/wallets/addWallet",
+        { user_id: userId, type: "personal" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data.wallet;
+    } catch (error) {
+      throw new Error(`Erreur lors de la création du wallet : ${error.message}`);
+    }
+  };
+
   const fetchWallet = async (userId, token) => {
     try {
-      const response = await axios.get(`http://localhost:3000/wallets/user/${userId}`, {
+      const response = await axios.get(`http://localhost:5000/wallets/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!response.data || !response.data._id) {
+        throw new Error("Aucun portefeuille trouvé pour cet utilisateur.");
+      }
       return response.data;
     } catch (error) {
+      if (error.response?.status === 404) {
+        return await createWallet(userId, token);
+      }
       throw new Error(`Erreur lors de la récupération du wallet : ${error.message}`);
     }
   };
 
   const fetchTransactions = async (walletId, token) => {
     try {
-      const response = await axios.get(`http://localhost:3000/transactions/getTransactions/${walletId}`, {
+      const response = await axios.get(`http://localhost:5000/transactions/getTransactions/${walletId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
@@ -87,7 +107,15 @@ const Wallet = () => {
   };
 
   useEffect(() => {
-    fetchWalletData();
+    let isMounted = true;
+
+    if (isMounted) {
+      fetchWalletData();
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const refreshWalletData = () => {
@@ -169,6 +197,12 @@ const Wallet = () => {
                   <FaExchangeAlt />
                 </div>
                 <p>Transfer</p>
+              </div>
+              <div className="action" onClick={() => setActiveScreen("scheduler")}>
+                <div className="action-icon">
+                  <FaCalendar />
+                </div>
+                <p>Salary Scheduler</p>
               </div>
             </div>
 
@@ -268,6 +302,7 @@ const Wallet = () => {
         {activeScreen === "deposit" && <Deposit goBack={refreshWalletData} walletId={walletId} />}
         {activeScreen === "withdraw" && <Withdraw goBack={refreshWalletData} walletId={walletId} />}
         {activeScreen === "transfer" && <Transfer goBack={refreshWalletData} walletId={walletId} />}
+        {activeScreen === "scheduler" && <SalaryScheduler goBack={refreshWalletData} walletId={walletId} />}
       </div>
     </div>
   );
