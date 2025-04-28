@@ -1,0 +1,401 @@
+/* Réinitialisation et styles de base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #E8ECEF;
+  color: #1A2B3C;
+}
+
+/* Conteneur principal */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 40px;
+  background-color: #E8ECEF;
+}
+
+/* Conteneur des états financiers */
+.wallet-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* En-tête */
+.wallet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.wallet-header h2 {
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: #1A2B3C;
+}
+
+/* Carte générique */
+.card {
+  background-color: #F5F6F5;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Formulaire */
+.form-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.form-container label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1A2B3C;
+}
+
+.form-container select,
+.form-container input {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  background-color: #FFFFFF;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-container select:focus,
+.form-container input:focus {
+  outline: none;
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+}
+
+.custom-tax {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* Boutons */
+.add-tax-button,
+.remove-tax-button,
+.submit-button,
+.forecast-button,
+.edit-button,
+.delete-button,
+.regenerate-button,
+.cancel-button,
+.export-button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.add-tax-button {
+  background-color: #36A2EB;
+  color: #FFFFFF;
+}
+
+.add-tax-button:hover {
+  background-color: #2A85C8;
+  transform: translateY(-2px);
+}
+
+.remove-tax-button {
+  background-color: #EF4444;
+  color: #FFFFFF;
+}
+
+.remove-tax-button:hover {
+  background-color: #DC2626;
+  transform: translateY(-2px);
+}
+
+.submit-button {
+  background-color: #10B981;
+  color: #FFFFFF;
+}
+
+.submit-button:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+}
+
+.submit-button:disabled {
+  background-color: #6B7280;
+  cursor: not-allowed;
+}
+
+/* Prévision */
+.forecast-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.forecast-button {
+  background-color: #FFD700;
+  color: #1A2B3C;
+}
+
+.forecast-button:hover {
+  background-color: #E6C200;
+  transform: translateY(-2px);
+}
+
+.forecast-results {
+  padding: 15px;
+  background-color: #E8ECEF;
+  border-radius: 8px;
+}
+
+.forecast-results p {
+  margin: 10px 0;
+  font-size: 0.95rem;
+}
+
+/* Graphique des tendances */
+.tax-trend-chart .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.toggle-icon {
+  font-size: 1.5rem;
+  color: #6B7280;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.toggle-icon:hover {
+  color: #FFD700;
+}
+
+/* Liste des états financiers */
+.statements-list {
+  display: grid;
+  gap: 20px;
+}
+
+.financial-statement-item .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0;
+}
+
+.financial-statement-item .section-header h4 {
+  margin: 0;
+}
+
+.statement-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.statement-details p {
+  font-size: 0.95rem;
+}
+
+.statement-details p strong {
+  color: #1A2B3C;
+}
+
+/* Tableau des taxes */
+.tax-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tax-table th,
+.tax-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #D1D5DB;
+}
+
+.tax-table th {
+  background-color: #1A2B3C;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.tax-table tr:hover {
+  background-color: #E8ECEF;
+}
+
+.tax-chart {
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+/* Actions des états financiers */
+.statement-actions {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.edit-button {
+  background-color: #3B82F6;
+  color: #FFFFFF;
+}
+
+.edit-button:hover {
+  background-color: #2563EB;
+  transform: translateY(-2px);
+}
+
+.delete-button {
+  background-color: #EF4444;
+  color: #FFFFFF;
+}
+
+.delete-button:hover {
+  background-color: #DC2626;
+  transform: translateY(-2px);
+}
+
+.regenerate-button {
+  background-color: #F59E0B;
+  color: #FFFFFF;
+}
+
+.regenerate-button:hover {
+  background-color: #D97706;
+  transform: translateY(-2px);
+}
+
+.cancel-button {
+  background-color: #6B7280;
+  color: #FFFFFF;
+}
+
+.cancel-button:hover {
+  background-color: #4B5563;
+  transform: translateY(-2px);
+}
+
+.export-button {
+  background-color: #10B981;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-button:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+}
+
+/* Formulaire d'édition */
+.edit-form {
+  padding: 20px;
+  background-color: #E8ECEF;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.edit-form h3 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.edit-form label {
+  display: block;
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.edit-form input,
+.edit-form select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  background-color: #FFFFFF;
+}
+
+.tax-edit {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #FFFFFF;
+  border-radius: 8px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+/* Messages */
+.error-message {
+  color: #EF4444;
+  font-size: 0.95rem;
+  margin: 15px 0;
+}
+
+.tax-generation-message {
+  color: #6B7280;
+  font-size: 0.95rem;
+  margin: 15px 0;
+}
+
+.update-alert {
+  color: #D97706;
+  background-color: #FEF3C7;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.no-statements {
+  text-align: center;
+  color: #6B7280;
+  font-size: 1.1rem;
+  margin-top: 30px;
+}

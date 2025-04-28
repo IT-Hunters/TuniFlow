@@ -23,6 +23,8 @@ var chatRouter = require('./routes/chatRoutes');
 var userLogsRoutes = require('./routes/UserLogsRoutes');
 const salarySchedulerRoutes = require('./routes/salarySchedulerRoutes');
 require('./jobs/salaryProcessor');
+const financialStatementRoutes = require("./routes/financialStatementRoutes");
+
 
 var app = express();
 var mongoose = require("mongoose");
@@ -69,6 +71,7 @@ app.use('/objectif', ObjectifRouter);
 app.use('/chat', chatRouter);
 app.use('/userLogs', userLogsRoutes);
 app.use('/salary-scheduler', salarySchedulerRoutes);
+app.use("/financial_statements", financialStatementRoutes);
 
 // 🟢 Test API
 app.get('/api/test', (req, res) => {

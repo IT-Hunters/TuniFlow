@@ -1,13 +1,12 @@
 const Wallet = require("../model/wallet");
 const Transaction = require("../model/Transaction");
 const mongoose = require("mongoose");
-// 📌 Effectuer un dépôt (Deposit)
 
-// 📌 Perform a deposit
+
 exports.deposit = async (req, res, io) => {
   try {
     const { walletId } = req.params;
-    const { amount } = req.body;
+    const { amount, is_taxable = false, vat_rate = 0 } = req.body;
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ message: "The amount must be greater than 0" });
@@ -23,15 +22,16 @@ exports.deposit = async (req, res, io) => {
 
     const transaction = new Transaction({
       wallet_id: walletId,
-      amount: amount,
+      amount,
       type: "income",
       balanceAfterTransaction: balance + amount,
-      date: req.body.date
+      date: req.body.date || Date.now(),
+      is_taxable,
+      vat_rate,
     });
 
     await transaction.save();
 
-    // 🔹 Update the balance in the wallet
     wallet.balance += amount;
     await wallet.save();
 
@@ -42,8 +42,7 @@ exports.deposit = async (req, res, io) => {
   }
 };
 
-// 📌 Perform a withdrawal
-exports.withdraw = async (req, res) => {
+exports.withdraw = async (req, res, io) => {
   try {
     const { walletId } = req.params;
     const { amount } = req.body;
@@ -57,28 +56,98 @@ exports.withdraw = async (req, res) => {
       return res.status(404).json({ message: "Wallet not found" });
     }
 
-    const transactions = await Transaction.find({ wallet_id: walletId });
-    const balance = transactions.reduce((acc, t) => acc + (t.type === "income" ? t.amount : -t.amount), 0);
-
-    if (balance < amount) {
+    if (wallet.balance < amount) {
       return res.status(400).json({ message: "Insufficient funds" });
     }
 
+    const transactions = await Transaction.find({ wallet_id: walletId });
+    const balance = transactions.reduce((acc, t) => acc + (t.type === "income" ? t.amount : -t.amount), 0);
+
     const transaction = new Transaction({
       wallet_id: walletId,
-      amount: amount,
+      amount,
       type: "expense",
-      balanceAfterTransaction: balance - amount
+      balanceAfterTransaction: balance - amount,
+      date: req.body.date || Date.now(),
     });
 
     await transaction.save();
 
-    // 🔹 Update the balance in the wallet
     wallet.balance -= amount;
     await wallet.save();
 
     global.io.emit("transactionUpdate", { walletId, balance: wallet.balance, transaction });
     res.status(200).json({ message: "Withdrawal completed successfully", transaction, newBalance: wallet.balance });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.transfer = async (req, res) => {
+  try {
+    const { senderWalletId, receiverWalletId } = req.params;
+    const { amount, is_taxable = false, vat_rate = 0 } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: "The amount must be greater than 0" });
+    }
+
+    const senderWallet = await Wallet.findById(senderWalletId);
+    const receiverWallet = await Wallet.findById(receiverWalletId);
+
+    if (!senderWallet || !receiverWallet) {
+      return res.status(404).json({ message: "One of the wallets was not found" });
+    }
+
+    if (senderWallet.balance < amount) {
+      return res.status(400).json({ message: "Insufficient funds" });
+    }
+
+    const newSenderBalance = senderWallet.balance - amount;
+    const newReceiverBalance = receiverWallet.balance + amount;
+
+    const senderTransaction = new Transaction({
+      wallet_id: senderWalletId,
+      amount: amount,
+      type: "expense",
+      balanceAfterTransaction: newSenderBalance,
+      date: Date.now(),
+    });
+
+    const receiverTransaction = new Transaction({
+      wallet_id: receiverWalletId,
+      amount: amount,
+      type: "income",
+      balanceAfterTransaction: newReceiverBalance,
+      date: Date.now(),
+      is_taxable,
+      vat_rate,
+    });
+
+    await senderTransaction.save();
+    await receiverTransaction.save();
+
+    senderWallet.balance = newSenderBalance;
+    receiverWallet.balance = newReceiverBalance;
+
+    await senderWallet.save();
+    await receiverWallet.save();
+
+    res.status(200).json({
+      message: "Transfer completed successfully",
+      senderTransaction,
+      receiverTransaction,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getTransactions = async (req, res) => {
+  try {
+    const { walletId } = req.params;
+    const transactions = await Transaction.find({ wallet_id: walletId });
+    res.status(200).json(transactions);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -104,28 +173,7 @@ exports.getBalance = async (req, res) => {
   }
 };
 
-exports.getTransactions = async (req, res) => {
-  try {
-    const { walletId } = req.params;
-    const { type, status, startDate, endDate } = req.query;
 
-    const filters = { wallet_id: walletId };
-
-    if (type) filters.type = type;
-    if (status) filters.status = status;
-    if (startDate || endDate) {
-      filters.date = {};
-      if (startDate) filters.date.$gte = new Date(startDate);
-      if (endDate) filters.date.$lte = new Date(endDate);
-    }
-
-    const transactions = await Transaction.find(filters).sort({ date: -1 });
-
-    res.status(200).json(transactions);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
 
 exports.cancelTransaction = async (req, res) => {
   try {

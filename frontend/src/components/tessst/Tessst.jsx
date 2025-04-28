@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendarAlt } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -15,7 +15,6 @@ import {
 import Deposit from "./Depossit";
 import Withdraw from "./Withdraw";
 import Transfer from "./Transfer";
-import SalaryScheduler from "./SalaryScheduler";
 import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 import "./Tessst.css";
@@ -143,7 +142,7 @@ const Wallet = () => {
       <div className="elyess-content">
         <Navbar />
         {activeScreen === "main" && (
-          <div className="wallett-container">
+          <div className="wallet-container">
             <div className="wallet-header">
               <h2>Wallet</h2>
               <p className="wallet-balance">
@@ -171,12 +170,6 @@ const Wallet = () => {
                 </div>
                 <p>Transfer</p>
               </div>
-              <div className="action" onClick={() => setActiveScreen("salary")}>
-                <div className="action-icon">
-                  <FaCalendarAlt />
-                </div>
-                <p>Salary Schedule</p>
-              </div>
             </div>
 
             <div className="transaction-history">
@@ -189,19 +182,19 @@ const Wallet = () => {
                   className={`filter-button ${filter === "all" ? "active" : ""}`}
                   onClick={() => setFilter("all")}
                 >
-                  All
+                  Toutes
                 </button>
                 <button
                   className={`filter-button ${filter === "income" ? "active" : ""}`}
                   onClick={() => setFilter("income")}
                 >
-                  Income
+                  Revenus
                 </button>
                 <button
                   className={`filter-button ${filter === "expense" ? "active" : ""}`}
                   onClick={() => setFilter("expense")}
                 >
-                  Expense
+                  Dépenses
                 </button>
               </div>
 
@@ -215,9 +208,9 @@ const Wallet = () => {
 
               {showCharts && (
                 <div className="charts-container">
-                  <h3>Evolution the balance</h3>
+                  <h3>Évolution du solde</h3>
                   <Line data={balanceData} options={{ responsive: true }} />
-                  <h3>Repartition Income/Expense</h3>
+                  <h3>Répartition Revenus/Dépenses</h3>
                   <Pie data={pieData} options={{ responsive: true }} />
                 </div>
               )}
@@ -272,27 +265,9 @@ const Wallet = () => {
           </div>
         )}
 
-        {/* Ajout de .form-wrapper pour centrer les formulaires */}
-        {activeScreen === "deposit" && (
-          <div className="form-wrapper">
-            <Deposit goBack={refreshWalletData} walletId={walletId} />
-          </div>
-        )}
-        {activeScreen === "withdraw" && (
-          <div className="form-wrapper">
-            <Withdraw goBack={refreshWalletData} walletId={walletId} />
-          </div>
-        )}
-        {activeScreen === "transfer" && (
-          <div className="form-wrapper">
-            <Transfer goBack={refreshWalletData} walletId={walletId} />
-          </div>
-        )}
-        {activeScreen === "salary" && (
-          <div className="form-wrapper">
-            <SalaryScheduler goBack={refreshWalletData} walletId={walletId} />
-          </div>
-        )}
+        {activeScreen === "deposit" && <Deposit goBack={refreshWalletData} walletId={walletId} />}
+        {activeScreen === "withdraw" && <Withdraw goBack={refreshWalletData} walletId={walletId} />}
+        {activeScreen === "transfer" && <Transfer goBack={refreshWalletData} walletId={walletId} />}
       </div>
     </div>
   );

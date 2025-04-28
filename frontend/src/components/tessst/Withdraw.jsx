@@ -57,6 +57,7 @@ const Withdraw = ({ goBack, walletId }) => {
             placeholder="Enter the amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
+            required
           />
         </label>
         <button className="submit-button" onClick={handleWithdraw}>

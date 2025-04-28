@@ -4,6 +4,8 @@ import "./Tessst.css";
 
 const Deposit = ({ goBack, walletId }) => {
   const [amount, setAmount] = useState("");
+  const [isTaxable, setIsTaxable] = useState(false);
+  const [vatRate, setVatRate] = useState(0.19); // Taux par défaut
   const [message, setMessage] = useState("");
 
   const handleDeposit = async () => {
@@ -26,7 +28,11 @@ const Deposit = ({ goBack, walletId }) => {
 
       const response = await axios.post(
         `http://localhost:3000/transactions/deposit/${walletId}`,
-        { amount: parseFloat(amount) },
+        {
+          amount: parseFloat(amount),
+          is_taxable: isTaxable,
+          vat_rate: isTaxable ? parseFloat(vatRate) : 0,
+        },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -34,6 +40,8 @@ const Deposit = ({ goBack, walletId }) => {
 
       setMessage(`Dépôt réussi ! Nouveau solde : ${response.data.newBalance}`);
       setAmount("");
+      setIsTaxable(false);
+      setVatRate(0.19);
       setTimeout(goBack, 2000);
     } catch (error) {
       setMessage(error.response?.data?.message || "Erreur lors du dépôt");
@@ -57,8 +65,28 @@ const Deposit = ({ goBack, walletId }) => {
             placeholder="Enter the amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
+            required
           />
         </label>
+        <label>
+          Soumis à la TVA :
+          <input
+            type="checkbox"
+            checked={isTaxable}
+            onChange={(e) => setIsTaxable(e.target.checked)}
+          />
+        </label>
+        {isTaxable && (
+          <label>
+            Taux de TVA :
+            <select value={vatRate} onChange={(e) => setVatRate(e.target.value)}>
+              <option value="0.19">19%</option>
+              <option value="0.07">7%</option>
+              <option value="0.13">13%</option>
+              <option value="0">0%</option>
+            </select>
+          </label>
+        )}
         <button className="submit-button" onClick={handleDeposit}>
           Deposit
         </button>

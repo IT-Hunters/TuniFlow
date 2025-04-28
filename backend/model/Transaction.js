@@ -1,21 +1,39 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-// Enumération pour le type de transaction
-const TransactionTypeEnum = ["income", "expense"];
-
-// Schéma Transaction (lié à Wallet)
-const TransactionSchema = new Schema({
-  wallet_id: { type: Schema.Types.ObjectId, ref: "Wallet", required: true },
-  amount: { type: Number, required: true },
-  type: { type: String, enum: TransactionTypeEnum, required: true }, // income = dépôt, expense = retrait
-  balanceAfterTransaction: { type: Number, required: true },
-  date: { type: Date, default: Date.now },
-  description: { type: String }
-}, { 
-  collection: "transactions",
-  timestamps: true
+const transactionSchema = new mongoose.Schema({
+  wallet_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Wallet",
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
+  type: {
+    type: String,
+    enum: ["income", "expense"],
+    required: true,
+  },
+  balanceAfterTransaction: {
+    type: Number,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+  description: {
+    type: String,
+  },
+  is_taxable: {
+    type: Boolean,
+    default: false, // Indique si la transaction est soumise à la TVA
+  },
+  vat_rate: {
+    type: Number,
+    default: 0, // Taux de TVA (ex. : 0.19, 0.07, 0.13, 0.0)
+  },
 });
 
-const Transaction = mongoose.model("Transaction", TransactionSchema);
-module.exports = Transaction;
+module.exports = mongoose.model("Transaction", transactionSchema);

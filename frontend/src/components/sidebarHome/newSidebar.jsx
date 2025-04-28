@@ -21,25 +21,23 @@ import "./SidebarHome.css";
 import { findMyProfile, logout } from "../../services/UserService";
 import { useNavigate } from "react-router-dom";
 
-
-
 const CoolSidebar = () => {
   const [userData, setUserData] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
   const [showConversation, setShowConversation] = useState(false);
-
   const [activeItem, setActiveItem] = useState("Dashboard");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Base navigation items avec ajout de "Wallet"
+  // Navigation items
   const baseNavItems = [
     { title: "Home", icon: FaHome, href: "/user" },
     { title: "Assets", icon: FaTachometerAlt, href: "/Assets" },
-    { title: "Finance", icon: FaBell, href: "#", badge: 3 },
+    { title: "Notifications", icon: FaBell, href: "#", badge: 2 },
     { title: "Objective", icon: FaCog, href: "/ObjectiveManagement" },
     { title: "Chat", icon: FaComments, href: "/chat" },
-    { title: "Wallet", icon: FaWallet, href: "/Transaction" }, // Ajout de Wallet
+    { title: "Financial Statements", icon: FaFileInvoice, href: "/financial-statements" },
+    { title: "Wallet", icon: FaWallet, href: "/Transaction" },
     { title: "Help", icon: FaQuestionCircle, href: "#" },
     { title: "Invoice", icon: FaFileInvoice, href: userData?.userType === "BusinessOwner" ? "/owner-invoices" : "/invoice" },
     { title: "Add Project", icon: FaPlus, href: "/AddProject" },
@@ -93,10 +91,10 @@ const CoolSidebar = () => {
       navigate(item.href);
     }
   };
+
   const toggleConversation = () => {
-    setShowConversation(prev => !prev);
+    setShowConversation((prev) => !prev);
   };
-  
 
   useEffect(() => {
     const fetchUser = async () => {

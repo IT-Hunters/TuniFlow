@@ -5,6 +5,8 @@ import "./Tessst.css";
 const Transfer = ({ goBack, walletId }) => {
   const [amount, setAmount] = useState("");
   const [receiverWalletId, setReceiverWalletId] = useState("");
+  const [isTaxable, setIsTaxable] = useState(false);
+  const [vatRate, setVatRate] = useState(0.19); // Taux par défaut
   const [message, setMessage] = useState("");
   const [walletData, setWalletData] = useState(null);
 
@@ -53,7 +55,11 @@ const Transfer = ({ goBack, walletId }) => {
 
       const response = await axios.post(
         `http://localhost:3000/transactions/transfer/${walletId}/${receiverWalletId}`,
-        { amount: parseFloat(amount) },
+        {
+          amount: parseFloat(amount),
+          is_taxable: isTaxable,
+          vat_rate: isTaxable ? parseFloat(vatRate) : 0,
+        },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -62,6 +68,8 @@ const Transfer = ({ goBack, walletId }) => {
       setMessage(`Transfert réussi ! Nouveau solde : ${response.data.senderTransaction.balanceAfterTransaction}`);
       setAmount("");
       setReceiverWalletId("");
+      setIsTaxable(false);
+      setVatRate(0.19);
       setTimeout(goBack, 2000);
     } catch (error) {
       setMessage(error.response?.data?.message || "Erreur lors du transfert");
@@ -94,6 +102,7 @@ const Transfer = ({ goBack, walletId }) => {
             placeholder="Enter the amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
+            required
           />
         </label>
         <label>
@@ -103,8 +112,28 @@ const Transfer = ({ goBack, walletId }) => {
             placeholder="Entrez l'ID du portefeuille"
             value={receiverWalletId}
             onChange={(e) => setReceiverWalletId(e.target.value)}
+            required
           />
         </label>
+        <label>
+          Soumis à la TVA :
+          <input
+            type="checkbox"
+            checked={isTaxable}
+            onChange={(e) => setIsTaxable(e.target.checked)}
+          />
+        </label>
+        {isTaxable && (
+          <label>
+            Taux de TVA :
+            <select value={vatRate} onChange={(e) => setVatRate(e.target.value)}>
+              <option value="0.19">19%</option>
+              <option value="0.07">7%</option>
+              <option value="0.13">13%</option>
+              <option value="0">0%</option>
+            </select>
+          </label>
+        )}
         <button className="submit-button" onClick={handleTransfer}>
           Transfer
         </button>
