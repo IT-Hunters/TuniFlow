@@ -202,18 +202,45 @@ const ObjectivesList = () => {
           {/* Objectives List and Add Button */}
           {selectedProject && !loading && !error && (
             <>
+             
+
               {objectives.length > 0 ? (
                 <div className="objectives-list">
-                  <h2>Objectives</h2>
+                  <div className="objectives-header">
+                    <h2>Objectives</h2>
+                    <div className="add-objective-section">
+                      <button
+                        className="create-button"
+                        onClick={handleAddObjective}
+                        disabled={loading}
+                      >
+                        <span>
+                          <svg
+                            height="24"
+                            width="24"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z" fill="currentColor"></path>
+                          </svg>
+                          Create
+                        </span>
+                      </button>
+                    </div>
+                  </div>
                   <div className="objectives-grid">
+                    
                     {paginatedObjectives.map(objective => (
-                      <div key={objective._id} className="objectif-card">
-                        <div className="objectif-bookmark">
-                          {objective.objectivetype}
-                        </div>
-                        <div className="objectif-card-details">
-                          <p className="objectif-text-title">{objective.name}</p>
-                          <p className="objectif-description">{objective.description}</p>
+                      <div key={objective._id} className="obj-card">
+                        <div className="obj-container">
+                          <div className="obj-type">
+                            {objective.objectivetype}
+                          </div>
+                          
+                          <h3 className="obj-title">{objective.name}</h3>
+                          <p className="obj-description">{objective.description}</p>
+                          
                           <div className="progress-section">
                             <div className="progress-label">
                               <span>Progress</span>
@@ -226,26 +253,28 @@ const ObjectivesList = () => {
                               />
                             </div>
                           </div>
+                          
                           <div className="due-date">
                             <span>Due date:</span>
                             <span>{new Date(objective.datefin).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
                           </div>
-                        </div>
-                        <div className="button-group">
-                          <button
-                            className="objectif-card-button objective-button"
-                            onClick={() => handleViewDetails(objective)}
-                            disabled={loading}
-                          >
-                            View Details
-                          </button>
-                          <button
-                            className="objectif-card-button objective-button delete-button"
-                            onClick={() => handleDelete(objective._id)}
-                            disabled={loading}
-                          >
-                            Delete
-                          </button>
+
+                          <div className="obj-actions">
+                            <button
+                              className="obj-btn obj-btn-view"
+                              onClick={() => handleViewDetails(objective)}
+                              disabled={loading}
+                            >
+                              View Details
+                            </button>
+                            <button
+                              className="obj-btn obj-btn-delete"
+                              onClick={() => handleDelete(objective._id)}
+                              disabled={loading}
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -263,7 +292,7 @@ const ObjectivesList = () => {
                       </button>
 
                       <div className="pagination-numbers">
-                        {getPaginationItems().map((item, i) => {
+                        {getPaginationItems().map((item) => {
                           if (item === "ellipsis-start" || item === "ellipsis-end") {
                             return (
                               <span key={item} className="pagination-ellipsis">
@@ -299,15 +328,6 @@ const ObjectivesList = () => {
                   <p>No objectives found for this project.</p>
                 </div>
               )}
-              <div className="add-objective-section">
-                <button
-                  className="add-objective-btn objective-button add-objective-button"
-                  onClick={handleAddObjective}
-                  disabled={loading}
-                >
-                  Add Objective
-                </button>
-              </div>
             </>
           )}
         </div>
