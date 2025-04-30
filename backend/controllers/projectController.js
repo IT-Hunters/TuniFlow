@@ -1137,11 +1137,49 @@ if (project.objectifs?.length > 0) {
         });
     }
 };
+
+
+// Récupérer tous les utilisateurs assignés au projet par rôle
+const getAssignedUsersToProject = async (req, res) => {
+    const { projectId } = req.params;
+  
+    // Vérifier si l'ID du projet est valide
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
+  
+    try {
+      // Chercher le projet avec l'ID valide
+      const project = await Project.findById(projectId)
+        .populate('accountants') // Populate accountants
+        .populate('financialManagers') // Populate financial managers
+        .populate('rhManagers') // Populate RH managers
+        .populate('businessManager') // Populate business manager
+  
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+  
+      // Combinaison des utilisateurs assignés au projet
+      const assignedUsers = [
+        ...project.accountants,
+        ...project.financialManagers,
+        ...project.rhManagers,
+        project.businessManager, // Ajout du business manager
+      ];
+  
+      return res.json(assignedUsers);
+    } catch (error) {
+      console.error('Error fetching assigned users:', error);
+      return res.status(500).json({ message: 'Failed to fetch assigned users' });
+    }
+};
+
 module.exports = {
     addProject,
     assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,
     assignRHManagerToProject,updateproject,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner,
-    assignFinancialManagerToProject,
+    assignFinancialManagerToProject,getAssignedUsersToProject,
     unassignRHManagerFromProject,deleteProjectById,
     unassignFinancialManagerFromProject,
     unassignAccountantFromProject,

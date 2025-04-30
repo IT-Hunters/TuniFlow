@@ -8,6 +8,7 @@ import { Edit, Trash2 } from 'react-feather';
 
 const API_URL = 'http://localhost:3000/users';
 const API_Project = 'http://localhost:3000/project';
+const API_Conversation = 'http://localhost:5000/project-conversations';
 
 const MyProject = () => {
   const [project, setProject] = useState(null);
@@ -19,6 +20,9 @@ const MyProject = () => {
   const [assignmentLoading, setAssignmentLoading] = useState(false);
   const [assignmentError, setAssignmentError] = useState(null);
   const [assignmentSuccess, setAssignmentSuccess] = useState(null);
+  const [conversationLoading, setConversationLoading] = useState(false);
+  const [conversationError, setConversationError] = useState(null);
+  const [conversationSuccess, setConversationSuccess] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
   const navigate = useNavigate();
@@ -51,7 +55,7 @@ const MyProject = () => {
         axios.get(`${API_Project}/getAllFinancialManagersOfProject`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_Project}/getAllHRsOfProject`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      
+
       setAccountants(accountantResponse.data.accountants || []);
       setFinancialManagers(financialManagerResponse.data.financialManagers || []);
       setRhManagers(rhManagerResponse.data.rhManagers || []);
@@ -69,9 +73,9 @@ const MyProject = () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found. Please log in.');
       const endpoint = {
-        'Accountant': `${API_Project}/assignAccountantToProject/${userId}`,
-        'FinancialManager': `${API_Project}/assignFinancialManagerToProject/${userId}`,
-        'RH': `${API_Project}/assignRHManagerToProject/${userId}`,
+        Accountant: `${API_Project}/assignAccountantToProject/${userId}`,
+        FinancialManager: `${API_Project}/assignFinancialManagerToProject/${userId}`,
+        RH: `${API_Project}/assignRHManagerToProject/${userId}`,
       }[userType];
       if (!endpoint) throw new Error('Invalid user type.');
       const response = await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${token}` } });
@@ -104,27 +108,48 @@ const MyProject = () => {
     }
   };
 
-  const handleUnassignUser = async (userId, userType) => {
-    setAssignmentLoading(true);
-    setAssignmentError(null);
-    setAssignmentSuccess(null);
+  const handleAddConversation = async () => {
+    setConversationLoading(true);
+    setConversationError(null);
+    
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No authentication token found. Please log in.');
-      const endpoint = {
-        'Accountant': `${API_Project}/unassignaccountant/${userId}`,
-        'FinancialManager': `${API_Project}/unassignfinancialmanager/${userId}`,
-        'RH': `${API_Project}/unassignrh/${userId}`,
-      }[userType];
-      if (!endpoint) throw new Error('Invalid user type.');
-      const response = await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setAssignmentSuccess(response.data.message);
-      await Promise.all([fetchMyProject(), fetchAvailableUsers()]);
+      if (!token) throw new Error('Authentication required');
+      
+      if (!project) throw new Error('No project found');
+  
+      // Récupération des utilisateurs assignés
+      const response = await axios.get(
+        `http://localhost:3000/project/${project._id}/assigned-users`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      const participants = response.data.map(user => user._id);
+      const validRoles = ['ACCOUNTANT', 'FINANCIAL_MANAGER', 'RH', 'BUSINESS_MANAGER'];
+      const invalidParticipants = response.data.filter(
+        user => !validRoles.includes(user.role)
+      );
+  
+      if (invalidParticipants.length > 0) {
+        throw new Error('Some users have invalid roles');
+      }
+  
+      // Création de la conversation
+      await axios.post(
+        API_Conversation,
+        { projectId: project._id, participants },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      navigate('/conversation');
+      
     } catch (err) {
-      console.error('Unassignment Error:', err.response?.data || err.message);
-      setAssignmentError(err.response?.data?.message || 'Failed to unassign user: ' + err.message);
+      setConversationError(
+        err.response?.data?.message || 
+        'Failed to create conversation: ' + err.message
+      );
     } finally {
-      setAssignmentLoading(false);
+      setConversationLoading(false);
     }
   };
 
@@ -141,10 +166,17 @@ const MyProject = () => {
   }, [location.state]);
 
   const allUsers = [
-    ...accountants.map(user => ({ ...user, userType: 'Accountant' })),
-    ...financialManagers.map(user => ({ ...user, userType: 'FinancialManager' })),
-    ...rhManagers.map(user => ({ ...user, userType: 'RH' })),
+    ...accountants.map((user) => ({ ...user, userType: 'Accountant' })),
+    ...financialManagers.map((user) => ({ ...user, userType: 'FinancialManager' })),
+    ...rhManagers.map((user) => ({ ...user, userType: 'RH' })),
   ];
+
+  // Vérifier si des participants sont assignés
+  const hasParticipants =
+    project &&
+    (project.accountants.length > 0 ||
+      project.financialManagers.length > 0 ||
+      project.rhManagers.length > 0);
 
   // Pagination
   const indexOfLastUser = currentPage * usersPerPage;
@@ -179,6 +211,21 @@ const MyProject = () => {
                 <p><strong>Assigned Accountants:</strong> {project.accountants.length}</p>
                 <p><strong>Assigned Financial Managers:</strong> {project.financialManagers.length}</p>
                 <p><strong>Assigned RH Managers:</strong> {project.rhManagers.length}</p>
+                {hasParticipants ? (
+                  <button
+                    className="btn btn-primary MyProject-add-conversation-btn"
+                    onClick={handleAddConversation}
+                    disabled={conversationLoading || !project}
+                  >
+                    {conversationLoading ? 'Creating Conversation...' : 'Add Conversation'}
+                  </button>
+                ) : (
+                  <p className="alert alert-warning">
+                    No users assigned to this project. Please assign users below to start a conversation.
+                  </p>
+                )}
+                {conversationError && <div className="alert alert-error">{conversationError}</div>}
+                {conversationSuccess && <div className="alert alert-success">{conversationSuccess}</div>}
               </div>
             )}
           </div>
@@ -232,15 +279,15 @@ const MyProject = () => {
                               {assignmentLoading ? 'Assigning...' : 'Assign'}
                             </button>
                           )}
-                          <Edit 
-                            size={16} 
-                            className="MyProject-edit-icon" 
-                            onClick={() => handleEditUser(user._id)} 
+                          <Edit
+                            size={16}
+                            className="MyProject-edit-icon"
+                            onClick={() => handleEditUser(user._id)}
                           />
-                          <Trash2 
-                            size={16} 
-                            className="MyProject-delete-icon" 
-                            onClick={() => handleDeleteUser(user._id)} 
+                          <Trash2
+                            size={16}
+                            className="MyProject-delete-icon"
+                            onClick={() => handleDeleteUser(user._id)}
                           />
                         </div>
                       </td>
@@ -251,8 +298,8 @@ const MyProject = () => {
 
               {/* Pagination */}
               <div className="MyProject-pagination">
-                <button 
-                  onClick={handlePrevPage} 
+                <button
+                  onClick={handlePrevPage}
                   disabled={currentPage === 1}
                   className="btn btn-secondary"
                 >
@@ -261,15 +308,14 @@ const MyProject = () => {
                 <span style={{ margin: '0 10px' }}>
                   Page {currentPage} of {totalPages}
                 </span>
-                <button 
-                  onClick={handleNextPage} 
+                <button
+                  onClick={handleNextPage}
                   disabled={currentPage === totalPages}
                   className="btn btn-secondary"
                 >
                   Next
                 </button>
               </div>
-
             </div>
           )}
         </div>
