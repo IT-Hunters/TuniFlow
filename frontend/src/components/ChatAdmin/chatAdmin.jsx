@@ -25,7 +25,7 @@ const ChatAdmin = () => {
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const fileInputRef = useRef(null);
-    const ADMIN_ID = "67bee9c72a104f8241d58e7d";
+    const ADMIN_ID = "67c6e16c7ccab71bb436bb3a";
 
     useEffect(() => {
         const token = localStorage.getItem("token");
