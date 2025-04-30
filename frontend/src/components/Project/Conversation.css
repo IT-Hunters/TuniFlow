@@ -1,47 +1,66 @@
+/* Conteneur principal de la conversation */
 .conversation-container {
   display: flex;
   flex-direction: column;
   height: 85vh;
   max-width: 1000px;
   margin: 0 auto;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: #f1f5f9; /* Gris clair */
+  border-radius: 20px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  font-family: 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
 }
 
+/* Zone des messages */
 .messages-box {
   flex: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
-  background: #f5f7fa;
+  /* Nouvelle image de fond : back2.jpg */
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/back3.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 #f5f7fa;
+  scrollbar-color: #d1d5db #f1f5f9;
 }
 
+/* Ajustement de la scrollbar pour qu'elle soit visible sur l'image de fond */
 .messages-box::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .messages-box::-webkit-scrollbar-track {
-  background: #f5f7fa;
-  border-radius: 10px;
+  background: rgba(241, 245, 249, 0.8); /* Gris clair avec opacité */
+  border-radius: 12px;
 }
 
 .messages-box::-webkit-scrollbar-thumb {
-  background-color: #c1c1c1;
-  border-radius: 10px;
+  background-color: #d1d5db;
+  border-radius: 12px;
+  transition: background-color 0.3s;
 }
 
+.messages-box::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* Conteneur de chaque message */
 .message-item {
-  margin-bottom: 16px;
-  max-width: 75%;
+  margin-bottom: 20px;
+  max-width: 70%;
   position: relative;
+  transition: transform 0.2s ease, background-color 0.3s;
+}
+
+.message-item:hover {
+  transform: translateY(-2px);
 }
 
 .message-item.sending {
-  opacity: 0.7;
+  opacity: 0.65;
+  filter: blur(0.5px);
 }
 
 .message-content-container {
@@ -49,58 +68,94 @@
   flex-direction: column;
 }
 
+/* Contenu du message */
 .message-content {
-  padding: 12px 16px;
-  border-radius: 18px;
+  padding: 12px 18px;
+  border-radius: 20px;
   font-size: 15px;
-  line-height: 1.4;
+  line-height: 1.5;
   word-wrap: break-word;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+  /* Ajout d'une bordure pour améliorer le contraste */
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Messages de l'utilisateur courant */
+/* Messages de l'utilisateur courant (bleu profond) */
 .message-item.self {
-  align-self: flex-end;
+  margin-left: auto;
 }
 
 .message-item.self .message-content {
-  background: #007bff;
+  background: rgba(30, 58, 138, 0.95); /* Bleu profond avec légère transparence */
   color: white;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 6px;
 }
 
 /* Messages des autres utilisateurs */
 .message-item.other {
-  align-self: flex-start;
+  margin-right: auto;
 }
 
 .message-item.other .message-content {
-  background: #e9ecef;
-  color: #212529;
-  border-bottom-left-radius: 4px;
+  background: rgba(226, 232, 240, 0.95); /* Gris légèrement plus foncé avec transparence */
+  color: #1f2937;
+  border-bottom-left-radius: 6px;
+}
+
+.message-sender-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb; /* Texte clair pour contraste sur l'image */
+  margin-bottom: 4px;
+  margin-left: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Ombre pour lisibilité */
 }
 
 .message-meta {
   font-size: 12px;
-  color: #6c757d;
-  margin: 4px 8px;
+  color: #e5e7eb; /* Texte clair pour contraste */
+  margin: 6px 10px;
   display: flex;
   align-items: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .message-status {
   font-size: 11px;
-  color: #6c757d;
+  color: #e5e7eb;
   font-style: italic;
   margin-left: 8px;
+  display: flex;
+  align-items: center;
 }
 
+/* Spinner pour les messages en cours d'envoi */
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Formulaire de saisie */
 .message-form {
   display: flex;
-  padding: 16px;
-  background: white;
-  border-top: 1px solid #e9ecef;
+  padding: 16px 20px;
+  background: #f1f5f9; /* Gris clair */
+  border-top: 1px solid #e5e7eb;
   align-items: center;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.03);
 }
 
 .input-area {
@@ -112,106 +167,147 @@
 
 .message-input {
   flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #e9ecef;
-  border-radius: 24px;
+  padding: 12px 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 30px;
   outline: none;
   font-size: 15px;
-  transition: border-color 0.2s;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  background: #f9fafb; /* Légèrement plus foncé que le fond */
 }
 
 .message-input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: #1e3a8a; /* Bleu profond */
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
+/* Bouton Emoji */
 .emoji-button {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 26px;
   cursor: pointer;
   margin-left: 12px;
-  color: #6c757d;
-  transition: transform 0.2s;
+  color: #6b7280;
+  transition: color 0.3s, transform 0.3s;
 }
 
 .emoji-button:hover {
-  color: #007bff;
-  transform: scale(1.1);
+  color: #1e3a8a; /* Bleu profond */
+  transform: scale(1.15);
 }
 
+.emoji-button.active {
+  color: #1e3a8a;
+  transform: scale(1.15);
+}
+
+/* Sélecteur d'emojis */
 .emoji-picker {
   position: absolute;
-  bottom: 50px;
-  right: 0;
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  padding: 10px;
+  bottom: 60px;
+  right: 10px;
+  background: #f1f5f9; /* Gris clair */
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 12px;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+  animation: slideUp 0.3s ease-out;
 }
 
 .emoji {
-  font-size: 24px;
+  font-size: 26px;
   cursor: pointer;
-  transition: transform 0.2s;
+  padding: 4px;
+  border-radius: 8px;
+  transition: transform 0.2s, background-color 0.3s;
   text-align: center;
 }
 
 .emoji:hover {
   transform: scale(1.2);
+  background-color: #e5e7eb;
 }
-
+/* Bouton d'envoi */
 .btn.btn-primary {
-  background-color: #007bff;
+  background-color: #1e3a8a; /* Bleu marine */
   border: none;
-  padding: 12px 24px;
-  border-radius: 24px;
+  padding: 12px 28px;
+  border-radius: 30px;
   color: white;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
   margin-left: 12px;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .btn.btn-primary:hover {
-  background-color: #0069d9;
+  background-color: #06227e; /* Bleu marine légèrement plus clair */
+  transform: translateY(-2px);
 }
 
 .btn.btn-primary:disabled {
-  background-color: #a0a0a0;
+  background-color: #325ba1;
   cursor: not-allowed;
+  transform: none;
 }
 
+/* Bouton de son */
+.btn.btn-secondary {
+  background-color: #6b7280;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn.btn-secondary:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+}
+
+/* Alertes */
 .alert {
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin: 16px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  margin: 20px;
   text-align: center;
+  font-weight: 500;
 }
 
 .alert-loading {
-  background-color: #e7f1ff;
-  color: #004085;
+  background-color: #dbeafe; /* Bleu très clair */
+  color: #1e3a8a; /* Bleu profond */
 }
 
 .alert-error {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 /* Animation pour les nouveaux messages */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .message-item {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Animation pour le sélecteur d'emojis */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Indicateur de connexion */
@@ -221,17 +317,83 @@
   right: 20px;
   padding: 8px 16px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s;
 }
 
 .socket-connected {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #dbeafe; /* Bleu très clair */
+  color: #1e3a8a; /* Bleu profond */
 }
 
 .socket-disconnected {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .conversation-container {
+    height: 80vh;
+    border-radius: 12px;
+    margin: 0 10px;
+  }
+
+  .messages-box {
+    padding: 16px;
+    background-size: cover; /* Assure que l'image s'adapte bien */
+  }
+
+  .message-item {
+    max-width: 85%;
+  }
+
+  .message-content {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .message-meta {
+    font-size: 11px;
+    margin: 4px 8px;
+  }
+
+  .message-form {
+    padding: 12px 16px;
+  }
+
+  .message-input {
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+
+  .btn.btn-primary {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .emoji-button {
+    font-size: 22px;
+    margin-left: 8px;
+  }
+
+  .emoji-picker {
+    grid-template-columns: repeat(4, 1fr);
+    padding: 8px;
+    bottom: 50px;
+    right: 0;
+  }
+
+  .emoji {
+    font-size: 22px;
+  }
+
+  .socket-status {
+    font-size: 12px;
+    padding: 6px 12px;
+    bottom: 15px;
+    right: 15px;
+  }
 }
