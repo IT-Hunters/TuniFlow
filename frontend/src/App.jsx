@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Dashbord from "./components/dashboard/Dashbord";
 import AuthPage from "./components/Auth/Authpage";
 import Profile from "./components/Profile/Profile";
@@ -40,10 +42,24 @@ import UserUpdate from "./components/Project/UserUpdate";
 import EmployeeTable from "./components/Project/EmployeeTable";
 import Updatebymanager from "./components/Project/Updatebymanager";
 import Conversation from "./components/Project/Conversation";
+import Room from './components/Project/Room';
+import CreateRoomModal from './components/Project/CreateRoomModal';
 
 function App() {
   return (
     <Router>
+      <ToastContainer
+        position="top-center"
+        autoClose={7000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       <Routes>
         <Route path="/login" element={<AuthPage />} />
         <Route path="/dashboard" element={<Dashbord />} />
@@ -86,6 +102,8 @@ function App() {
         <Route path="/Updatebymanager/:id" element={<Updatebymanager />} />
         <Route path="/findemploye" element={<EmployeeTable />} />
         <Route path="/conversation" element={<Conversation />} />
+        <Route path="/rooms/:projectId" element={<Room />} />
+        <Route path="/CreateRoomModal" element={<CreateRoomModal />} />
       </Routes>
     </Router>
   );

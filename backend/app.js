@@ -24,7 +24,7 @@ var userLogsRoutes = require('./routes/UserLogsRoutes');
 const salarySchedulerRoutes = require('./routes/salarySchedulerRoutes');
 require('./jobs/salaryProcessor');
 const financialStatementRoutes = require("./routes/financialStatementRoutes");
-
+const roomRoutes = require('./routes/roomRoutes');
 
 var app = express();
 var mongoose = require("mongoose");
@@ -72,6 +72,7 @@ app.use('/chat', chatRouter);
 app.use('/userLogs', userLogsRoutes);
 app.use('/salary-scheduler', salarySchedulerRoutes);
 app.use("/financial_statements", financialStatementRoutes);
+app.use('/api/rooms', roomRoutes);
 
 // 🟢 Test API
 app.get('/api/test', (req, res) => {
@@ -216,11 +217,7 @@ global.io.on("connection", (socket) => {
     socket.leave(projectId);
     console.log(`User ${socket.id} left project conversation: ${projectId}`);
   });
-// Après la création de l'instance io
-app.use((req, res, next) => {
-  req.io = global.io; // Passez l'instance io aux routes
-  next();
-});
+
   // Écouter les nouveaux messages de projet
   socket.on("newProjectMessage", async ({ projectId, senderId, content }) => {
     try {
