@@ -45,7 +45,7 @@ const CoolSidebar = () => {
     { title: "Manager List", icon: FaUserFriends, href: "/ManagerList" },
     { title: "ProjectView", icon: FaUserFriends, href: "/ProjectView" },
     { title: "OwnerProjectsView", icon: FaUserFriends, href: "/OwnerProjectsView" },
-    { title: "Conversation Du Projet", icon: FaUserFriends, href: "/conversation" },
+    { title: "Conversation Du Projet", icon: FaComments, href: "/conversation" },
   ];
 
   // Filter nav items based on user role
