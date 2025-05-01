@@ -14,6 +14,7 @@ const xlsx = require('xlsx');
 const { createNotification } = require('../controllers/NotificationController');
 const walletController = require("../controllers/walletcontroller");
 const FinancialManager = require("../model/FinancialManager");
+const ProjectConversation= require("../model/ProjectConversation");
 const BusinessOwner = require("../model/BusinessOwner");
 const Accountant = require("../model/Accountant");
 const BusinessManager = require("../model/BusinessManager");
@@ -1027,10 +1028,9 @@ const Registerwithproject = async (req, res) => {
                 timestamp: new Date()
             });
         }
-        
 
         // 🔟 Ajouter l'utilisateur au projet
-        switch (req.body.role) {
+        switch (req.body.role) { // Correction : "req symmetry.body.role" remplacé par "req.body.role"
             case "BUSINESS_OWNER":
                 project.businessOwner = result._id;
                 break;
@@ -1087,6 +1087,16 @@ const Registerwithproject = async (req, res) => {
 
         await project.save();
 
+        // Changement : Ajouter le nouvel utilisateur à la liste des participants de la conversation
+        const conversation = await ProjectConversation.findOne({ projectId });
+        if (conversation) {
+            // Ajouter l'ID de l'utilisateur à la liste des participants (évite les doublons avec $addToSet)
+            conversation.participants.addToSet(result._id);
+            await conversation.save();
+        } else {
+            console.log(`Aucune conversation trouvée pour le projet ${projectId}.`);
+        }
+
         // 1️⃣2️⃣ Réponse
         res.status(201).json({ message: "Registration successful", user: result });
 
@@ -1094,7 +1104,7 @@ const Registerwithproject = async (req, res) => {
         console.error("Error during registration:", error);
         res.status(500).json({ message: "Internal server error", error });
     }
-}; 
+};
 // Ajouter des employés à partir d'un fichier Excel
 const addEmployeesFromExcel = async (req, res) => {
     try {
@@ -1289,64 +1299,164 @@ const addEmployee = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
 
+        // Vérifier si tous les champs sont présents et non vides
         if (!name || !email || !password || !role) {
-            return res.status(400).json({ message: 'All fields are required' });
+            return res.status(400).json({ 
+                message: 'Tous les champs sont obligatoires',
+                fields: { name: !name, email: !email, password: !password, role: !role }
+            });
+        }
+
+        // Validation du nom (minimum 2 caractères, maximum 50)
+        if (name.length < 2 || name.length > 50) {
+            return res.status(400).json({ 
+                message: 'Le nom doit contenir entre 2 et 50 caractères'
+            });
+        }
+
+        // Validation du format de l'email plus robuste
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ 
+                message: 'Format d\'email invalide',
+                suggestion: 'Utilisez un email valide comme exemple@domaine.com'
+            });
+        }
+
+        // Validation du mot de passe (minimum 8 caractères, au moins 1 majuscule, 1 minuscule, 1 chiffre)
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({
+                message: 'Le mot de passe doit contenir au moins 8 caractères, dont une majuscule, une minuscule et un chiffre',
+                requirements: {
+                    minLength: 8,
+                    uppercase: true,
+                    lowercase: true,
+                    number: true
+                }
+            });
+        }
+
+        // Validation des rôles autorisés
+        const allowedRoles = ['employee', 'manager', 'admin'];
+        if (!allowedRoles.includes(role)) {
+            return res.status(400).json({ 
+                message: 'Rôle non autorisé',
+                allowedRoles: allowedRoles
+            });
+        }
+
+        // Vérification du token
+        if (!req.headers.authorization) {
+            return res.status(401).json({ message: 'Token manquant' });
         }
 
         const token = req.headers.authorization.split(" ")[1];
         if (!token) {
-            return res.status(401).json({ message: 'Token missing' });
+            return res.status(401).json({ message: 'Format de token invalide. Utilisez: Bearer <token>' });
         }
 
-        const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
-        const userId = decodedToken.userId;
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+        } catch (jwtError) {
+            return res.status(401).json({ 
+                message: 'Token invalide ou expiré',
+                error: jwtError.message 
+            });
+        }
 
+        const userId = decodedToken.userId;
         if (!userId) {
-            return res.status(400).json({ message: "User ID missing in token" });
+            return res.status(400).json({ message: "ID utilisateur manquant dans le token" });
         }
 
         const user = await userModel.findById(userId);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
 
+        // Vérification du type d'utilisateur
         if (user.userType !== "RH") {
-            return res.status(400).json({ message: "The logged-in user is not of type RH" });
+            return res.status(403).json({ 
+                message: "Seuls les utilisateurs de type RH peuvent ajouter des employés",
+                userType: user.userType
+            });
         }
 
         const projectId = user.project;
         if (!projectId) {
-            return res.status(400).json({ message: "No project associated with the logged-in user" });
+            return res.status(400).json({ 
+                message: "Aucun projet associé à l'utilisateur connecté",
+                solution: "Assurez-vous que l'utilisateur RH est bien affecté à un projet"
+            });
         }
 
-        const existingEmployee = await Employe.findOne({ email });
+        // Vérifier si un employé avec cet email existe déjà (case insensitive)
+        const existingEmployee = await Employe.findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
         if (existingEmployee) {
-            return res.status(400).json({ message: 'An employee with this email already exists' });
+            return res.status(409).json({ 
+                message: 'Un employé avec cet email existe déjà',
+                existingEmployeeId: existingEmployee._id
+            });
         }
 
+        // Hachage du mot de passe
         const hashedPassword = await bcryptjs.hash(password, 10);
 
+        // Créer le nouvel employé
         const newEmployee = new Employe({
-            name,
-            email,
+            name: name.trim(),
+            email: email.toLowerCase().trim(),
             password: hashedPassword,
             role,
             project: projectId
         });
 
+        // Sauvegarder l'employé dans la base de données
         await newEmployee.save();
 
-        // Mettre à jour le projet pour inclure l'ID du nouvel employé
+        // Mettre à jour le projet avec le nouvel employé
         await Project.findByIdAndUpdate(projectId, {
             $push: { employees: newEmployee._id }
+        }, { new: true });
+
+        // Ne pas renvoyer le mot de passe dans la réponse
+        const employeeResponse = newEmployee.toObject();
+        delete employeeResponse.password;
+
+        return res.status(201).json({ 
+            message: 'Employé ajouté avec succès', 
+            employee: employeeResponse,
+            projectId: projectId
         });
 
-        res.status(201).json({ message: 'Employee added successfully', employee: newEmployee });
     } catch (error) {
-        console.error("Error adding employee:", error);
-        res.status(500).json({ message: 'Internal server error', error });
+        console.error("Erreur lors de l'ajout de l'employé:", error);
+        
+        // Gestion spécifique des erreurs de base de données
+        if (error.name === 'MongoError' && error.code === 11000) {
+            return res.status(409).json({ 
+                message: 'Email déjà utilisé (erreur de base de données)',
+                error: error.message
+            });
+        }
+        
+        // Erreur de validation Mongoose
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                message: 'Erreur de validation des données',
+                errors: Object.values(error.errors).map(err => err.message)
+            });
+        }
+
+        return res.status(500).json({ 
+            message: 'Erreur interne du serveur',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
+
 
 const RegisterManger = async (req, res) => {
     try {

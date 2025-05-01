@@ -88,6 +88,38 @@ const MyProject = () => {
       setAssignmentLoading(false);
     }
   };
+  const handleUnassignUser = async (userId, userType) => {
+    setAssignmentLoading(true);
+    setAssignmentError(null);
+    setAssignmentSuccess(null);
+  
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found. Please log in.');
+  
+      // Choisir l'URL correcte selon le type d'utilisateur
+      const endpoint = {
+        Accountant: `${API_Project}/unassignaccountant/${userId}`,
+        FinancialManager: `${API_Project}/unassignfinancialmanager/${userId}`,
+        RH: `${API_Project}/unassignrh/${userId}`,
+      }[userType];
+  
+      if (!endpoint) throw new Error('Type d’utilisateur invalide.');
+  
+      const response = await axios.post(endpoint, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      setAssignmentSuccess(response.data.message || 'Utilisateur désassigné avec succès.');
+      await Promise.all([fetchMyProject(), fetchAvailableUsers()]);
+    } catch (err) {
+      console.error('Erreur lors du désassignement :', err.response?.data || err.message);
+      setAssignmentError(err.response?.data?.message || 'Erreur lors du désassignement : ' + err.message);
+    } finally {
+      setAssignmentLoading(false);
+    }
+  };
+  
 
   const handleEditUser = (userId) => {
     navigate(`/Updatebymanager/${userId}`);

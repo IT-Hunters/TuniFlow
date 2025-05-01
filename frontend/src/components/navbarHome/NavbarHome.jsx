@@ -116,7 +116,9 @@ const Navbar = ({ notifications: externalNotifications }) => {
     fetchNotifications();
   };
 
-  const handleMarkAsRead = async (notificationId) => {
+  const handleMarkAsRead = async (notificationId, event) => {
+    // Empêche la propagation de l'événement pour éviter que le clic sur le bouton déclenche la redirection
+    event.stopPropagation();
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -146,7 +148,14 @@ const Navbar = ({ notifications: externalNotifications }) => {
       }
     }
   };
-  
+
+  // Fonction pour gérer le clic sur une notification et rediriger vers /projectview
+  const handleNotificationRedirect = (notification) => {
+    // Redirige vers /projectview avec le projectId dans l'état
+    navigate('/projectview', { state: { projectId: notification.projectId } });
+    // Ferme le menu de notification
+    setNotificationMenuOpen(false);
+  };
 
   const unreadNotificationsCount = notifications.filter((notif) => !notif.isRead).length;
 
@@ -227,13 +236,18 @@ const Navbar = ({ notifications: externalNotifications }) => {
               notifications
                 .filter((notif) => !notif.isRead)
                 .map((notif, index) => (
-                  <div key={index} className="notification-item">
+                  <div
+                    key={index}
+                    className="notification-item"
+                    onClick={() => handleNotificationRedirect(notif)} // Redirection lors du clic sur la notification
+                    style={{ cursor: 'pointer' }} // Indique que l'élément est cliquable
+                  >
                     <p>
                       {notif.message} - {new Date(notif.createdAt).toLocaleTimeString()}
                     </p>
                     <button
                       className="mark-as-read-btn"
-                      onClick={() => handleMarkAsRead(notif._id)}
+                      onClick={(event) => handleMarkAsRead(notif._id, event)} // Ajout de event pour stopPropagation
                     >
                       Marquer comme lu
                     </button>
