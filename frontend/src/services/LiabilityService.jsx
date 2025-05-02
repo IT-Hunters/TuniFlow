@@ -2,11 +2,13 @@ const token = localStorage.getItem("token");
 
 export const submitLiability = async (formData) => {
     try {
+        console.log("fooooooooooorm " + JSON.stringify(formData))
         const response = await fetch("http://localhost:3000/assetspassifs", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`,
+                "cache-control": "no-cache",
             },
             body: JSON.stringify(formData),
         });
@@ -31,6 +33,7 @@ export const getAllLiabilities = async () => {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`,
+                "cache-control": "no-cache",
             },
         });
 
@@ -39,7 +42,7 @@ export const getAllLiabilities = async () => {
         }
 
         const data = await response.json();
-        console.log("Assets fetched successfully:");
+        console.log("Liabilities fetched successfully:");
         return data;
     } catch (error) {
         console.error("Error fetching assets:", error);

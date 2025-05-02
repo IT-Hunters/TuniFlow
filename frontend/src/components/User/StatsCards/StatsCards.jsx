@@ -13,20 +13,20 @@ export default function StatsCards() {
 
   useEffect(() => {
     const getStatsData = async () => {
-      const projectId = "67e8cad500e54584114910e8";
+      const userId = localStorage.getItem("userId");
       const walletId = "67d15c34ea844b95d23a1788";
 
       try {
-        const workingCapital = await fetchWorkingCapitalStatus(projectId);
+        const workingCapital = await fetchWorkingCapitalStatus(userId);
         setWorkingCapitalStatus(workingCapital);
 
-        const revenue = await getRevenueData(walletId);
+        const revenue = await getRevenueData(userId);
         setRevenueData(revenue);
 
-        const profit = await calculateProfitMargin(walletId);
+        const profit = await calculateProfitMargin(userId);
         setProfitMarginData(profit);
 
-        const expenses = await getExpenseData(walletId);
+        const expenses = await getExpenseData(userId);
         setExpenseData(expenses);
       } catch (error) {
         console.error("Error fetching stats data:", error);
@@ -81,6 +81,7 @@ export default function StatsCards() {
     <div className="stats-container">
       {stats.map((stat) => (
         <div key={stat.title} className="stat-card">
+          
           <div className="stat-content">
             <div>
               <p className="stat-title">{stat.title}</p>

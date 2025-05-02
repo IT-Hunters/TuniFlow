@@ -6,7 +6,7 @@ const NonCurrentLiabilities = require("../model/AssetPassif/NonCurrentLiabilitie
 
 exports.getAllPassifs = async (req, res) => {
     try {
-        const passifs = await Liability.find();
+        const passifs = await Liability.find().sort({ timestamp: -1 , total_value: -1 });
         res.status(200).json(passifs);
     } catch (error) {
         res.status(500).json({ message: error.message });

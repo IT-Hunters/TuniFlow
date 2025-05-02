@@ -30,8 +30,10 @@ const authenticateJWT = (req, res, next) => {
       return res.status(400).json({ message: 'Token invalide: userId manquant.' });
     }
 
-    req.user = { userId: decoded.userId,
-      role: decoded.role
+    req.user = { 
+      userId: decoded.userId,
+      role: decoded.role,
+      project_id: decoded.project_id,
      };
     console.log('req.user après authentification:', req.user);
     next();

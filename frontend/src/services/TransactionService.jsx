@@ -1,7 +1,7 @@
 const token = localStorage.getItem("token");
-const API_URL = "http://localhost:5000/transactions";
-export const getRevenueData = async (walletId) => {
-      const response = await fetch(`${API_URL}/getRevenue/${walletId}`, {
+const API_URL = "http://localhost:3000/transactions";
+export const getRevenueData = async (userId) => {
+      const response = await fetch(`${API_URL}/getRevenue/${userId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -11,8 +11,8 @@ export const getRevenueData = async (walletId) => {
       });
       return response.json(); 
   };
-  export const calculateProfitMargin = async (walletId) => {
-    const response = await fetch(`http://localhost:5000/wallets/calculateProfitMargin/${walletId}`, {
+  export const calculateProfitMargin = async (projectId) => {
+    const response = await fetch(`http://localhost:3000/wallets/calculateProfitMargin/${projectId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -22,10 +22,10 @@ export const getRevenueData = async (walletId) => {
     });
     return response.json(); 
 };
-export const getExpenseData = async (walletId) => {
+export const getExpenseData = async (projectId) => {
   try {
     // Current period (last 7 days)
-    const currentResponse = await fetch(`${API_URL}/expenses/${walletId}?period=current`, {
+    const currentResponse = await fetch(`${API_URL}/expenses/${projectId}?period=current`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -36,7 +36,7 @@ export const getExpenseData = async (walletId) => {
     const currentData = await currentResponse.json();
 
     // Previous period (previous 7 days)
-    const previousResponse = await fetch(`${API_URL}/expenses/${walletId}?period=previous`, {
+    const previousResponse = await fetch(`${API_URL}/expenses/${projectId}?period=previous`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

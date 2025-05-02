@@ -13,7 +13,7 @@ const ProjectSchema = new Schema({
   obligations_fiscales: [{ type: Schema.Types.ObjectId, ref: "ObligationsFiscales" }],
   taxes: [{ type: Schema.Types.ObjectId, ref: "Taxes" }],
   assets_actif: [{ type: Schema.Types.ObjectId, ref: "AssetActif" }],
-  assets_passif: [{ type: Schema.Types.ObjectId, ref: "AssetPassif" }],
+  assets_passif: [{ type: Schema.Types.ObjectId, ref: "Liability" }],
   employees: [{ type: Schema.Types.ObjectId, ref: "Employe" }],
   wallet: { type: Schema.Types.ObjectId, ref: "Wallet", unique: true }, 
   objectifs: [{ type: Schema.Types.ObjectId, ref: "Objectif" }],

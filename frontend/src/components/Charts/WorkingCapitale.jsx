@@ -26,7 +26,7 @@ const WorkingCapitalDashboard = ({ projectId }) => {
   useEffect(() => {
     async function loadData() {
       try {
-        const response = await fetchWorkingCapital(projectId);
+        const response = await fetchWorkingCapital(localStorage.getItem("userId"));
         if (!response || !response.workingCapitalByDate) {
           throw new Error("No data received from API");
         }

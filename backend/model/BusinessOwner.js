@@ -12,7 +12,7 @@ const BusinessOwnerSchema = new Schema({
   picture: { type: String },
   autorization: { type: Boolean, default: false },
   evidence: { type: String },
-  projects: [{ type: Schema.Types.ObjectId, ref: "Project" }] ,// Utiliser Schema
+  projects: [{ type: Schema.Types.ObjectId, ref: "Project" }] ,
   wallet: { type: Schema.Types.ObjectId, ref: "Wallet" }
 });
 

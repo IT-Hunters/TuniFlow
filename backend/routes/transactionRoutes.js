@@ -20,9 +20,9 @@ router.put("/cancelTransaction/:transactionId", transactioncontroller.cancelTran
 
 // 📌 Mettre à jour une transaction
 router.put("/updateTransaction/:transactionId", transactioncontroller.updateTransaction);
-router.get("/expenses/:walletId", transactioncontroller.getExpenses);
+//router.get("/expenses/:userId", transactioncontroller.getExpenses);
 // 📌 Transférer de l'argent entre deux wallets
 router.post("/transfer/:senderWalletId/:receiverWalletId", transactioncontroller.transfer);
-router.get("/getRevenue/:walletId", transactioncontroller.getRevenue);
-router.get("/expenses/:walletId", transactioncontroller.getExpenses);
+router.get("/getRevenue/:projectId", transactioncontroller.getRevenue);
+router.get("/expenses/:projectId", transactioncontroller.getExpenses);
 module.exports = router;

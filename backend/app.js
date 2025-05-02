@@ -18,10 +18,12 @@ var projectRouter = require('./routes/project.router');
 var projectConversationRouter = require('./routes/projectConversationRoutes');
 var taxeRoutes = require('./routes/taxeRoutes');
 var transactionRoutes = require('./routes/transactionRoutes');
+const logs = require('./middleware/Logger');
 var walletRoutes = require('./routes/walletRoutes');
 var chatRouter = require('./routes/chatRoutes');
 var userLogsRoutes = require('./routes/UserLogsRoutes');
 const salarySchedulerRoutes = require('./routes/salarySchedulerRoutes');
+var logsRoutes = require('./routes/logsRoutes');
 require('./jobs/salaryProcessor');
 const financialStatementRoutes = require("./routes/financialStatementRoutes");
 
@@ -50,6 +52,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(logger('dev'));
+app.use(logs);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -58,6 +61,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 🟢 Define Routes
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/logs',logsRoutes);
 app.use('/project', projectRouter);
 app.use('/project-conversations', projectConversationRouter);
 app.use('/invoices', invoiceRouter);

@@ -7,11 +7,12 @@ export const submitAsset = async (formData) => {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`,
+                "cache-control": "no-cache",
             },
             body: JSON.stringify(formData),
         });
 
-        if (!response.ok) {
+        if (!response.ok) { 
             throw new Error("Failed to submit asset");
         }
 
@@ -30,6 +31,7 @@ export const getAllAssets = async () => {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`,
+                "cache-control": "no-cache",
             },
         });
 

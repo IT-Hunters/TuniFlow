@@ -7,7 +7,7 @@ const TangibleAsset = require("../model/AssetActif/TangibleAsset");
 const Treasury = require("../model/AssetActif/Treasury");
 exports.getAllAssets = async (req, res) => {
     try {
-        const assets = await AssetActif.find();
+        const assets = await AssetActif.find().sort({ timestamp: -1 , total_value: -1 });
         res.status(200).json(assets);
     } catch (error) {
         res.status(500).json({ message: error.message });

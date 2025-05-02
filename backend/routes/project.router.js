@@ -4,7 +4,7 @@ const authorizeRole = require('../middleware/autorizedrole');
 const { addProject,assignAccountantToProject,assignFinancialManagerToProject,assignRHManagerToProject,
     unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById,getMyProject,
     getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,updateproject,
-    deleteProjectById,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner
+    deleteProjectById,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner,getProjectByUserId
 } = require("../controllers/projectController");
 const {createNotification,getUserNotifications,markNotificationAsRead} =require("../controllers/NotificationController")
 const { authenticateJWT } = require('../config/autorisation');
@@ -69,6 +69,7 @@ router.post("/unassignaccountant/:accountantId", authenticateJWT, unassignAccoun
 router.post("/unassignfinancialmanager/:financialManagerId", authenticateJWT, unassignFinancialManagerFromProject);
 router.post("/unassignrh/:rhId", authenticateJWT, unassignRHManagerFromProject);
 router.get("/getProject/:id", getProjectById);
+router.get("/getProjectByUser/:userId", getProjectByUserId);
 router.delete("/deleteProjectById/:id", deleteProjectById);
 router.put("/updateproject/:id", updateproject);
 router.get("/my-project", 

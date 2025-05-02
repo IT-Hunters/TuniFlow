@@ -3,11 +3,12 @@ var router = express.Router();
 const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation,getAvailableAndAssignedBusinessManagers
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,findMyProjectsOwner,updateFirstLogin,
   getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,deleteById,
-  getAllBusinessOwners,addEmployee,downloadEvidence,RegisterManger,getAllRoles,findMyPicture,logout,getbyid,updateById} = require('../controllers/auth');
+  getAllBusinessOwners,fetchProjectByUser,findMyProject2,addEmployee,downloadEvidence,RegisterManger,getAllRoles,findMyPicture,logout,getbyid,updateById} = require('../controllers/auth');
   const multerImage = require("../config/multer-picture");
   const multerImageAndPdf = require("../config/multer-picture-pdf");
   const multerExcel = require("../config/multer-excel");
 const { authenticateJWT } = require('../config/autorisation');
+const logger = require('../middleware/Logger');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
@@ -36,11 +37,13 @@ router.get("/getAllFinancialManagers",authenticateJWT,getAllFinancialManagers)
 router.get("/getAllRH",authenticateJWT,getAllRH)
 router.get("/getempl",getAllempl)
 router.get('/findMyProject', authenticateJWT, findMyProject);
+router.get('/findMyProject2', authenticateJWT, findMyProject2);
 router.get('/findMyProjectsOwner', authenticateJWT, findMyProjectsOwner);
 router.post("/send-code", sendVerificationCode);
 router.post("/forgot-password",forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/verify-code", verifyCode);
+router.post("/fetchProjectByUser/:projectId",authenticateJWT,fetchProjectByUser);
 router.get('/download/:fileName', downloadEvidence);
 router.get("/roles", getAllRoles);
 /*router.post("/registerwithproject/:projectId", async (req, res) => {

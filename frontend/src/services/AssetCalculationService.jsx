@@ -1,11 +1,12 @@
 const token = localStorage.getItem("token");
-export const fetchWorkingCapital = async (projectId) => {
+export const fetchWorkingCapital = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:3000/assetCalculation/${projectId}`, {
+      const response = await fetch(`http://localhost:3000/assetCalculation/${userId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`, 
+            "Cache-Control": "no-cache",
         },
     });
     console.log(token)
@@ -19,13 +20,15 @@ export const fetchWorkingCapital = async (projectId) => {
       return [];
     }
   };
-  export const fetchCandlestickData = async () => {
+  export const fetchCandlestickData = async (userId) => {
     try {
-      const response = await fetch(`"http://localhost:5000/wallets/cashflow/candlestick2/67bcf581623ede9afabc6edf"`, {
+      console.log("sssssssssssssssssssssssssssss" + userId);
+      const response = await fetch(`http://localhost:5000/wallets/cashflow/candlestick2/${userId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`, 
+            "Authorization": `Bearer ${token}`,
+            "cache-control": "no-cache",
         },
     });
       if (!response.ok) {
@@ -50,10 +53,11 @@ export const fetchWorkingCapital = async (projectId) => {
       console.error("Error fetching candlestick data:", error);
     }
   };
-  export const fetchWorkingCapitalStatus = async (projectId) => {
+  export const fetchWorkingCapitalStatus = async (userId) => {
     try {
         // Adjusting the URL to the new endpoint
-        const response = await fetch(`http://localhost:5000/assetCalculation/WorkingCapitalStatus/${projectId}`, {
+        
+        const response = await fetch(`http://localhost:5000/assetCalculation/WorkingCapitalStatus/${userId}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

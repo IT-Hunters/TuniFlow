@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { submitAsset } from "../../services/AssetActifService";     
 
-const AssetForm = ({ handleClose }) => {
+const AssetForm = ({ handleClose ,projectId}) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
@@ -18,7 +18,7 @@ const AssetForm = ({ handleClose }) => {
         balance: "",
         quantite: "",
         unite_value: "",
-        projet_id: ""
+        projet_id: projectId
     });
 
     const handleChange = (e) => {
@@ -30,9 +30,9 @@ const AssetForm = ({ handleClose }) => {
         if (loading) return; 
         setLoading(true);
         setError("");
-        formData.projet_id="65d7c5f1a2b3c45678901234";
+        formData.projet_id=projectId;
         const updatedFormData = Object.fromEntries(
-            Object.entries({ ...formData, projet_id: "65d7c5f1a2b3c45678901234" })
+            Object.entries({ ...formData, projet_id: projectId })
                 .filter(([_, v]) => v !== "" && v !== null && v !== undefined)
         );       
         const numericalFields = ["total_value", "quantite", "unite_value"];

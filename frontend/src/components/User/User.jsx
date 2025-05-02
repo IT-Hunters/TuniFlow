@@ -29,7 +29,9 @@ const API_Users = 'http://localhost:3000/users';
 
 export default function User() {
   const [selectedRole, setSelectedRole] = useState("all");
-  const walletId = "67d15c34ea844b95d23a1788"; 
+  const selectedProjectId = "67e8cad500e54584114910e8";
+  localStorage.setItem('selectedProjectId', selectedProjectId);
+  const walletId = "68112d12b7a83867f82846ea"; 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,6 +50,7 @@ export default function User() {
           selectedRole={selectedRole} 
           setSelectedRole={setSelectedRole} 
           walletId={walletId} 
+          selectedProjectId= {selectedProjectId}
         />
       </div>
     </div>
@@ -112,9 +115,9 @@ export function TransactionList({ walletId }) {
   );
 }
 
-function Dashboard({ selectedRole, setSelectedRole, walletId }) {
+function Dashboard({ selectedRole, setSelectedRole, walletId}){
   const [projects, setProjects] = useState([]);
-  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState(localStorage.getItem('selectedProjectId') || '');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -122,7 +125,7 @@ function Dashboard({ selectedRole, setSelectedRole, walletId }) {
     const fetchMyProjects = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_Users}/findMyProject`, {
+        const response = await axios.get(`${API_Users}/findMyProject2`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -131,7 +134,12 @@ function Dashboard({ selectedRole, setSelectedRole, walletId }) {
         console.log('Fetched projects:', projectData);
         if (projectData.length > 0) {
           setProjects(projectData);
-          setSelectedProjectId(projectData[0].id); // Set the first project as default
+          // If no project is selected, set the first project as default
+          if (!selectedProjectId && projectData.length > 0) {
+            const defaultProjectId = projectData[0].id;
+            setSelectedProjectId(defaultProjectId);
+            localStorage.setItem('selectedProjectId', defaultProjectId);
+          }
         } else {
           setError('No projects found. Please create a project to view objectives.');
         }
@@ -146,11 +154,19 @@ function Dashboard({ selectedRole, setSelectedRole, walletId }) {
     fetchMyProjects();
   }, []);
 
+  // Handle project selection change
+  const handleProjectChange = (e) => {
+    const newProjectId = e.target.value;
+    setSelectedProjectId(newProjectId);
+    localStorage.setItem('selectedProjectId', newProjectId); // Save to localStorage, overwriting previous value
+  };
+
   return (
     <div className="main-panel">
       <div className="content-wrapper">
         {/* Row 1: StatsCards (full width) */}
         <div className="row">
+        <h2>Overview Across All Projetcs Owned</h2>
           <div className="col-lg-12 grid-margin stretch-card">
             <StatsCards />
           </div>
@@ -160,6 +176,7 @@ function Dashboard({ selectedRole, setSelectedRole, walletId }) {
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card">
             <div className="project-selection">
+              <h3>Dive Into Projects Global Overview</h3>
               <h2>Select Project</h2>
               {loading ? (
                 <p>Loading projects...</p>
@@ -168,12 +185,12 @@ function Dashboard({ selectedRole, setSelectedRole, walletId }) {
               ) : (
                 <select
                   value={selectedProjectId}
-                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                  onChange={handleProjectChange}
                 >
                   <option value="">Select a project</option>
                   {projects.map(project => (
                     <option key={project.id} value={project.id}>
-                      {project.name} (Owner: {project.businessOwner?.name || 'Unknown'})
+                      {project.name} (Owner: {project.businessOwner?.fullname || 'Unknown'})
                     </option>
                   ))}
                 </select>
@@ -190,7 +207,7 @@ function Dashboard({ selectedRole, setSelectedRole, walletId }) {
             <div className="dashboard-section">
               <RoleSelector selectedRole={selectedRole} setSelectedRole={setSelectedRole} />
               {selectedProjectId ? (
-                <ProjectsOverview projectId={selectedProjectId} /> // Remove selectedRole
+                <ProjectsOverview projectId={localStorage.getItem('selectedProjectId')} />
               ) : (
                 <p>Please select a project to view objectives.</p>
               )}
@@ -204,7 +221,7 @@ function Dashboard({ selectedRole, setSelectedRole, walletId }) {
             <EventCalendar />
           </div>
           <div className="col-lg-6 grid-margin stretch-card">
-            <TeamActivity />
+            <TeamActivity projectId={localStorage.getItem('selectedProjectId')} />
           </div>
         </div>
 

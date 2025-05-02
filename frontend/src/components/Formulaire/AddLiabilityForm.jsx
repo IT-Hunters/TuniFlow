@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { submitLiability } from "../../services/LiabilityService";
 
-const AddLiabilityForm = ({ handleClose }) => {
+const AddLiabilityForm = ({ handleClose ,projectId}) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
         type_liability: "",
         category: "",
         name: "",
-        total: "",
+        total_value: "",
         date_commitment: "",
-        project_id: "65d7c5f1a2b3c45678901234"
+        project_id: projectId
     });
 
     const handleChange = (e) => {
@@ -27,8 +27,8 @@ const AddLiabilityForm = ({ handleClose }) => {
             Object.entries(formData).filter(([_, v]) => v !== "" && v !== null && v !== undefined)
         );
 
-        if ("total" in updatedFormData) {
-            updatedFormData.total = Number(updatedFormData.total);
+        if ("total_value" in updatedFormData) {
+            updatedFormData.total_value = Number(updatedFormData.total_value);
         }
 
         console.log(updatedFormData);
@@ -64,9 +64,9 @@ const AddLiabilityForm = ({ handleClose }) => {
                 <input
                     type="number"
                     className="form-control"
-                    name="total"
+                    name="total_value"
                     placeholder="Total Amount"
-                    value={formData.total}
+                    value={formData.total_value}
                     onChange={handleChange}
                     required
                 />

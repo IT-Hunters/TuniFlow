@@ -31,7 +31,6 @@ async function getAll(req, res) {
         res.send(err);
     }
 }
-
 const Register = async (req, res) => {
     try {
         // 1️⃣ Validation des données
@@ -47,20 +46,21 @@ const Register = async (req, res) => {
         }
 
         // 3️⃣ Hachage du mot de passe
-        req.body.password = await bcryptjs.hash(req.body.password, 10);
+        const hashedPassword = await bcryptjs.hash(req.body.password, 10);
 
         // 4️⃣ Sélection du modèle en fonction du rôle
         let userType;
         let UserModel;
         switch (req.body.role) {
-            case "BUSINESS_OWNER":
+            case "z":
                 userType = new BusinessOwner({
                     email: req.body.email,
-                    password: req.body.password,
+                    password: hashedPassword,
                     fullname: req.body.fullname,
                     lastname: req.body.lastname,
                     role: req.body.role,
-                    evidence: req.file ? req.file.path : null
+                    evidence: req.file ? req.file.path : null,
+                    firstlogin: true // Set default firstlogin
                 });
                 UserModel = BusinessOwner;
                 break;
@@ -68,10 +68,11 @@ const Register = async (req, res) => {
             case "ACCOUNTANT":
                 userType = new Accountant({
                     email: req.body.email,
-                    password: req.body.password,
+                    password: hashedPassword,
                     fullname: req.body.fullname,
                     lastname: req.body.lastname,
-                    role: req.body.role
+                    role: req.body.role,
+                    firstlogin: true
                 });
                 UserModel = Accountant;
                 break;
@@ -79,10 +80,11 @@ const Register = async (req, res) => {
             case "RH":
                 userType = new RH({
                     email: req.body.email,
-                    password: req.body.password,
+                    password: hashedPassword,
                     fullname: req.body.fullname,
                     lastname: req.body.lastname,
-                    role: req.body.role
+                    role: req.body.role,
+                    firstlogin: true
                 });
                 UserModel = RH;
                 break;
@@ -90,10 +92,11 @@ const Register = async (req, res) => {
             case "FINANCIAL_MANAGER":
                 userType = new FinancialManager({
                     email: req.body.email,
-                    password: req.body.password,
+                    password: hashedPassword,
                     fullname: req.body.fullname,
                     lastname: req.body.lastname,
-                    role: req.body.role
+                    role: req.body.role,
+                    firstlogin: true
                 });
                 UserModel = FinancialManager;
                 break;
@@ -101,10 +104,11 @@ const Register = async (req, res) => {
             case "BUSINESS_MANAGER":
                 userType = new BusinessManager({
                     email: req.body.email,
-                    password: req.body.password,
+                    password: hashedPassword,
                     fullname: req.body.fullname,
                     lastname: req.body.lastname,
-                    role: req.body.role
+                    role: req.body.role,
+                    firstlogin: true
                 });
                 UserModel = BusinessManager;
                 break;
@@ -112,7 +116,26 @@ const Register = async (req, res) => {
             default:
                 return res.status(400).json({ role: "Invalid role" });
         }
-        // 1️⃣1️⃣ Envoyer un e-mail de bienvenue avec le mot de passe en clair
+
+        // 5️⃣ Sauvegarde de l'utilisateur
+        const result = await userType.save();
+
+        // 6️⃣ Créer un Wallet pour l'utilisateur
+        const wallet = new Wallet({
+            user_id: result._id,
+            type: "default",
+            balance: 0,
+            currency: "TND"
+        });
+        await wallet.save();
+        console.log("Wallet created for user:", wallet);
+
+        // 7️⃣ Associer le wallet à l'utilisateur
+        result.wallet_id = wallet._id;
+        await result.save();
+        console.log("Wallet assigned to user:", result._id);
+
+        // 8️⃣ Envoyer un e-mail de bienvenue
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
@@ -128,13 +151,10 @@ const Register = async (req, res) => {
             html: `
               <div style="background-color: #f4f4f4; padding: 20px; font-family: Arial, sans-serif;">
                   <div style="max-width: 600px; background: #fff; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center;">
-                      
-                      <!-- Logo -->
                       <div style="text-align: center; margin-bottom: 20px;">
                           <img src="https://www.futuronomics.com/wp-content/uploads/2024/07/best-1024x576.png" 
                                alt="TuniFlow Logo" style="max-width: 150px; border-radius: 10px;">
                       </div>
-                  
                       <h2 style="color: #333;">🎉 Welcome to our platform!</h2>
                       <p style="color: #555;">Hello ${req.body.fullname},</p>
                       <p style="color: #555;">Your account has been successfully created as <strong>${req.body.role}</strong>.</p>
@@ -142,95 +162,63 @@ const Register = async (req, res) => {
                       <p style="color: #555;"><strong>Email:</strong> ${req.body.email}</p>
                       <p style="color: #555;"><strong>Password:</strong> ${req.body.password}</p>
                       <p style="color: #555;">We recommend changing your password after your first login.</p>
-                  
                       <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-                      <p style="color: #999; font-size: 12px;">© ${new Date().getFullYear()} TuniFlow - All rights reserved.</p>
+                      <p style="color: #999; font-size: 12px;">© ${new Date().getYear()} TuniFlow - All rights reserved.</p>
                   </div>
               </div>
-          `,
+            `,
         };
 
         await transporter.sendMail(mailOptions);
 
-        // 5️⃣ Sauvegarde de l'utilisateur
-        const result = await userType.save();
-
-      // ✅ Créer une notification si l'utilisateur est affecté à un projet
-if (req.body.projectId) {
-    const message = `Vous avez été affecté au projet ${req.body.projectId}`;
-    const notification = await createNotification(result._id, message, req.body.projectId);
-    
-    // ✅ Émettre la notification au bon utilisateur via Socket.IO
-    if (global.io) {
-        global.io.to(result._id.toString()).emit("newNotification", notification);
-    }}
-
-        // 6️⃣ Création automatique d'un wallet
-        if (["BUSINESS_OWNER", "BUSINESS_MANAGER", "ACCOUNTANT", "FINANCIAL_MANAGER"].includes(req.body.role)) {
-            const walletData = {
-                user_id: result._id,
-                type: "Principal"
-            };
-            const walletReq = { body: walletData };
-            const walletRes = {
-                status: (code) => ({
-                    json: async (data) => {
-                        if (code === 201) {
-                            console.log("Wallet created successfully in Register:", data);
-                            await UserModel.findByIdAndUpdate(result._id, { wallet: data.wallet._id });
-                            result.wallet = data.wallet._id;
-                        } else {
-                            console.error("Error creating wallet:", data);
-                        }
-                    }
-                })
-            };
-            await walletController.addWallet(walletReq, walletRes);
-        }
-
-       // 7️⃣ Création automatique d'un chat pour Business Owner avec l'Admin
-if (req.body.role === "BUSINESS_OWNER") {
-    const adminId = "67bee9c72a104f8241d58e7d"; // ID fixe de l'Admin
-    try {
-        // Vérifier si un chat existe déjà
-        let chat = await Chat.findOne({
-            participants: { $all: [result._id, adminId] }
-        });
-
-        if (!chat) {
-            // Créer le chat directement
-            chat = new Chat({
-                participants: [result._id, adminId],
-                messages: [],
-                createdBy: "System",
-                createdAt: new Date()
-            });
-            await chat.save();
-            console.log("Chat créé automatiquement:", {
-                chatId: chat._id,
-                participants: chat.participants
-            });
-
-            // Émettre l'événement Socket.IO si disponible
+        // 9️⃣ Créer une notification si l'utilisateur est affecté à un projet
+        if (req.body.projectId) {
+            const message = `Vous avez été affecté au projet ${req.body.projectId}`;
+            const notification = await createNotification(result._id, message, req.body.projectId);
             if (global.io) {
-                global.io.emit("newChat", {
-                    chatId: chat._id,
-                    participants: chat.participants
-                });
+                global.io.to(result._id.toString()).emit("newNotification", notification);
             }
-        } else {
-            console.log("Chat existant trouvé:", chat);
         }
-    } catch (chatError) {
-        console.error("Erreur lors de la création automatique du chat:", chatError);
-    }
-}
-        // 8️⃣ Réponse avec l'utilisateur créé
-        res.status(201).json({ message: "Registration successful", user: result });
 
+        // 10️⃣ Création automatique d'un chat pour Business Owner avec l'Admin
+        if (req.body.role === "BUSINESS_OWNER") {
+            const adminId = "67bee9c72a104f8241d58e7d";
+            try {
+                let chat = await Chat.findOne({
+                    participants: { $all: [result._id, adminId] }
+                });
+
+                if (!chat) {
+                    chat = new Chat({
+                        participants: [result._id, adminId],
+                        messages: [],
+                        createdBy: "System",
+                        createdAt: new Date()
+                    });
+                    await chat.save();
+                    console.log("Chat créé automatiquement:", {
+                        chatId: chat._id,
+                        participants: chat.participants
+                    });
+                    if (global.io) {
+                        global.io.emit("newChat", {
+                            chatId: chat._id,
+                            participants: chat.participants
+                        });
+                    }
+                } else {
+                    console.log("Chat existant trouvé:", chat);
+                }
+            } catch (chatError) {
+                console.error("Erreur lors de la création automatique du chat:", chatError);
+            }
+        }
+
+        // 11️⃣ Réponse avec l'utilisateur créé
+        res.status(201).json({ message: "Registration successful", user: result });
     } catch (error) {
-        console.error("Error during registration:", error);
-        res.status(500).json({ message: "Internal server error", error });
+        console.error("Error during registration:", error.stack);
+        res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
 const Login = async (req, res) => {
@@ -251,45 +239,65 @@ const Login = async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
+        // Select the first project from the list, if it exists
+        const projectId = existUser.projects && existUser.projects.length > 0 ? existUser.projects[0] : null;
+
         const payload = {
             userId: existUser._id,
             fullname: existUser.fullname,
             email: existUser.email,
-            role: existUser.role
+            role: existUser.role,
+            project_id: projectId
         };
+        console.log("Payload:", JSON.stringify(payload));
 
         const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "1d" });
-        //create logs
+
+        // Create logs
         await createLog(existUser._id);
+        console.log("Token:", token);
+
         // Ensure global.connectedUsers is always a Set
         if (!global.connectedUsers || !(global.connectedUsers instanceof Set)) {
             global.connectedUsers = new Set();
         }
 
-        global.connectedUsers.add(existUser);
-
+        global.connectedUsers.add(existUser._id.toString());
         global.io.emit("userOnline", Array.from(global.connectedUsers));
 
-        return res.status(200).json({ token: token, role: existUser.role });
+        // Update firstlogin if true
+        if (existUser.firstlogin === true) {
+            await updateFirstLogin(existUser._id);
+        }
+
+        return res.status(200).json({ token: token, role: existUser.role, userId: existUser._id });
     } catch (error) {
-        console.error('Error during login:', error);
-        return res.status(500).json({ message: 'Internal server error' });
+        console.error('Error during login:', error.stack);
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
 
 const updateFirstLogin = async (userId) => {
     try {
-        // Trouver l'utilisateur par son ID
-        const user = await userModel.findById(userId);
+        console.log(`Updating firstlogin for user: ${userId}`);
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            throw new Error("Invalid userId");
+        }
 
+        const user = await userModel.findById(userId);
         if (!user) {
             throw new Error("User not found");
         }
 
-        // Vérifier si firstlogin est true
+        // Check if firstlogin field exists and is true
+        if (typeof user.firstlogin === 'undefined') {
+            console.warn(`firstlogin field is undefined for user: ${userId}`);
+            return { success: false, message: "firstlogin field not defined" };
+        }
+
         if (user.firstlogin === true) {
-            user.firstlogin = false; // Mettre à jour firstlogin à false
-            await user.save(); // Sauvegarder les modifications
+            user.firstlogin = false;
+            await user.save();
             console.log(`firstlogin updated to false for user: ${userId}`);
             return { success: true, message: "firstlogin updated to false" };
         } else {
@@ -297,8 +305,8 @@ const updateFirstLogin = async (userId) => {
             return { success: false, message: "firstlogin is already false" };
         }
     } catch (error) {
-        console.error("Error updating firstlogin:", error.message);
-        throw error;
+        console.error("Error updating firstlogin:", error.stack);
+        throw new Error(`Failed to update firstlogin: ${error.message}`);
     }
 };
 
@@ -748,6 +756,98 @@ async function findMyProject(req, res) {
     }
 }
 
+async function findMyProject2(req, res) {
+    try {
+        // Retrieve the user ID and role from the token
+        const userId = req.user.userId;
+        const userRole = req.user.role;
+        console.log(`User ID: ${userId}, Role: ${userRole}`);
+
+        let projects = [];
+        let user;
+
+        // Fetch user based on role
+        if (userRole === "BUSINESS_MANAGER") {
+            // For BusinessManager: Fetch single project
+            user = await userModel.findById(userId).populate({
+                path: "project",
+                populate: [
+                    { path: "businessOwner", select: "fullname email" },
+                    { path: "businessManager", select: "fullname email" },
+                    { path: "accountants", select: "fullname email" },
+                    { path: "financialManagers", select: "fullname email" },
+                    { path: "rhManagers", select: "fullname email" },
+                    { path: "taxes" },
+                    { path: "assets_actif" },
+                    { path: "objectifs" },
+                ],
+            });
+
+            if (!user) {
+                return res.status(404).json({ message: "BusinessManager not found" });
+            }
+
+            if (!user.project) {
+                return res.status(404).json({ message: "No project assigned to this manager" });
+            }
+
+            projects = [user.project]; // Single project as array for uniform processing
+        } else if (userRole === "BUSINESS_OWNER") {
+            // For BusinessOwner: Fetch multiple projects
+            user = await userModel.findById(userId).populate({
+                path: "projects",
+                populate: [
+                    { path: "businessOwner", select: "fullname email" },
+                    { path: "businessManager", select: "fullname email" },
+                    { path: "accountants", select: "fullname email" },
+                    { path: "financialManagers", select: "fullname email" },
+                    { path: "rhManagers", select: "fullname email" },
+                    { path: "taxes" },
+                    { path: "assets_actif" },
+                    { path: "objectifs" },
+                ],
+            });
+
+            if (!user) {
+                return res.status(404).json({ message: "BusinessOwner not found" });
+            }
+
+            if (!user.projects || user.projects.length === 0) {
+                return res.status(404).json({ message: "No projects assigned to this owner" });
+            }
+
+            projects = user.projects; // Array of projects
+        } else {
+            return res.status(403).json({ message: "Unauthorized role for accessing projects" });
+        }
+
+        // Format the response
+        const projectData = projects.map((project) => ({
+            id: project._id,
+            name: `Project ${project._id.toString().slice(-4)}`,
+            description: `Managed by ${user.fullname}`,
+            status: project.status,
+            amount: project.amount,
+            startDate: project.createdAt,
+            endDate: project.due_date,
+            businessOwner: project.businessOwner,
+            teamMembers: {
+                manager: project.businessManager,
+                accountants: project.accountants,
+                financialManagers: project.financialManagers,
+                rhManagers: project.rhManagers,
+            },
+            taxes: project.taxes,
+            assets_actif: project.assets_actif,
+            objectifs: project.objectifs,
+        }));
+
+        res.status(200).json(projectData);
+    } catch (error) {
+        console.error("Error in findMyProject:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+}
 const findMyProjectsOwner = async (req, res) => {
     try {
         const userId = req.user.userId; // L'ID de l'utilisateur est extrait du token après authentification
@@ -1487,6 +1587,96 @@ const getAvailableAndAssignedBusinessManagers = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+const fetchProjectByUser = async (req, res) => {
+    try {
+      const { userId } = req.params;
+  
+      // Validate userId
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ message: "Invalid userId" });
+      }
+      const objectId = new mongoose.Types.ObjectId(userId);
+      console.log("User ID:", objectId);
+  
+      // Fetch user with role, wallet_id, and project
+      const user = await userModel.findById(objectId).select("role wallet_id project");
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      console.log("User retrieved:", {
+        _id: user._id,
+        role: user.role,
+        wallet_id: user.wallet_id,
+        project: user.project,
+      });
+  
+      // Handle based on role
+      if (user.role !== "z") {
+        // Non-BusinessOwner (e.g., BusinessManager, Accountant, RH, FinancialManager)
+        if (!user.wallet_id) {
+          return res.status(404).json({ message: "No wallet associated with this user" });
+        }
+        console.log("Wallet ID:", user.wallet_id);
+  
+        const wallet = await Wallet.findById(user.wallet_id).select("project");
+        if (!wallet) {
+          return res.status(404).json({ message: "Wallet not found" });
+        }
+        console.log("Wallet retrieved:", wallet);
+  
+        if (!wallet.project) {
+          return res.status(404).json({ message: "No project associated with this wallet" });
+        }
+        console.log("Project ID:", wallet.project);
+  
+        const project = await Project.findById(wallet.project)
+          .populate("businessManager", "fullname email")
+          .populate("accountants", "fullname email")
+          .populate("financialManagers", "fullname email")
+          .populate("businessOwner", "fullname email")
+          .populate("rhManagers", "fullname email")
+          .populate("taxes")
+          .populate("assets_actif")
+          .exec();
+  
+        if (!project) {
+          return res.status(404).json({ message: "Project not found" });
+        }
+        console.log("Project retrieved:", project);
+  
+        return res.status(200).json(project);
+      } else {
+        // BusinessOwner (role: "z")
+        if (!user.project) {
+          return res.status(404).json({ message: "No project associated with this BusinessOwner" });
+        }
+        console.log("Project ID:", user.project);
+  
+        const project = await Project.findById(user.project)
+          .populate("businessManager", "fullname email")
+          .populate("accountants", "fullname email")
+          .populate("financialManagers", "fullname email")
+          .populate("businessOwner", "fullname email")
+          .populate("rhManagers", "fullname email")
+          .populate("taxes")
+          .populate("assets_actif")
+          .exec();
+  
+        if (!project) {
+          return res.status(404).json({ message: "Project not found" });
+        }
+        console.log("Project retrieved:", project);
+  
+        return res.status(200).json(project);
+      }
+    } catch (error) {
+      console.error("Error fetching project by user:", error.stack);
+      res.status(500).json({
+        message: "Failed to fetch project for user",
+        error: error.message,
+      });
+    }
+  };
 
 
 module.exports = {
@@ -1495,6 +1685,6 @@ module.exports = {
     acceptAutorisation, updateProfile, AddPicture, getBusinessOwnerFromToken,
     getAllBusinessManagers, getAllAccountants, getAllFinancialManagers, getAllRH, findMyProject, Registerwithproject,
     resetPassword, forgotPassword, verifyCode, sendVerificationCode, getAllempl, addEmployeesFromExcel, getAllBusinessOwners, addEmployee, downloadEvidence, RegisterManger,           // New
-     getAllRoles, findMyPicture, logout, getbyid, deleteById, updateById, findMyProjectsOwner, updateFirstLogin,    // New
+     getAllRoles, findMyPicture, logout, getbyid, deleteById, updateById, findMyProjectsOwner, updateFirstLogin,findMyProject2,fetchProjectByUser   // New
    
 };

@@ -1137,6 +1137,52 @@ if (project.objectifs?.length > 0) {
         });
     }
 };
+
+async function getProjectByUserId(req, res) {
+    try {
+        const { userId } = req.params;
+        console.log('ID:', userId); 
+        const objectId = new mongoose.Types.ObjectId(userId);
+        console.log('User ID:', objectId); // Log the user ID for debugging
+
+        // Fetch user and their project field
+        const user = await userModel.findById(objectId).select("project");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        console.log('User retrieved:', user); // Log user for debugging
+
+        // Check if user has a project assigned
+        if (!user.project) {
+            return res.status(404).json({ message: "No project associated with this user" });
+        }
+        console.log('Project ID:', user.project); // Log project ID for debugging
+
+        // Find project by ID
+        const project = await Project.findById(user.project)
+            .populate('businessManager', 'fullname email')
+            .populate('accountants', 'fullname email')
+            .populate('financialManagers', 'fullname email')
+            .populate('businessOwner', 'fullname email')
+            .populate('rhManagers', 'fullname email')
+            .populate('taxes')
+            .populate('assets_actif')
+            .exec();
+
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+        console.log('Project retrieved:', project); 
+
+        res.status(200).json(project);
+    } catch (error) {
+        console.error("Error fetching project by userId:", error.message);
+        res.status(500).json({
+            message: "Failed to fetch project for user",
+            error: error.message
+        });
+    }
+}
 module.exports = {
     addProject,
     assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,
@@ -1146,5 +1192,5 @@ module.exports = {
     unassignFinancialManagerFromProject,
     unassignAccountantFromProject,
     getProjectById,
-    getMyProject,getbyid
+    getMyProject,getbyid,getProjectByUserId
 };

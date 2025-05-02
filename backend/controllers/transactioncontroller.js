@@ -1,4 +1,6 @@
 const Wallet = require("../model/wallet");
+const User = require("../model/user");
+const Project = require("../model/Project");
 const Transaction = require("../model/Transaction");
 const mongoose = require("mongoose");
 
@@ -299,46 +301,121 @@ exports.transfer = async (req, res) => {
 // 📌 Get the total revenue (income transactions)
 exports.getRevenue = async (req, res) => {
   try {
-    const { walletId } = req.params;
+    const { projectId } = req.params;
 
-    // Fetch all income transactions for the given wallet
-    const transactions = await Transaction.find({ wallet_id: walletId, type: "income" });
+    // Validate projectId
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: "Invalid projectId" });
+    }
 
-    // Calculate total revenue by summing the amounts of all income transactions
+    // Fetch the project and its wallet
+    const project = await Project.findById(projectId).select("wallet");
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+    console.log("Project retrieved:", project);
+
+    if (!project.wallet) {
+      return res.status(404).json({ message: "No wallet associated with this project" });
+    }
+    const walletId = project.wallet;
+    console.log("Wallet ID:", walletId);
+
+    // Fetch all income transactions for the wallet
+    const transactions = await Transaction.find({
+      wallet_id: new mongoose.Types.ObjectId(walletId),
+      type: "income",
+    });
+
+    // Calculate total revenue
     const totalRevenue = transactions.reduce((acc, t) => acc + t.amount, 0);
 
     // Calculate the change in revenue
-    const previousWeekRevenue = await getPreviousWeekRevenue(walletId);
+    const previousWeekRevenue = await getPreviousWeekRevenue([walletId]);
     const revenueChange = totalRevenue - previousWeekRevenue;
 
     res.status(200).json({
       totalRevenue,
       revenueChange,
     });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    console.error("Error calculating revenue:", error.stack);
+    res.status(500).json({ message: "Failed to calculate revenue", error: error.message });
   }
 };
 
-// Helper function to fetch the previous week's revenue
-async function getPreviousWeekRevenue(walletId) {
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+// 📌 Helper function to fetch the previous week's revenue
+const getPreviousWeekRevenue = async (walletIds) => {
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - 14);
+  const endDate = new Date(today);
+  endDate.setDate(today.getDate() - 7);
 
-  const previousWeekTransactions = await Transaction.find({
-    wallet_id: walletId,
+  const transactions = await Transaction.find({
+    wallet_id: { $in: walletIds.map(id => new mongoose.Types.ObjectId(id)) },
     type: "income",
-    date: { $gte: oneWeekAgo }
+    date: { $gte: startDate, $lte: endDate },
   });
 
-  return previousWeekTransactions.reduce((acc, t) => acc + t.amount, 0);
-}
+  return transactions.reduce((acc, t) => acc + t.amount, 0);
+};
+const getUserWalletIds = async (userId) => {
+  const user = await User.findById(userId).select("role project projects");
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  let projectIds = [];
+  if (user.role === "BUSINESS_MANAGER") {
+    if (user.project) {
+      projectIds = [user.project];
+    }
+  } else if (user.role === "BUSINESS_OWNER") {
+    projectIds = user.projects || [];
+  } else {
+    throw new Error("Unauthorized role for accessing project wallets");
+  }
+
+  if (projectIds.length === 0) {
+    throw new Error("No projects found for this user");
+  }
+
+  // Fetch wallets for the projects
+  const projects = await Project.find({ _id: { $in: projectIds } }).select("wallet");
+  const walletIds = projects
+    .filter((project) => project.wallet)
+    .map((project) => project.wallet);
+
+  if (walletIds.length === 0) {
+    throw new Error("No wallets found for the user's projects");
+  }
+
+  return walletIds;
+};
 
 exports.getExpenses = async (req, res) => {
   try {
-    const { walletId } = req.params;
+    const { projectId } = req.params;
     const { period } = req.query;
-    const objectId = new mongoose.Types.ObjectId(walletId);
+
+    // Validate projectId
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: "Invalid projectId" });
+    }
+
+    // Fetch the project and its wallet
+    const project = await Project.findById(projectId).select("wallet");
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+    console.log("Project retrieved:", project);
+
+    if (!project.wallet) {
+      return res.status(404).json({ message: "No wallet associated with this project" });
+    }
+    const walletId = project.wallet;
+    console.log("Wallet ID:", walletId);
 
     const today = new Date();
     let startDate, endDate;
@@ -361,27 +438,28 @@ exports.getExpenses = async (req, res) => {
     const expenses = await Transaction.aggregate([
       {
         $match: {
-          wallet_id: objectId, // Changed from walletId to wallet_id to match schema
-          type: 'expense', // Changed from transactionType to type to match your schema
-          date: { $gte: startDate, $lte: endDate }
-        }
+          wallet_id: new mongoose.Types.ObjectId(walletId),
+          type: 'expense',
+          date: { $gte: startDate, $lte: endDate },
+        },
       },
       {
         $group: {
           _id: null,
-          totalExpenses: { $sum: '$amount' }
-        }
-      }
+          totalExpenses: { $sum: '$amount' },
+        },
+      },
     ]);
 
     const totalExpenses = expenses.length > 0 ? expenses[0].totalExpenses : 0;
 
     res.status(200).json({ totalExpenses });
   } catch (error) {
-    console.error("Error calculating expenses:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error calculating expenses:", error.stack);
+    res.status(500).json({ message: "Failed to calculate expenses", error: error.message });
   }
 };
+
 exports.getTransactionByWalletId = async (req, res) => {
   try {
     const { walletId } = req.params;

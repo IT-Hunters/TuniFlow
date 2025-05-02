@@ -34,7 +34,7 @@ const Wallet = () => {
 
   const fetchUserProfile = async (token) => {
     try {
-      const response = await axios.get("http://localhost:5000/users/findMyProfile", {
+      const response = await axios.get("http://localhost:3000/users/findMyProfile", {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data._id;

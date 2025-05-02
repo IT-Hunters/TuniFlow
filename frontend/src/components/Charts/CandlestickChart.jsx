@@ -1,42 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import Chart from "react-apexcharts";
 import io from 'socket.io-client';
-import { fetchWorkingCapital } from "../../services/AssetCalculationService";
+import { fetchCandlestickData } from "../../services/AssetCalculationService"; 
 const socket = io('http://localhost:5000');
 
-const CandlestickCashFlowChart = () => {
+const CandlestickCashFlowChart = ( {projectId}) => {
   const [chartData, setChartData] = useState([]);
 
-  const fetchCandlestickData = async () => {
-    try {
-      const response = await fetchWorkingCapital("67bb69af26a4e63fc511cb6d");
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      setChartData(response);
-    } catch (error) {
-      console.error("Error fetching candlestick data:", error);
-    }
-  };
-
   useEffect(() => {
-    fetchCandlestickData();
-    socket.on("transactionUpdate", (data) => {
-      console.log("Real-time update received:", data);
-      fetchCandlestickData();
+    const loadData = async () => {
+      try {
+
+        const data = await fetchCandlestickData(localStorage.getItem("userId"));
+        if (data) {
+          setChartData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching candlestick data:", error);
+      }
+    };
+    loadData();
+
+    socket.on("transactionUpdate", () => {
+      console.log("Real-time update received");
+      loadData();
     });
 
     return () => socket.off("transactionUpdate");
-  }, []);
+  }, [projectId]);
 
   const series = [{ data: chartData }];
-  
+
   const options = {
     chart: {
       type: "candlestick",
       height: 400,
-      background: "#1e1e1e",  
+      background: "#1e1e1e",
       toolbar: { show: true },
       animations: {
         enabled: true,
@@ -68,7 +67,7 @@ const CandlestickCashFlowChart = () => {
       candlestick: {
         colors: {
           upward: "#00C853",
-          downward: "#D50000", 
+          downward: "#D50000",
         },
         wick: {
           useFillColor: true,

@@ -6,6 +6,7 @@ export const findMyProfile = async () => {
 
         const response = await fetch("http://localhost:3000/users/findMyProfile", {
           headers: { Authorization: `Bearer ${token}` },
+          "cache-control": "no-cache",
         })
         const data = await response.json();
         console.log("Asset submitted successfully:");
