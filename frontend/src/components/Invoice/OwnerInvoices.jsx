@@ -245,25 +245,26 @@ const OwnerInvoices = () => {
                               <div className="history-section p-4 bg-gray-100 rounded">
                                 <h4 className="text-md font-medium">{t("Action History")}</h4>
                                 {invoice.history && invoice.history.length > 0 ? (
-                                  <ul className="list-disc pl-5">
-                                    {invoice.history.map((entry, index) => (
-                                      <li key={index}>
-                                        {entry.action === "CREATED" && t("Invoice Created")}
-                                        {entry.action === "SENT" && t("Invoice Sent")}
-                                        {entry.action === "PAID" && t("Invoice Paid")}
-                                        {entry.action === "REMINDER_SENT" && t("Reminder Sent")}
-                                        {` ${t("by")} `}
-                                        <strong>
-                                          {entry.user?.fullname || "Unknown User"}{" "}
-                                          {entry.user?.lastname || ""}
-                                        </strong>
-                                        {` ${t("on")} `}
-                                        {new Date(entry.date).toLocaleString()}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : (
-                                  <p>{t("No actions recorded")}</p>
+                                <ul className="list-disc pl-5">
+                               {invoice.history.map((entry, index) => (
+                                 <li key={index}>
+                                  {entry.action === "CREATED" && t("Invoice Created")}
+                                    {entry.action === "SENT" && t("Invoice Sent")}
+                                    {entry.action === "PAID" && t("Invoice Paid")}
+                                  {entry.action === "REMINDER_SENT" && t("Overdue Reminder Sent")}
+                                 {entry.action === "UPCOMING_REMINDER_SENT" && t("Upcoming Reminder Sent")}
+                                  {` ${t("by")} `}
+                                   <strong>
+                                  {entry.user?.fullname || "Unknown User"}{" "}
+                                    {entry.user?.lastname || ""}
+                                </strong>
+                                     {` ${t("on")} `}
+                                      {new Date(entry.date).toLocaleString()}
+                                     </li>
+                                         ))}
+                                     </ul>
+                                     ) : (
+                                   <p>{t("No actions recorded")}</p>
                                 )}
                               </div>
                             </td>

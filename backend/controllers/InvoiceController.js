@@ -101,16 +101,28 @@ const generateInvoicePDF = async (invoice) => {
   });
 };
 
-const sendReminderEmail = async (recipientEmail, bill) => {
+const sendReminderEmail = async (recipientEmail, bill, reminderType) => {
+  const isOverdue = reminderType === "OVERDUE";
+  const subject = isOverdue
+    ? `Reminder: Overdue Invoice #${bill.id}`
+    : `Upcoming Invoice Reminder: Due on ${new Date(bill.due_date).toLocaleDateString()}`;
+  const title = isOverdue
+    ? "Overdue Invoice Reminder"
+    : "Upcoming Invoice Reminder";
+  const message = isOverdue
+    ? "This is a reminder that the following invoice is overdue:"
+    : `This is a reminder that the following invoice is due on ${new Date(bill.due_date).toLocaleDateString()}:`;
+  const urgencyColor = isOverdue ? "#e74c3c" : "#f39c12"; // Rouge pour en retard, Orange pour à venir
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: recipientEmail,
-    subject: `Reminder: Overdue Invoice #${bill.id}`,
+    subject: subject,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
-        <h2 style="color: #e74c3c; text-align: center;">Overdue Invoice Reminder</h2>
+        <h2 style="color: ${urgencyColor}; text-align: center;">${title}</h2>
         <p style="color: #555;">Hello <strong>${bill.recipient_id.fullname}</strong>,</p>
-        <p style="color: #555;">This is a reminder that the following invoice is overdue:</p>
+        <p style="color: #555;">${message}</p>
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
           <tr>
             <td style="padding: 10px; background-color: #e9ecef; border: 1px solid #ddd;">Invoice ID</td>
@@ -125,11 +137,11 @@ const sendReminderEmail = async (recipientEmail, bill) => {
             <td style="padding: 10px; border: 1px solid #ddd;">${new Date(bill.due_date).toLocaleDateString()}</td>
           </tr>
         </table>
-        <p style="color: #555;">Please settle the payment as soon as possible to avoid further actions.</p>
+        <p style="color: #555;">Please settle the payment as soon as possible${isOverdue ? " to avoid further actions" : ""}.</p>
         <p style="color: #555;">If you have already paid this invoice, please disregard this email.</p>
         <p style="color: #555;">Best regards,<br>The TuniFlow Team</p>
         <div style="text-align: center; margin-top: 20px;">
-          <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 5px;">View My Dashboard</a>
+          <a href="http://localhost:3000" style="padding: 10px 20px; background-color: ${urgencyColor}; color: #fff; text-decoration: none; border-radius: 5px;">View My Dashboard</a>
         </div>
       </div>
     `,
@@ -137,9 +149,9 @@ const sendReminderEmail = async (recipientEmail, bill) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`Reminder sent to ${recipientEmail} for invoice ${bill.id}`);
+    console.log(`${reminderType} reminder sent to ${recipientEmail} for invoice ${bill.id}`);
   } catch (error) {
-    console.error(`Error sending reminder to ${recipientEmail}:`, error.message);
+    console.error(`Error sending ${reminderType} reminder to ${recipientEmail}:`, error.message);
     throw error;
   }
 };
@@ -161,32 +173,132 @@ const sendOverdueReminders = async () => {
         console.log(`No email found for recipient of bill ${bill.id}`);
         continue;
       }
+      const sendUpcomingReminders = async () => {
+  try {
+    const today = new Date();
+    const threeDaysFromNow = new Date(today);
+    threeDaysFromNow.setDate(today.getDate() + 3);
 
-      await sendReminderEmail(recipient.email, bill);
+    const upcomingBills = await Bill.find({
+      status: "PENDING",
+      due_date: { $gte: today, $lte: threeDaysFromNow },
+      reminderSent: false, // Éviter d'envoyer plusieurs rappels
+    })
+      .populate("recipient_id")
+      .sort({ amount: -1 }); // Trier par montant décroissant pour prioriser les factures élevées
+
+    console.log(`Found ${upcomingBills.length} upcoming bills to process.`);
+
+    for (const bill of upcomingBills) {
+      const recipient = bill.recipient_id;
+      if (!recipient || !recipient.email) {
+        console.log(`No email found for recipient of bill ${bill.id}`);
+        continue;
+      }
+
+      // Priorisation : Factures > 500 TND ou si c'est le dernier jour avant l'échéance
+      const isHighAmount = bill.amount > 500;
+      const isLastDay = new Date(bill.due_date).toDateString() === threeDaysFromNow.toDateString();
+      if (isHighAmount || isLastDay) {
+        await sendReminderEmail(recipient.email, bill, "UPCOMING");
+
+        bill.history.push({
+          action: "UPCOMING_REMINDER_SENT",
+          date: new Date(),
+          user: recipient._id,
+        });
+
+        bill.reminderSent = true;
+        bill.lastReminderDate = new Date();
+        await bill.save();
+
+        console.log(`Upcoming reminder sent for bill ${bill.id} to ${recipient.email}`);
+      }
+    }
+  } catch (error) {
+    console.error("Error in sendUpcomingReminders:", error.message);
+  }
+};
+
+      await sendReminderEmail(recipient.email, bill, "OVERDUE");
 
       bill.history.push({
         action: "REMINDER_SENT",
         date: new Date(),
-        user: recipient._id
+        user: recipient._id,
       });
 
       bill.reminderSent = true;
       bill.lastReminderDate = new Date();
       await bill.save();
 
-      console.log(`Reminder sent for bill ${bill.id} to ${recipient.email}`);
+      console.log(`Overdue reminder sent for bill ${bill.id} to ${recipient.email}`);
     }
   } catch (error) {
     console.error("Error in sendOverdueReminders:", error.message);
   }
 };
+const sendUpcomingReminders = async () => {
+  try {
+    const today = new Date();
+    const threeDaysFromNow = new Date(today);
+    threeDaysFromNow.setDate(today.getDate() + 3);
+
+    const upcomingBills = await Bill.find({
+      status: "PENDING",
+      due_date: { $gte: today, $lte: threeDaysFromNow },
+      reminderSent: false, // Éviter d'envoyer plusieurs rappels
+    })
+      .populate("recipient_id")
+      .sort({ amount: -1 }); // Trier par montant décroissant pour prioriser les factures élevées
+
+    console.log(`Found ${upcomingBills.length} upcoming bills to process.`);
+
+    for (const bill of upcomingBills) {
+      const recipient = bill.recipient_id;
+      if (!recipient || !recipient.email) {
+        console.log(`No email found for recipient of bill ${bill.id}`);
+        continue;
+      }
+
+      // Priorisation : Factures > 500 TND ou si c'est le dernier jour avant l'échéance
+      const isHighAmount = bill.amount > 500;
+      const isLastDay = new Date(bill.due_date).toDateString() === threeDaysFromNow.toDateString();
+      if (isHighAmount || isLastDay) {
+        await sendReminderEmail(recipient.email, bill, "UPCOMING");
+
+        bill.history.push({
+          action: "UPCOMING_REMINDER_SENT",
+          date: new Date(),
+          user: recipient._id,
+        });
+
+        bill.reminderSent = true;
+        bill.lastReminderDate = new Date();
+        await bill.save();
+
+        console.log(`Upcoming reminder sent for bill ${bill.id} to ${recipient.email}`);
+      }
+    }
+  } catch (error) {
+    console.error("Error in sendUpcomingReminders:", error.message);
+  }
+};
 
 const initializeReminderJob = () => {
+  // Rappels pour les factures en retard (à 9h00 tous les jours)
   cron.schedule("0 9 * * *", async () => {
     console.log("Running overdue invoice reminder job at", new Date().toISOString());
     await sendOverdueReminders();
   });
-  console.log("Reminder job scheduled to run daily at 9:00 AM");
+
+  // Rappels pour les factures à venir (à 10h00 tous les jours)
+  cron.schedule("0 10 * * *", async () => {
+    console.log("Running upcoming invoice reminder job at", new Date().toISOString());
+    await sendUpcomingReminders();
+  });
+
+  console.log("Reminder jobs scheduled: Overdue at 9:00 AM, Upcoming at 10:00 AM");
 };
 
 initializeReminderJob();
@@ -628,5 +740,14 @@ exports.exportInvoices = async (req, res) => {
   } catch (error) {
     console.error("Error exporting invoices:", error.message);
     res.status(500).json({ message: 'Failed to export invoices', error: error.message });
+  }
+};
+exports.testUpcomingReminders = async (req, res) => {
+  try {
+    await sendUpcomingReminders();
+    res.status(200).json({ message: "Upcoming reminders sent successfully" });
+  } catch (error) {
+    console.error("Error testing upcoming reminders:", error.message);
+    res.status(500).json({ message: "Error testing upcoming reminders", error: error.message });
   }
 };
