@@ -23,6 +23,6 @@ router.put("/updateTransaction/:transactionId", transactioncontroller.updateTran
 //router.get("/expenses/:userId", transactioncontroller.getExpenses);
 // 📌 Transférer de l'argent entre deux wallets
 router.post("/transfer/:senderWalletId/:receiverWalletId", transactioncontroller.transfer);
-router.get("/getRevenue/:projectId", transactioncontroller.getRevenue);
-router.get("/expenses/:projectId", transactioncontroller.getExpenses);
+router.get("/getRevenue/:userId", transactioncontroller.getRevenue);
+router.get("/expenses/:userId", transactioncontroller.getExpenses);
 module.exports = router;

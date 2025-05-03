@@ -104,25 +104,45 @@ async function calculateWorkingCapital(req, res) {
 async function calculateWorkingCapitalStatus(req, res) {
     try {
       const { userId } = req.params;
-  
-      // Validate projectId
-      if (!mongoose.Types.ObjectId.isValid(projectId)) {
-        return res.status(400).json({ message: "Invalid projectId" });
+      console.log('IDDDDD:', userId); 
+      const objectId = new mongoose.Types.ObjectId(userId);
+      console.log('User IDDDDD:', objectId); // Log the user ID for debugging
+
+      // Fetch user and their project field
+      const user = await User.findById(objectId).select("project");
+      if (!user) {
+          return res.status(404).json({ message: "User not found" });
       }
-      console.log('Project ID:', projectId);
-  
-      // Fetch the project
-      const project = await Project.findById(projectId).select("wallet");
+      console.log('User retrieved:', user); // Log user for debugging
+
+      // Check if user has a project assigned
+      if (!user.project) {
+          return res.status(404).json({ message: "No project associated with this user" });
+      }
+      console.log('Project ID:', user.project); // Log project ID for debugging
+
+      // Find project by ID
+      const project = await Project.findById(user.project)
+          .populate('businessManager', 'fullname email')
+          .populate('accountants', 'fullname email')
+          .populate('financialManagers', 'fullname email')
+          .populate('businessOwner', 'fullname email')
+          .populate('rhManagers', 'fullname email')
+          .populate('taxes')
+          .populate('assets_actif')
+          .exec();
+
       if (!project) {
-        return res.status(404).json({ message: "Project not found" });
+          return res.status(404).json({ message: "Project not found" });
       }
-      console.log("Project retrieved:", project);
+      console.log('Project retrieved:', project); 
   
       if (!project.wallet) {
         return res.status(404).json({ message: "No wallet associated with this project" });
       }
       console.log("Wallet ID:", project.wallet);
   
+      const projectId = project._id.toString();
       const projectObjectId = new mongoose.Types.ObjectId(projectId);
   
       const today = new Date();
