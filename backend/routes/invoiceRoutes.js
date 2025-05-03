@@ -39,4 +39,5 @@ router.post("/upload-logo", authenticateJWT, invoiceController.uploadLogo, (req,
   res.status(200).json({ logoUrl });
 });
 router.get('/export', authenticateJWT, invoiceController.exportInvoices);
+router.get("/test-upcoming-reminders", invoiceController.testUpcomingReminders);
 module.exports = router;

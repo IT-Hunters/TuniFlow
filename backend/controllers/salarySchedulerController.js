@@ -58,7 +58,7 @@ exports.processSalarySchedules = async () => {
         { lastProcessed: null },
         { lastProcessed: { $lt: new Date(today.getFullYear(), today.getMonth(), 1) } }
       ]
-    });
+    }).populate('walletId');
 
     for (const schedule of schedules) {
       try {
@@ -92,6 +92,15 @@ exports.processSalarySchedules = async () => {
         // Update last processed date
         schedule.lastProcessed = today;
         await schedule.save();
+
+        // Emit salary notification
+        if (global.io) {
+          global.io.to(wallet.userId.toString()).emit('salaryAdded', {
+            amount: schedule.amount,
+            date: today,
+            walletId: wallet._id
+          });
+        }
 
         console.log(`Successfully processed salary schedule ${schedule._id}`);
       } catch (error) {

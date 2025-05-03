@@ -184,10 +184,20 @@ const markObjectifAsCompleted = async (req, res) => {
       objectifId,
       { status: "Completed" },
       { new: true }
-    );
+    ).populate('project');
 
     if (!objectif) {
       return res.status(404).json({ success: false, message: "Objective not found" });
+    }
+
+    // Emit objective status change notification
+    if (global.io) {
+      global.io.to(objectif.project.businessManager.toString()).emit('objectiveStatusChanged', {
+        objectiveId: objectif._id,
+        objectiveName: objectif.name,
+        status: 'Completed',
+        projectId: objectif.project._id
+      });
     }
 
     res.status(200).json({ success: true, message: "Objective marked as 'Completed'", objectif });
@@ -205,10 +215,20 @@ const markObjectifAsFailed = async (req, res) => {
       objectifId,
       { status: "Failed" },
       { new: true }
-    );
+    ).populate('project');
 
     if (!objectif) {
       return res.status(404).json({ success: false, message: "Objective not found" });
+    }
+
+    // Emit objective status change notification
+    if (global.io) {
+      global.io.to(objectif.project.businessManager.toString()).emit('objectiveStatusChanged', {
+        objectiveId: objectif._id,
+        objectiveName: objectif.name,
+        status: 'Failed',
+        projectId: objectif.project._id
+      });
     }
 
     res.status(200).json({ success: true, message: "Objective marked as 'Failed'", objectif });

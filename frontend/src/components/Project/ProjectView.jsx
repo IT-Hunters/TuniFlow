@@ -5,6 +5,8 @@ import './ProjectView.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import GoogleTranslate from './GoogleTranslate';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const API_URL = 'http://localhost:3000/users';
 
@@ -23,9 +25,10 @@ const ProjectView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ title: '', date: '' });
   const navigate = useNavigate();
 
-  // Récupérer les infos utilisateur depuis le token
   const token = localStorage.getItem('token');
   const decodedToken = token ? decodeJWT(token) : null;
   const userRole = decodedToken?.role;
@@ -65,7 +68,11 @@ const ProjectView = () => {
 
   const generateReport = async (projectId) => {
     if (!projectId) {
-      alert("Impossible de générer le rapport : ID du projet manquant");
+      toast.error("Impossible de générer le rapport : ID du projet manquant", {
+        position: 'top-center',
+        autoClose: 7000,
+        theme: 'colored'
+      });
       return;
     }
 
@@ -89,14 +96,21 @@ const ProjectView = () => {
       link.setAttribute('download', `rapport-projet-${projectId}.pdf`);
       document.body.appendChild(link);
       link.click();
-      
+
       setTimeout(() => {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       }, 100);
     } catch (err) {
       console.error("Erreur lors de la génération du rapport:", err);
-      alert(`Erreur lors de la génération du rapport: ${err.response?.data?.message || err.message}`);
+      toast.error(
+        `Erreur lors de la génération du rapport: ${err.response?.data?.message || err.message}`,
+        {
+          position: 'top-center',
+          autoClose: 7000,
+          theme: 'colored'
+        }
+      );
     }
   };
 
@@ -105,7 +119,7 @@ const ProjectView = () => {
     if (!file) return;
 
     setIsUploading(true);
-    
+
     try {
       if (!token) {
         navigate('/login');
@@ -126,19 +140,92 @@ const ProjectView = () => {
         }
       );
 
-      alert(`Succès: ${response.data.message}`);
-      // Rafraîchir les données
+      toast.success(`Succès: ${response.data.message}`, {
+        position: 'top-center',
+        autoClose: 7000,
+        theme: 'colored'
+      });
+
       const projectResponse = await axios.get(`${API_URL}/findMyProject`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProject(projectResponse.data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert(`Erreur: ${error.response?.data?.message || error.message || 'Erreur inconnue'}`);
+      toast.error(
+        `Erreur: ${error.response?.data?.message || 'Erreur lors de l\'upload du fichier Excel.'}`,
+        {
+          position: 'top-center',
+          autoClose: 7000,
+          theme: 'colored'
+        }
+      );
     } finally {
       setIsUploading(false);
-      // Réinitialiser la valeur du input pour permettre le re-upload du même fichier
       event.target.value = '';
+    }
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const createRoom = async () => {
+    try {
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      if (!formData.title || !formData.date) {
+        toast.error('Veuillez remplir tous les champs du formulaire.', {
+          position: 'top-center',
+          autoClose: 7000,
+          theme: 'colored'
+        });
+        return;
+      }
+
+      // Valider que la date est dans le futur
+      const now = new Date();
+      const selectedDate = new Date(formData.date);
+      if (selectedDate <= now) {
+        toast.error('La date de la réunion doit être dans le futur.', {
+          position: 'top-center',
+          autoClose: 7000,
+          theme: 'colored'
+        });
+        return;
+      }
+
+      const response = await axios.post(
+        'http://localhost:3000/api/rooms',
+        { projectId: project.id, title: formData.title, date: formData.date },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast.success(response.data.message, {
+        position: 'top-center',
+        autoClose: 7000,
+        theme: 'colored'
+      });
+
+      setIsModalOpen(false);
+      setFormData({ title: '', date: '' });
+      navigate(`/rooms/${project.id}`);
+    } catch (err) {
+      console.error('Erreur lors de la création de la réunion:', err);
+      toast.error(
+        err.response?.data?.message || 'Erreur lors de la création de la réunion',
+        {
+          position: 'top-center',
+          autoClose: 7000,
+          theme: 'colored'
+        }
+      );
     }
   };
 
@@ -188,20 +275,19 @@ const ProjectView = () => {
         <Navbar />
         <div className="project-details-wrapper">
           <header className="project-header">
-          <GoogleTranslate/>
+            <GoogleTranslate />
             <h1 className="project-title">
               {project.name || `Projet ${project.id?.slice(-4) || 'Sans nom'}`}
             </h1>
             <div className="action-buttons">
               {userRole === 'RH' && (
                 <>
-                 <button 
-  onClick={() => navigate('/add-employee')} 
-  className="action-btn add-employee-btn"
->
-  Add Empolyer
-</button>
-                  
+                  <button 
+                    onClick={() => navigate('/add-employee')} 
+                    className="action-btn add-employee-btn"
+                  >
+                    Ajouter Employé
+                  </button>
                   <div style={{ position: 'relative', display: 'inline-block' }}>
                     <input
                       type="file"
@@ -220,7 +306,7 @@ const ProjectView = () => {
                         cursor: isUploading ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      {isUploading ? 'Import en cours...' : 'Add Emplye with Excel'}
+                      {isUploading ? 'Import en cours...' : 'Ajouter Employés via Excel'}
                     </label>
                     {isUploading && (
                       <div style={{
@@ -240,24 +326,87 @@ const ProjectView = () => {
                 className="action-btn generate-report-btn"
                 style={{ backgroundColor: '#4CAF50', color: 'white' }}
               >
-                generate Rapport
+                Générer Rapport
               </button>
               <button 
-        onClick={() => navigate('/findemploye')} 
-        className="action-btn show-employees-btn"
-        style={{ backgroundColor: '#2196F3', color: 'white' }}
-      >
-        Show Employees
-      </button>
+                onClick={() => navigate('/findemploye')} 
+                className="action-btn show-employees-btn"
+                style={{ backgroundColor: '#2196F3', color: 'white' }}
+              >
+                Voir Employés
+              </button>
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="action-btn create-room-btn"
+                style={{ backgroundColor: '#9c27b0', color: 'white' }}
+              >
+                Créer Réunion
+              </button>
+              <Link 
+                to={`/rooms/${project.id}`} 
+                className="action-btn view-rooms-btn"
+                style={{ backgroundColor: '#3f51b5', color: 'white' }}
+              >
+                Voir toutes les réunions
+              </Link>
             </div>
           </header>
-        
+
+          {isModalOpen && (
+            <div className="modal">
+              <div className="modal-content">
+                <h2>Créer une nouvelle réunion</h2>
+                <form onSubmit={(e) => { e.preventDefault(); createRoom(); }}>
+                  <div className="form-group">
+                    <label htmlFor="title">Titre de la réunion</label>
+                    <input
+                      type="text"
+                      id="title"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleFormChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="date">Date et heure</label>
+                    <input
+                      type="datetime-local"
+                      id="date"
+                      name="date"
+                      value={formData.date}
+                      onChange={handleFormChange}
+                      min={new Date().toISOString().slice(0, 16)}
+                      required
+                    />
+                  </div>
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        setFormData({ title: '', date: '' });
+                      }}
+                      className="action-btn cancel-btn"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="submit"
+                      className="action-btn submit-btn"
+                    >
+                      Créer
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
 
           <div className="project-layout">
-            {/* Colonne de gauche : Détails du projet */}
             <section className="project-details">
               <div className="detail-card">
-                <h2 className="card-title">Informations of Project</h2>
+                <h2 className="card-title">Informations du Projet</h2>
                 <ul className="detail-list">
                   <li className="detail-item">
                     <span className="label">Statut</span>
@@ -266,11 +415,11 @@ const ProjectView = () => {
                     </span>
                   </li>
                   <li className="detail-item">
-                    <span className="label">Start date</span>
+                    <span className="label">Date de début</span>
                     <span>{formatDate(project.startDate)}</span>
                   </li>
                   <li className="detail-item">
-                    <span className="label">End date</span>
+                    <span className="label">Date de fin</span>
                     <span>{formatDate(project.endDate) || 'En cours'}</span>
                   </li>
                 </ul>
@@ -283,81 +432,72 @@ const ProjectView = () => {
                 </p>
               </div>
 
-               {/* Section Objectifs */}
-<div className="detail-card">
-  <h2 className="card-title">Objectifs</h2>
-  {project.objectifs?.length > 0 ? (
-    <div className="objectifs-container">
-      {project.objectifs.map(objectif => (
-        <div key={objectif._id} className="objectif-card">
-          <div className="objectif-header">
-            <h3>{objectif.name}</h3>
-            <span>Status:</span>
-            <span className={`status-badge ${objectif.status.toLowerCase()}`}>
-  {objectif.status}
-</span>
+              <div className="detail-card">
+                <h2 className="card-title">Objectifs</h2>
+                {project.objectifs?.length > 0 ? (
+                  <div className="objectifs-container">
+                    {project.objectifs.map((objectif) => (
+                      <div key={objectif._id} className="objectif-card">
+                        <div className="objectif-header">
+                          <h3>{objectif.name}</h3>
+                          <span>Statut: </span>
+                          <span className={`status-badge ${objectif.status.toLowerCase()}`}>
+                            {objectif.status}
+                          </span>
+                        </div>
+                        <p className="objectif-description">{objectif.description}</p>
+                        <div className="objectif-progress">
+                          <div className="progress-bar">
+                            <div 
+                              className="progress-fill" 
+                              style={{ width: `${objectif.progress}%` }}
+                            ></div>
+                          </div>
+                          <span>Progrès: </span>
+                          <span className="progress-text">{objectif.progress}%</span>
+                        </div>
+                        <div className="objectif-details">
+                          <div className="detail-row">
+                            <span>Montant cible: </span>
+                            <strong>{objectif.target_amount.toLocaleString()} $</strong>
+                          </div>
+                          <div className="detail-row">
+                            <span>Budget: </span>
+                            <strong>
+                              {objectif.minbudget.toLocaleString()} $ - {objectif.maxbudget.toLocaleString()} $
+                            </strong>
+                          </div>
+                          <div className="detail-row">
+                            <span>Période: </span>
+                            <strong>
+                              {formatDate(objectif.datedebut)} au {formatDate(objectif.datefin)}
+                            </strong>
+                          </div>
+                          <div className="detail-row">
+                            <span>Type: </span>
+                            <strong>{objectif.objectivetype}</strong>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-data">Aucun objectif défini</p>
+                )}
+              </div>
 
-            <span className={`status-badge ${objectif.status.toLowerCase()}`}>
-</span>
-
-          </div>
-          
-          <p className="objectif-description">{objectif.description}</p>
-          
-          <div className="objectif-progress">
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${objectif.progress}%` }}
-              ></div>
-            </div>
-            <span>Progress:</span>
-            <span className="progress-text">{objectif.progress}%</span>
-          </div>
-          
-          <div className="objectif-details">
-            <div className="detail-row">
-              <span>Target amount:</span>
-              <strong>{objectif.target_amount.toLocaleString()} $</strong>
-            </div>
-            <div className="detail-row">
-              <span>Budget:</span>
-              <strong>
-                {objectif.minbudget.toLocaleString()} $ - {objectif.maxbudget.toLocaleString()} $
-              </strong>
-            </div>
-            <div className="detail-row">
-              <span>Priod:</span>
-              <strong>
-                {formatDate(objectif.datedebut)} au {formatDate(objectif.datefin)}
-              </strong>
-            </div>
-            <div className="detail-row">
-              <span>Type:</span>
-              <strong>{objectif.objectivetype}</strong>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <p className="no-data">Aucun objectif défini</p>
-  )}
-</div>
-
-              {/* Section Taxes */}
               <div className="detail-card">
                 <h2 className="card-title">Taxes</h2>
                 {project.taxes?.length > 0 ? (
                   <div className="grid-container">
-                    {project.taxes.map(tax => (
+                    {project.taxes.map((tax) => (
                       <div key={tax._id} className="info-card">
                         <h3>{tax.nom_taxe}</h3>
                         <div className="info-details">
-                          <p><strong>Category:</strong> {tax.categorie}</p>
-                          <p><strong>Rate:</strong> {tax.taux}%</p>
-                          <p><strong>Effective date:</strong> {formatDate(tax.date_effet)}</p>
-                          <p><strong>Description:</strong> {tax.description}</p>
+                          <p><strong>Catégorie: </strong> {tax.categorie}</p>
+                          <p><strong>Taux: </strong> {tax.taux}%</p>
+                          <p><strong>Date d'effet: </strong> {formatDate(tax.date_effet)}</p>
+                          <p><strong>Description: </strong> {tax.description}</p>
                         </div>
                       </div>
                     ))}
@@ -367,19 +507,18 @@ const ProjectView = () => {
                 )}
               </div>
 
-              {/* Section Actifs */}
               <div className="detail-card">
                 <h2 className="card-title">Actifs</h2>
                 {project.assets_actif?.length > 0 ? (
                   <div className="grid-container">
-                    {project.assets_actif.map(asset => (
+                    {project.assets_actif.map((asset) => (
                       <div key={asset._id} className="info-card">
                         <h3>{asset.name}</h3>
                         <div className="info-details">
-                          <p><strong>Type:</strong> {asset.type_actif}</p>
-                          <p><strong>Value:</strong> {asset.total_value}$</p>
-                          <p><strong>Acquisition date:</strong> {formatDate(asset.date_acquisition)}</p>
-                          <p><strong>Body type:</strong> {asset.type_corporel}</p>
+                          <p><strong>Type: </strong> {asset.type_actif}</p>
+                          <p><strong>Valeur: </strong> {asset.total_value}$</p>
+                          <p><strong>Date d'acquisition: </strong> {formatDate(asset.date_acquisition)}</p>
+                          <p><strong>Type corporel: </strong> {asset.type_corporel}</p>
                         </div>
                       </div>
                     ))}
@@ -390,12 +529,11 @@ const ProjectView = () => {
               </div>
             </section>
 
-            {/* Colonne de droite : Membres de l'équipe */}
             <aside className="team-section">
-              <h2 className="section-title">Team Members</h2>
+              <h2 className="section-title">Membres de l'équipe</h2>
               <div className="team-list">
                 <div className="team-card">
-                  <h3 className="team-role">Owner</h3>
+                  <h3 className="team-role">Propriétaire</h3>
                   <p className="team-name">
                     {project.businessOwner?.fullname || 'Non assigné'}
                   </p>
@@ -405,18 +543,17 @@ const ProjectView = () => {
                 </div>
 
                 <div className="team-card">
-             <h3 className="team-role">Busness Manager</h3>
-               <p className="team-name">
-                 {project.teamMembers?.manager?.fullname || 'Non assigné'}
-               </p>
-               <p className="team-email">
-                {project.teamMembers?.manager?.email || '-'}
-                </p>
+                  <h3 className="team-role">Manager Commercial</h3>
+                  <p className="team-name">
+                    {project.teamMembers?.manager?.fullname || 'Non assigné'}
+                  </p>
+                  <p className="team-email">
+                    {project.teamMembers?.manager?.email || '-'}
+                  </p>
                 </div>
 
-                
                 <div className="team-card">
-                  <h3 className="team-role">Accauntant</h3>
+                  <h3 className="team-role">Comptable</h3>
                   {project.teamMembers?.accountants?.length > 0 ? (
                     project.teamMembers.accountants.map((acc) => (
                       <div key={acc._id} className="team-subitem">
@@ -430,7 +567,7 @@ const ProjectView = () => {
                 </div>
 
                 <div className="team-card">
-                  <h3 className="team-role">Busness Financiers</h3>
+                  <h3 className="team-role">Responsables Financiers</h3>
                   {project.teamMembers?.financialManagers?.length > 0 ? (
                     project.teamMembers.financialManagers.map((fm) => (
                       <div key={fm._id} className="team-subitem">

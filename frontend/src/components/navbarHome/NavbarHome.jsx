@@ -4,6 +4,7 @@ import axios from "axios";
 import { FaBell } from "react-icons/fa";
 import ChatService from "../../services/ChatService"; 
 import LanguageSelector from "../Language/LanguageSelector"; 
+import notificationService from "../../services/NotificationService";
 import "./NavbarHome.css";
 
 const Navbar = ({ notifications: externalNotifications }) => {
@@ -115,7 +116,9 @@ const Navbar = ({ notifications: externalNotifications }) => {
     fetchNotifications();
   };
 
-  const handleMarkAsRead = async (notificationId) => {
+  const handleMarkAsRead = async (notificationId, event) => {
+    // Empêche la propagation de l'événement pour éviter que le clic sur le bouton déclenche la redirection
+    event.stopPropagation();
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -145,7 +148,14 @@ const Navbar = ({ notifications: externalNotifications }) => {
       }
     }
   };
-  
+
+  // Fonction pour gérer le clic sur une notification et rediriger vers /projectview
+  const handleNotificationRedirect = (notification) => {
+    // Redirige vers /projectview avec le projectId dans l'état
+    navigate('/projectview', { state: { projectId: notification.projectId } });
+    // Ferme le menu de notification
+    setNotificationMenuOpen(false);
+  };
 
   const unreadNotificationsCount = notifications.filter((notif) => !notif.isRead).length;
 
@@ -169,6 +179,37 @@ const Navbar = ({ notifications: externalNotifications }) => {
       navigate("/");
     }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      notificationService.initializeSocket(token);
+
+      // Handle salary notifications
+      notificationService.on('salaryAdded', (data) => {
+        const newNotification = {
+          message: `Your salary of ${data.amount} TND has been added to your wallet`,
+          createdAt: new Date(),
+          isRead: false
+        };
+        setNotifications(prev => [newNotification, ...prev]);
+      });
+
+      // Handle objective status change notifications
+      notificationService.on('objectiveStatusChanged', (data) => {
+        const newNotification = {
+          message: `Objective "${data.objectiveName}" has been marked as ${data.status}`,
+          createdAt: new Date(),
+          isRead: false
+        };
+        setNotifications(prev => [newNotification, ...prev]);
+      });
+    }
+
+    return () => {
+      notificationService.disconnect();
+    };
+  }, []);
 
   return (
     <nav className="navbar-home">
@@ -195,13 +236,18 @@ const Navbar = ({ notifications: externalNotifications }) => {
               notifications
                 .filter((notif) => !notif.isRead)
                 .map((notif, index) => (
-                  <div key={index} className="notification-item">
+                  <div
+                    key={index}
+                    className="notification-item"
+                    onClick={() => handleNotificationRedirect(notif)} // Redirection lors du clic sur la notification
+                    style={{ cursor: 'pointer' }} // Indique que l'élément est cliquable
+                  >
                     <p>
                       {notif.message} - {new Date(notif.createdAt).toLocaleTimeString()}
                     </p>
                     <button
                       className="mark-as-read-btn"
-                      onClick={() => handleMarkAsRead(notif._id)}
+                      onClick={(event) => handleMarkAsRead(notif._id, event)} // Ajout de event pour stopPropagation
                     >
                       Marquer comme lu
                     </button>

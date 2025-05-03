@@ -3,8 +3,8 @@ var router = express.Router();
 const authorizeRole = require('../middleware/autorizedrole');
 const { addProject,assignAccountantToProject,assignFinancialManagerToProject,assignRHManagerToProject,
     unassignAccountantFromProject,unassignFinancialManagerFromProject,unassignRHManagerFromProject,getProjectById,getMyProject,
-    getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,updateproject,
-    deleteProjectById,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner,getProjectByUserId
+    getbyid,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,updateproject,getProjectByUserId,
+    deleteProjectById,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner,getAssignedUsersToProject,
 } = require("../controllers/projectController");
 const {createNotification,getUserNotifications,markNotificationAsRead} =require("../controllers/NotificationController")
 const { authenticateJWT } = require('../config/autorisation');
@@ -31,6 +31,7 @@ router.get('/notifications', authenticateJWT, getUserNotifications);
 
 
 router.put('/notifications/:notificationId/mark-as-read', authenticateJWT, markNotificationAsRead);
+router.get('/:projectId/assigned-users', getAssignedUsersToProject);
 
 router.get("/getAllAccountantsofproject",authenticateJWT,getAllAccountantsofproject)
 router.get("/getAllHRsOfProject",authenticateJWT,getAllHRsOfProject)

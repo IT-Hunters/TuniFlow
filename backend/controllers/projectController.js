@@ -13,6 +13,7 @@ const taxe=require("../model/TaxeModels/Taxes")
 const { getBusinessOwnerFromToken } = require("./auth");
 const RH = require("../model/RH");
 const assets_actif=require("../model/AssetActif/AssetActif")
+const ProjectConversation=require("../model/ProjectConversation")
 const Project = require("../model/Project");
 const BusinessManager = require("../model/BusinessManager");
 const PDFDocument = require("pdfkit");
@@ -147,6 +148,16 @@ async function assignAccountantToProject(req, res) {
             });
         }
 
+        // Changement : Ajouter le comptable à la conversation du projet
+        const conversation = await ProjectConversation.findOne({ projectId });
+        if (conversation) {
+            // Ajouter l'ID du comptable à la liste des participants (évite les doublons avec $addToSet)
+            conversation.participants.addToSet(accountant._id);
+            await conversation.save();
+        } else {
+            console.log(`Aucune conversation trouvée pour le projet ${projectId}.`);
+        }
+
         return res.status(200).json({ message: "Accountant assigned to project successfully", project });
     } catch (error) {
         console.error("Error during assignment:", error);
@@ -206,19 +217,29 @@ async function assignFinancialManagerToProject(req, res) {
 
         financialManager.project = project._id;
         await financialManager.save();
-         // 🎯 Créer une notification pour informer le comptable
-         const message = `Vous avez été affecté au projet ${project.name || project._id}`;
-         await createNotification(financialManager._id, message, project._id);
- 
-         // 🎯 Émettre l'événement Socket.IO aussi pour le comptable
-         if (global.io) {
-             global.io.to(financialManager._id.toString()).emit("newNotification", {
-                 message,
-                 projectId: project._id,
-                 timestamp: new Date()
-             });
-         }
- 
+
+        // 🎯 Créer une notification pour informer le gestionnaire financier
+        const message = `Vous avez été affecté au projet ${project.name || project._id}`;
+        await createNotification(financialManager._id, message, project._id);
+
+        // 🎯 Émettre l'événement Socket.IO aussi pour le gestionnaire financier
+        if (global.io) {
+            global.io.to(financialManager._id.toString()).emit("newNotification", {
+                message,
+                projectId: project._id,
+                timestamp: new Date()
+            });
+        }
+
+        // Changement : Ajouter le gestionnaire financier à la conversation du projet
+        const conversation = await ProjectConversation.findOne({ projectId });
+        if (conversation) {
+            // Ajouter l'ID du gestionnaire financier à la liste des participants (évite les doublons avec $addToSet)
+            conversation.participants.addToSet(financialManager._id);
+            await conversation.save();
+        } else {
+            console.log(`Aucune conversation trouvée pour le projet ${projectId}.`);
+        }
 
         return res.status(200).json({ message: "Financial Manager assigned to project successfully", project });
     } catch (error) {
@@ -257,20 +278,29 @@ async function assignRHManagerToProject(req, res) {
 
         rh.project = project._id;
         await rh.save();
-         
-         // 🎯 Créer une notification pour informer le comptable
-         const message = `Vous avez été affecté au projet ${project.name || project._id}`;
-         await createNotification(rh._id, message, project._id);
- 
-         // 🎯 Émettre l'événement Socket.IO aussi pour le comptable
-         if (global.io) {
-             global.io.to(rh._id.toString()).emit("newNotification", {
-                 message,
-                 projectId: project._id,
-                 timestamp: new Date()
-             });
-         }
- 
+
+        // 🎯 Créer une notification pour informer le gestionnaire RH
+        const message = `Vous avez été affecté au projet ${project.name || project._id}`;
+        await createNotification(rh._id, message, project._id);
+
+        // 🎯 Émettre l'événement Socket.IO aussi pour le gestionnaire RH
+        if (global.io) {
+            global.io.to(rh._id.toString()).emit("newNotification", {
+                message,
+                projectId: project._id,
+                timestamp: new Date()
+            });
+        }
+
+        // Changement : Ajouter le gestionnaire RH à la conversation du projet
+        const conversation = await ProjectConversation.findOne({ projectId });
+        if (conversation) {
+            // Ajouter l'ID du gestionnaire RH à la liste des participants (évite les doublons avec $addToSet)
+            conversation.participants.addToSet(rh._id);
+            await conversation.save();
+        } else {
+            console.log(`Aucune conversation trouvée pour le projet ${projectId}.`);
+        }
 
         return res.status(200).json({ message: "RH Manager assigned to project successfully", project });
     } catch (error) {
@@ -324,6 +354,16 @@ async function unassignAccountantFromProject(req, res) {
             });
         }
 
+        // Changement : Retirer le comptable de la liste des participants de la conversation
+        const conversation = await ProjectConversation.findOne({ projectId });
+        if (conversation) {
+            // Retirer l'ID du comptable de la liste des participants
+            conversation.participants.pull(accountant._id);
+            await conversation.save();
+        } else {
+            console.log(`Aucune conversation trouvée pour le projet ${projectId}.`);
+        }
+
         return res.status(200).json({ message: "Accountant removed from project successfully", project });
     } catch (error) {
         console.error("Error during unassignment:", error);
@@ -375,6 +415,16 @@ async function unassignFinancialManagerFromProject(req, res) {
             });
         }
 
+        // Changement : Retirer le gestionnaire financier de la liste des participants de la conversation
+        const conversation = await ProjectConversation.findOne({ projectId });
+        if (conversation) {
+            // Retirer l'ID du gestionnaire financier de la liste des participants
+            conversation.participants.pull(financialManager._id);
+            await conversation.save();
+        } else {
+            console.log(`Aucune conversation trouvée pour le projet ${projectId}.`);
+        }
+
         return res.status(200).json({ message: "Financial Manager removed from project successfully", project });
     } catch (error) {
         console.error("Error during unassignment:", error);
@@ -424,6 +474,16 @@ async function unassignRHManagerFromProject(req, res) {
                 projectId: project._id,
                 timestamp: new Date()
             });
+        }
+
+        // Changement : Retirer le gestionnaire RH de la liste des participants de la conversation
+        const conversation = await ProjectConversation.findOne({ projectId });
+        if (conversation) {
+            // Retirer l'ID du gestionnaire RH de la liste des participants
+            conversation.participants.pull(rh._id);
+            await conversation.save();
+        } else {
+            console.log(`Aucune conversation trouvée pour le projet ${projectId}.`);
         }
 
         return res.status(200).json({ message: "RH Manager removed from project successfully", project });
@@ -1183,11 +1243,47 @@ async function getProjectByUserId(req, res) {
         });
     }
 }
+
+// Récupérer tous les utilisateurs assignés au projet par rôle
+const getAssignedUsersToProject = async (req, res) => {
+    const { projectId } = req.params;
+  
+    // Vérifier si l'ID du projet est valide
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
+  
+    try {
+      // Chercher le projet avec l'ID valide
+      const project = await Project.findById(projectId)
+        .populate('accountants') // Populate accountants
+        .populate('financialManagers') // Populate financial managers
+        .populate('rhManagers') // Populate RH managers
+        .populate('businessManager') // Populate business manager
+  
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+  
+      // Combinaison des utilisateurs assignés au projet
+      const assignedUsers = [
+        ...project.accountants,
+        ...project.financialManagers,
+        ...project.rhManagers,
+        project.businessManager, // Ajout du business manager
+      ];
+  
+      return res.json(assignedUsers);
+    } catch (error) {
+      console.error('Error fetching assigned users:', error);
+      return res.status(500).json({ message: 'Failed to fetch assigned users' });
+    }
+};
 module.exports = {
     addProject,
     assignAccountantToProject,getAllAccountantsofproject,getAllHRsOfProject,getAllFinancialManagersOfProject,
     assignRHManagerToProject,updateproject,generateProjectReport,generateProjectReportbyid,generateProjectsReportowner,
-    assignFinancialManagerToProject,
+    assignFinancialManagerToProject,getAssignedUsersToProject,
     unassignRHManagerFromProject,deleteProjectById,
     unassignFinancialManagerFromProject,
     unassignAccountantFromProject,

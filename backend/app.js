@@ -26,7 +26,7 @@ const salarySchedulerRoutes = require('./routes/salarySchedulerRoutes');
 var logsRoutes = require('./routes/logsRoutes');
 require('./jobs/salaryProcessor');
 const financialStatementRoutes = require("./routes/financialStatementRoutes");
-
+const roomRoutes = require('./routes/roomRoutes');
 
 var app = express();
 var mongoose = require("mongoose");
@@ -76,6 +76,7 @@ app.use('/chat', chatRouter);
 app.use('/userLogs', userLogsRoutes);
 app.use('/salary-scheduler', salarySchedulerRoutes);
 app.use("/financial_statements", financialStatementRoutes);
+app.use('/api/rooms', roomRoutes);
 
 // 🟢 Test API
 app.get('/api/test', (req, res) => {
