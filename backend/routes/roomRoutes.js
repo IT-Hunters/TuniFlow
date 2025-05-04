@@ -4,7 +4,7 @@ const roomController = require('../controllers/roomController');
 const { authenticateJWT } = require('../config/autorisation');
 
 // Créer une nouvelle salle de réunion
-router.post('/create-room', authenticateJWT, roomController.createRoom);
+router.post('/', authenticateJWT, roomController.createRoom);
 
 // Rejoindre une salle de réunion
 router.post('/join/:roomId', authenticateJWT, roomController.joinRoom);

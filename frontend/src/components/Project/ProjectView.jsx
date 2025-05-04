@@ -20,6 +20,12 @@ const decodeJWT = (token) => {
   }
 };
 
+// Fonction pour valider un email
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 const ProjectView = () => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,6 +39,7 @@ const ProjectView = () => {
   const decodedToken = token ? decodeJWT(token) : null;
   const userRole = decodedToken?.role;
   const userId = decodedToken?.userId;
+  const userEmail = decodedToken?.email || 'Utilisateur'; // Récupérer l'email ou un identifiant par défaut
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -50,6 +57,7 @@ const ProjectView = () => {
           throw new Error("Le projet retourné n'a pas d'ID");
         }
 
+        console.log('Structure complète de project:', response.data);
         setProject(response.data);
       } catch (err) {
         console.error('Erreur lors de la récupération du projet:', err);
@@ -182,24 +190,24 @@ const ProjectView = () => {
         toast.error('Veuillez remplir tous les champs du formulaire.', {
           position: 'top-center',
           autoClose: 7000,
-          theme: 'colored'
+          theme: 'colored',
         });
         return;
       }
 
-      // Valider que la date est dans le futur
       const now = new Date();
       const selectedDate = new Date(formData.date);
       if (selectedDate <= now) {
         toast.error('La date de la réunion doit être dans le futur.', {
           position: 'top-center',
           autoClose: 7000,
-          theme: 'colored'
+          theme: 'colored',
         });
         return;
       }
 
-      const response = await axios.post(
+      // Créer la réunion dans le backend
+      const roomResponse = await axios.post(
         'http://localhost:3000/api/rooms',
         { projectId: project.id, title: formData.title, date: formData.date },
         {
@@ -207,23 +215,117 @@ const ProjectView = () => {
         }
       );
 
-      toast.success(response.data.message, {
-        position: 'top-center',
-        autoClose: 7000,
-        theme: 'colored'
+      // Récupérer les emails en utilisant la structure project.teamMembers
+      const businessManagerEmail = project.teamMembers?.manager?.email;
+      const accountantsEmails = (project.teamMembers?.accountants || []).map(acc => acc.email);
+      const financialManagersEmails = (project.teamMembers?.financialManagers || []).map(fm => fm.email);
+      const rhManagersEmails = (project.teamMembers?.rhManagers || []).map(rh => rh.email);
+      const businessOwnerEmail = project.businessOwner?.email;
+
+      // Log pour afficher les emails par rôle
+      console.log('Emails extraits par rôle:', {
+        businessManagerEmail,
+        accountantsEmails,
+        financialManagersEmails,
+        rhManagersEmails,
+        businessOwnerEmail
       });
+
+      const attendeeEmails = [
+        businessManagerEmail,
+        ...accountantsEmails,
+        ...financialManagersEmails,
+        ...rhManagersEmails,
+        businessOwnerEmail,
+      ].filter(email => email && isValidEmail(email)); // Filtrer les valeurs null/undefined et les emails invalides
+
+      const allAttendeeEmails = [...new Set(attendeeEmails)]; // Éviter les doublons
+
+      console.log('Emails des participants avant envoi:', allAttendeeEmails);
+
+      // Créer un événement Google Calendar
+      const calendarEvent = {
+        summary: formData.title,
+        description: `Réunion pour le projet ${project.name || project.id}.`,
+        start: {
+          dateTime: selectedDate.toISOString(),
+          timeZone: 'Africa/Tunis',
+        },
+        end: {
+          dateTime: new Date(selectedDate.getTime() + 60 * 60 * 1000).toISOString(),
+          timeZone: 'Africa/Tunis',
+        },
+        attendees: allAttendeeEmails.length > 0 ? allAttendeeEmails.map(email => ({ email })) : undefined,
+        reminders: {
+          useDefault: false,
+          overrides: [
+            { method: 'email', minutes: 24 * 60 },
+            { method: 'popup', minutes: 15 },
+          ],
+        },
+      };
+
+      console.log('Requête envoyée à Google Calendar:', { calendarId: 'primary', event: calendarEvent, sendNotifications: true });
+
+      // Appeler la route backend pour créer l'événement
+      const calendarResponse = await axios.post(
+        'http://localhost:3000/api/calendar/create-event',
+        {
+          calendarId: 'primary',
+          event: calendarEvent,
+          sendNotifications: allAttendeeEmails.length > 0,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      console.log('Réponse complète de Google Calendar:', calendarResponse.data);
+
+      // Vérifier si l'événement a été créé avec succès
+      if (calendarResponse.data.event && calendarResponse.data.event.id) {
+        console.log('Événement créé avec succès, ID:', calendarResponse.data.event.id);
+        // Vérifier les participants dans la réponse
+        if (calendarResponse.data.event.attendees) {
+          console.log('Participants confirmés dans l\'événement:', calendarResponse.data.event.attendees.map(att => att.email));
+        } else {
+          console.log('Aucun participant confirmé dans la réponse de l\'événement.');
+        }
+
+        // Notification pour l'utilisateur connecté (en bas à droite)
+        toast.info(
+          `Événement "${formData.title}" ajouté à votre Google Calendar, ${userEmail} !`,
+          {
+            position: 'bottom-right',
+            autoClose: 5000,
+            theme: 'colored',
+          }
+        );
+      } else {
+        console.log('Aucune ID d\'événement retournée, vérifiez la réponse:', calendarResponse.data);
+      }
+
+      // Afficher une notification de succès avec les participants
+      toast.success(
+        `${roomResponse.data.message} `,
+        {
+          position: 'top-center',
+          autoClose: 7000,
+          className: 'custom-success-toast',
+        }
+      );
 
       setIsModalOpen(false);
       setFormData({ title: '', date: '' });
       navigate(`/rooms/${project.id}`);
     } catch (err) {
-      console.error('Erreur lors de la création de la réunion:', err);
+      console.error('Erreur détaillée lors de la création de la réunion:', err.response ? err.response.data : err.message);
       toast.error(
-        err.response?.data?.message || 'Erreur lors de la création de la réunion',
+        err.response?.data?.message || 'Erreur lors de la création de la réunion (Vérifiez votre authentification)',
         {
           position: 'top-center',
           autoClose: 7000,
-          theme: 'colored'
+          theme: 'colored',
         }
       );
     }
