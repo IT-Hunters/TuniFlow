@@ -21,6 +21,7 @@ const BusinessManager = require("../model/BusinessManager");
 const RH = require("../model/RH");
 const Project = require("../model/Project");
 const Employe = require('../model/Employe');
+const Wallet = require('../model/wallet');
 const nodemailer = require('nodemailer');
 const { createLog } = require("./UserLogsController");
 
@@ -53,7 +54,7 @@ const Register = async (req, res) => {
         let userType;
         let UserModel;
         switch (req.body.role) {
-            case "z":
+            case "BUSINESS_OWNER":
                 userType = new BusinessOwner({
                     email: req.body.email,
                     password: hashedPassword,

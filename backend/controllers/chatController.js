@@ -41,7 +41,7 @@ const sendMessage = async (req, res) => {
     console.log("sendMessage appelé avec:", req.body, "Utilisateur:", req.user);
     const { content, chatId } = req.body;
     const senderId = req.user.userId;
-    const adminId = "67c6e16c7ccab71bb436bb3a";
+    const adminId = "681a152d206ec575db21fbed";
 
     try {
         let chat;
@@ -212,7 +212,7 @@ const uploadFile = async (req, res) => {
 
         let chat = await Chat.findById(chatId);
         if (!chat) {
-            const adminId = "67c6e16c7ccab71bb436bb3a"; // ID de l'admin
+            const adminId = "681a152d206ec575db21fbed"; // ID de l'admin
             chat = new Chat({
                 participants: [senderId, adminId],
                 messages: [],

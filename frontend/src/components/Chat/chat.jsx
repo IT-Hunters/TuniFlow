@@ -20,7 +20,7 @@ const Chat = () => {
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const fileInputRef = useRef(null);
-    const ADMIN_ID = "67c6e16c7ccab71bb436bb3a";
+    const ADMIN_ID = "681a152d206ec575db21fbed";
 
     useEffect(() => {
         const token = localStorage.getItem("token");
