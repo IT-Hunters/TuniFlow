@@ -1,46 +1,179 @@
-.todo-container {
+/* ToDoList.css */
+
+/* Réutilisation des styles du template */
+.container {
+    display: flex;
+  }
+  
+  .main {
+    flex: 1;
     padding: 20px;
-    max-width: 600px;
+  }
+  
+  .update-project-wrapper {
+    max-width: 800px;
     margin: 0 auto;
   }
   
-  .todo-container h2 {
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+  }
+  
+  .project-title {
+    font-size: 24px;
+    font-weight: bold;
     color: #333;
   }
   
-  .task-form {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .toggle-archive-btn {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .toggle-archive-btn:hover {
+    background-color: #5a6268;
+  }
+  
+  .update-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .detail-card {
     margin-bottom: 20px;
   }
   
-  .task-form input {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
+  .card-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #444;
+  }
+  
+  .alert {
+    padding: 10px;
+    margin-bottom: 15px;
     border-radius: 4px;
   }
   
-  .add-task-btn {
-    background-color: #007bff; /* bleu */
-    color: white;
-    padding: 6px 12px; /* réduire la taille */
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: auto; /* optionnel pour éviter qu’il prenne toute la largeur */
+  .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
   }
   
-  .add-task-btn:hover {
-    background-color: #0056b3; /* bleu plus foncé au survol */
+  .alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
   }
   
-  .task-list {
+  .project-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .form-group {
     display: flex;
     flex-direction: column;
     gap: 10px;
+  }
+  
+  .label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #555;
+  }
+  
+  .form-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .action-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .submit-btn {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .submit-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .submit-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  /* Styles pour la barre de progression */
+  .progress-container {
+    margin-bottom: 20px;
+  }
+  
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 5px;
+  }
+  
+  .progress-bar {
+    display: flex;
+    width: 100%;
+    height: 10px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  .progress-todo {
+    background-color: #dc3545; /* Rouge pour À faire */
+    height: 100%;
+  }
+  
+  .progress-in-progress {
+    background-color: #ffc107; /* Orange pour En cours */
+    height: 100%;
+  }
+  
+  .progress-completed {
+    background-color: #28a745; /* Vert pour Complétée */
+    height: 100%;
+  }
+  
+  .task-list {
+    margin-top: 20px;
   }
   
   .task-item {
@@ -53,9 +186,28 @@
     margin-bottom: 10px;
   }
   
-  .task-description {
+  .task-item.overdue {
+    background-color: #f8d7da; /* Rouge pâle pour dépassée */
+    border-color: #dc3545;
+  }
+  
+  .task-item.approaching {
+    background-color: #fff3cd; /* Orange pâle pour approche */
+    border-color: #ffc107;
+  }
+  
+  .task-details {
     flex: 1;
+  }
+  
+  .task-description {
     margin: 0;
+  }
+  
+  .task-due-date {
+    font-size: 12px;
+    color: #666;
+    margin: 2px 0 0;
   }
   
   .task-description-input {
@@ -67,21 +219,15 @@
   
   .task-status {
     margin-right: 10px;
-    padding: 5px;
+    padding: 2px;
     border-radius: 4px;
     border: 1px solid #ccc;
+    font-size: 12px;
   }
   
   .task-actions {
     display: flex;
     gap: 10px;
-  }
-  
-  .action-btn {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
   }
   
   .edit-btn {
@@ -93,6 +239,24 @@
     background-color: #0056b3;
   }
   
+  .archive-btn {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .archive-btn:hover {
+    background-color: #5a6268;
+  }
+  
+  .restore-btn {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .restore-btn:hover {
+    background-color: #218838;
+  }
+  
   .delete-btn {
     background-color: #dc3545;
     color: white;
@@ -101,16 +265,41 @@
   .delete-btn:hover {
     background-color: #c82333;
   }
-  .submit-btn {
-    background-color: #007bff; /* Bleu */
-    color: white;
-    padding: 6px 12px; /* Plus petit que 8px 16px */
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: auto; /* évite qu'il prenne trop de place */
-    font-size: 14px;
+  
+  .no-data {
+    text-align: center;
+    color: #888;
+    margin-top: 20px;
   }
+  
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 5px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .submit-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 200px;
+    font-size: 20px;
+    display: block;
+    margin: 0 auto; /* Centre horizontalement */
+  }
+  
   
   .submit-btn:hover {
     background-color: #0056b3; /* Bleu foncé au survol */

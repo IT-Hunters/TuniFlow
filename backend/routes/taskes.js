@@ -3,10 +3,15 @@ const router = express.Router();
 const Task = require('../model/Task');
 const { authenticateJWT } = require('../config/autorisation');
 
-// Récupérer les tâches de l'utilisateur connecté
+// Récupérer les tâches de l'utilisateur connecté (non archivées par défaut)
 router.get('/', authenticateJWT, async (req, res) => {
   try {
-    const tasks = await Task.find({ userId: req.user.userId });
+    const showArchived = req.query.showArchived === 'true'; // Paramètre pour afficher les archivées
+    const query = { userId: req.user.userId };
+    if (!showArchived) {
+      query.isArchived = false; // Par défaut, n'affiche pas les tâches archivées
+    }
+    const tasks = await Task.find(query);
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ message: 'Erreur serveur' });
@@ -16,12 +21,13 @@ router.get('/', authenticateJWT, async (req, res) => {
 // Ajouter une nouvelle tâche
 router.post('/', authenticateJWT, async (req, res) => {
   try {
-    const { description, status } = req.body;
+    const { description, status, dueDate } = req.body;
     console.log('Données reçues:', req.body);
     const task = new Task({
       userId: req.user.userId,
       description,
       status,
+      dueDate: dueDate ? new Date(dueDate) : null, // Ajout de la date d'échéance
     });
     const savedTask = await task.save();
     res.status(201).json(savedTask);
@@ -31,12 +37,13 @@ router.post('/', authenticateJWT, async (req, res) => {
   }
 });
 
-// Mettre à jour une tâche (status ou description)
+// Mettre à jour une tâche (status, description ou dueDate)
 router.put('/:id', authenticateJWT, async (req, res) => {
   try {
     const updates = {};
     if (req.body.status) updates.status = req.body.status;
     if (req.body.description) updates.description = req.body.description;
+    if (req.body.dueDate) updates.dueDate = new Date(req.body.dueDate);
 
     const task = await Task.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.userId },
@@ -50,13 +57,29 @@ router.put('/:id', authenticateJWT, async (req, res) => {
   }
 });
 
+// Archiver ou désarchiver une tâche
+router.put('/:id/archive', authenticateJWT, async (req, res) => {
+  try {
+    const { isArchived } = req.body;
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.userId },
+      { isArchived },
+      { new: true, runValidators: true }
+    );
+    if (!task) return res.status(404).json({ message: 'Tâche non trouvée' });
+    res.json(task);
+  } catch (err) {
+    res.status(400).json({ message: 'Erreur lors de l\'archivage de la tâche' });
+  }
+});
+
 // Supprimer une tâche
 router.delete('/:id', authenticateJWT, async (req, res) => {
   try {
-    console.log('Tentative de suppression - ID:', req.params.id, 'UserId:', req.user.userId); // Débogage
+    console.log('Tentative de suppression - ID:', req.params.id, 'UserId:', req.user.userId);
     const task = await Task.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
     if (!task) {
-      console.log('Tâche non trouvée avec ID:', req.params.id, 'pour userId:', req.user.userId); // Débogage
+      console.log('Tâche non trouvée avec ID:', req.params.id, 'pour userId:', req.user.userId);
       return res.status(404).json({ message: 'Tâche non trouvée' });
     }
     console.log('Tâche supprimée avec succès:', task);
