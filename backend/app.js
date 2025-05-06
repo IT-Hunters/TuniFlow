@@ -28,6 +28,7 @@ require('./jobs/salaryProcessor');
 const financialStatementRoutes = require("./routes/financialStatementRoutes");
 const roomRoutes = require('./routes/roomRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
+const taskRoutes = require('./routes/taskes');
 var app = express();
 var mongoose = require("mongoose");
 var connection = require("./config/database.json");
@@ -78,6 +79,7 @@ app.use('/salary-scheduler', salarySchedulerRoutes);
 app.use("/financial_statements", financialStatementRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/', calendarRoutes);
+app.use('/api/tasks', taskRoutes);
 // 🟢 Test API
 app.get('/api/test', (req, res) => {
   res.status(200).json({ message: 'Project tested' });

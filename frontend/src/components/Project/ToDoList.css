@@ -1,0 +1,118 @@
+.todo-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .todo-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .task-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .task-form input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .add-task-btn {
+    background-color: #007bff; /* bleu */
+    color: white;
+    padding: 6px 12px; /* réduire la taille */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: auto; /* optionnel pour éviter qu’il prenne toute la largeur */
+  }
+  
+  .add-task-btn:hover {
+    background-color: #0056b3; /* bleu plus foncé au survol */
+  }
+  
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .task-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+  }
+  
+  .task-description {
+    flex: 1;
+    margin: 0;
+  }
+  
+  .task-description-input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .task-status {
+    margin-right: 10px;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  .task-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .action-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .edit-btn {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .edit-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .delete-btn {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .delete-btn:hover {
+    background-color: #c82333;
+  }
+  .submit-btn {
+    background-color: #007bff; /* Bleu */
+    color: white;
+    padding: 6px 12px; /* Plus petit que 8px 16px */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: auto; /* évite qu'il prenne trop de place */
+    font-size: 14px;
+  }
+  
+  .submit-btn:hover {
+    background-color: #0056b3; /* Bleu foncé au survol */
+  }
+  
