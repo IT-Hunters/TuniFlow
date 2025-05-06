@@ -40,4 +40,5 @@ router.post("/upload-logo", authenticateJWT, invoiceController.uploadLogo, (req,
 });
 router.get('/export', authenticateJWT, invoiceController.exportInvoices);
 router.get("/test-upcoming-reminders", invoiceController.testUpcomingReminders);
+router.post('/generate-description', invoiceController.generateDescription);
 module.exports = router;

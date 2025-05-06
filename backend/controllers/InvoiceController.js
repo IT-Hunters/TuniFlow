@@ -49,6 +49,26 @@ const transporter = nodemailer.createTransport({
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
 });
 
+const generateDescription = (amount, category, project) => {
+  const templates = require(path.join(__dirname, '../data/invoice-descriptions.json')).templates;
+  const categoryTemplates = templates[category || "N/A"];
+  const threshold = Object.keys(categoryTemplates).find(t => {
+    if (t.startsWith("<")) return amount < parseInt(t.slice(1));
+    if (t.startsWith(">=")) return amount >= parseInt(t.slice(2));
+    return false;
+  }) || ">=1500"; // Par défaut pour les montants élevés
+  let description = categoryTemplates[threshold];
+  description = description.replace("{amount}", amount)
+                           .replace("{project}", project?.status || "N/A");
+  return description;
+};
+
+exports.generateDescription = async (req, res) => {
+  const { amount, category, project } = req.body;
+  const description = generateDescription(Number(amount), category, project);
+  res.status(200).json({ description });
+};
+
 const generateInvoicePDF = async (invoice) => {
   const pdfPath = path.join(__dirname, '../invoices', `invoice_${invoice._id}.pdf`);
   console.log('Attempting to generate PDF at:', pdfPath);
@@ -112,7 +132,7 @@ const sendReminderEmail = async (recipientEmail, bill, reminderType) => {
   const message = isOverdue
     ? "This is a reminder that the following invoice is overdue:"
     : `This is a reminder that the following invoice is due on ${new Date(bill.due_date).toLocaleDateString()}:`;
-  const urgencyColor = isOverdue ? "#e74c3c" : "#f39c12"; // Rouge pour en retard, Orange pour à venir
+  const urgencyColor = isOverdue ? "#e74c3c" : "#f39c12";
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -173,52 +193,6 @@ const sendOverdueReminders = async () => {
         console.log(`No email found for recipient of bill ${bill.id}`);
         continue;
       }
-      const sendUpcomingReminders = async () => {
-  try {
-    const today = new Date();
-    const threeDaysFromNow = new Date(today);
-    threeDaysFromNow.setDate(today.getDate() + 3);
-
-    const upcomingBills = await Bill.find({
-      status: "PENDING",
-      due_date: { $gte: today, $lte: threeDaysFromNow },
-      reminderSent: false, // Éviter d'envoyer plusieurs rappels
-    })
-      .populate("recipient_id")
-      .sort({ amount: -1 }); // Trier par montant décroissant pour prioriser les factures élevées
-
-    console.log(`Found ${upcomingBills.length} upcoming bills to process.`);
-
-    for (const bill of upcomingBills) {
-      const recipient = bill.recipient_id;
-      if (!recipient || !recipient.email) {
-        console.log(`No email found for recipient of bill ${bill.id}`);
-        continue;
-      }
-
-      // Priorisation : Factures > 500 TND ou si c'est le dernier jour avant l'échéance
-      const isHighAmount = bill.amount > 500;
-      const isLastDay = new Date(bill.due_date).toDateString() === threeDaysFromNow.toDateString();
-      if (isHighAmount || isLastDay) {
-        await sendReminderEmail(recipient.email, bill, "UPCOMING");
-
-        bill.history.push({
-          action: "UPCOMING_REMINDER_SENT",
-          date: new Date(),
-          user: recipient._id,
-        });
-
-        bill.reminderSent = true;
-        bill.lastReminderDate = new Date();
-        await bill.save();
-
-        console.log(`Upcoming reminder sent for bill ${bill.id} to ${recipient.email}`);
-      }
-    }
-  } catch (error) {
-    console.error("Error in sendUpcomingReminders:", error.message);
-  }
-};
 
       await sendReminderEmail(recipient.email, bill, "OVERDUE");
 
@@ -238,6 +212,7 @@ const sendOverdueReminders = async () => {
     console.error("Error in sendOverdueReminders:", error.message);
   }
 };
+
 const sendUpcomingReminders = async () => {
   try {
     const today = new Date();
@@ -247,10 +222,10 @@ const sendUpcomingReminders = async () => {
     const upcomingBills = await Bill.find({
       status: "PENDING",
       due_date: { $gte: today, $lte: threeDaysFromNow },
-      reminderSent: false, // Éviter d'envoyer plusieurs rappels
+      reminderSent: false,
     })
       .populate("recipient_id")
-      .sort({ amount: -1 }); // Trier par montant décroissant pour prioriser les factures élevées
+      .sort({ amount: -1 });
 
     console.log(`Found ${upcomingBills.length} upcoming bills to process.`);
 
@@ -261,7 +236,6 @@ const sendUpcomingReminders = async () => {
         continue;
       }
 
-      // Priorisation : Factures > 500 TND ou si c'est le dernier jour avant l'échéance
       const isHighAmount = bill.amount > 500;
       const isLastDay = new Date(bill.due_date).toDateString() === threeDaysFromNow.toDateString();
       if (isHighAmount || isLastDay) {
@@ -286,13 +260,11 @@ const sendUpcomingReminders = async () => {
 };
 
 const initializeReminderJob = () => {
-  // Rappels pour les factures en retard (à 9h00 tous les jours)
   cron.schedule("0 9 * * *", async () => {
     console.log("Running overdue invoice reminder job at", new Date().toISOString());
     await sendOverdueReminders();
   });
 
-  // Rappels pour les factures à venir (à 10h00 tous les jours)
   cron.schedule("0 10 * * *", async () => {
     console.log("Running upcoming invoice reminder job at", new Date().toISOString());
     await sendUpcomingReminders();
@@ -323,6 +295,9 @@ exports.createInvoice = async (req, res) => {
     const recipient_id = project.businessOwner._id;
     console.log('Recipient ID:', recipient_id);
 
+    // Générer une description si customNotes est vide ou non fourni
+    const generatedDescription = customNotes ? customNotes : generateDescription(Number(amount), category, project);
+
     const newInvoice = new Bill({
       id: uuidv4(),
       creator_id,
@@ -333,7 +308,7 @@ exports.createInvoice = async (req, res) => {
       status: "PENDING",
       project_id: project._id,
       logoUrl,
-      customNotes,
+      customNotes: generatedDescription, // Utiliser la description générée ou la note personnalisée
       history: [
         {
           action: "CREATED",
@@ -428,7 +403,7 @@ exports.sendInvoice = async (req, res) => {
       `,
       attachments: [
         { filename: `invoice_${invoice._id}.pdf`, path: pdfPath },
-        { filename: `qr_${invoice._id}.png`, path: qrCodePath, cid: "qr_code" }
+        { filename: `qr_${invoiceId}.png`, path: qrCodePath, cid: "qr_code" }
       ]
     };
 

@@ -1,4 +1,3 @@
-// src/components/Invoice/CreateInvoice.jsx
 import React, { useState, useEffect } from 'react';
 import CoolSidebar from "../sidebarHome/newSidebar"; 
 import Navbar from "../navbarHome/NavbarHome"; 
@@ -81,6 +80,26 @@ const CreateInvoice = () => {
     }
   };
 
+  const generateDescription = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/project/my-project', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const project = response.data;
+      const amount = Number(invoiceData.amount);
+      const description = await axios.post(
+        'http://localhost:3000/invoices/generate-description',
+        { amount, category: invoiceData.category, project },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setInvoiceData(prev => ({ ...prev, customNotes: description.data.description }));
+    } catch (error) {
+      console.error('Error generating description:', error);
+      setError(t("Failed to generate description"));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -106,8 +125,7 @@ const CreateInvoice = () => {
 
       const response = await axios.post('http://localhost:3000/invoices/create', {
         ...invoiceData,
-        logoUrl: uploadedLogoUrl,
-        customNotes: invoiceData.customNotes
+        logoUrl: uploadedLogoUrl
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -265,6 +283,9 @@ const CreateInvoice = () => {
                     onChange={handleChange}
                     rows="4"
                   />
+                  <button type="button" onClick={generateDescription} className="generate-button">
+                    {t("Generate Description")}
+                  </button>
                 </div>
                 
                 <button type="submit" disabled={loading} className="invoice-button">
@@ -287,7 +308,7 @@ const CreateInvoice = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div>  
   );
 };
 

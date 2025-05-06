@@ -1,0 +1,39 @@
+{
+    "templates": {
+      "Consulting": {
+        "<300": "Consulting services for project {project}, totaling {amount} TND, including initial consultation.",
+        "<1000": "Professional consulting services for project {project}, valued at {amount} TND, with detailed reporting.",
+        ">=1000": "Comprehensive consulting services for project {project}, amounting to {amount} TND, with strategic insights."
+      },
+      "Services": {
+        "<500": "General services provided for project {project}, costing {amount} TND.",
+        "<1500": "Extended service delivery for project {project}, valued at {amount} TND, with ongoing support.",
+        ">=1500": "Premium service package for project {project}, totaling {amount} TND, with advanced features."
+      },
+      "Products": {
+        "<200": "Product supply for project {project}, priced at {amount} TND.",
+        "<800": "Bulk product delivery for project {project}, valued at {amount} TND, with standard shipping.",
+        ">=800": "Premium product batch for project {project}, amounting to {amount} TND, with expedited delivery."
+      },
+      "Freelance": {
+        "<400": "Freelance work for project {project}, totaling {amount} TND, for basic tasks.",
+        "<1200": "Specialized freelance services for project {project}, valued at {amount} TND, with custom deliverables.",
+        ">=1200": "Expert freelance contribution for project {project}, amounting to {amount} TND, with full support."
+      },
+      "Maintenance": {
+        "<350": "Maintenance services for project {project}, costing {amount} TND, for routine checks.",
+        "<900": "Regular maintenance for project {project}, valued at {amount} TND, with detailed reports.",
+        ">=900": "Advanced maintenance package for project {project}, totaling {amount} TND, with emergency support."
+      },
+      "Other": {
+        "<500": "Miscellaneous services for project {project}, totaling {amount} TND.",
+        "<1500": "Custom work for project {project}, valued at {amount} TND, with tailored solutions.",
+        ">=1500": "Specialized project support for {project}, amounting to {amount} TND, with additional resources."
+      },
+      "N/A": {
+        "<500": "General invoice for project {project}, totaling {amount} TND.",
+        "<1500": "Unspecified services for project {project}, valued at {amount} TND.",
+        ">=1500": "Comprehensive work for project {project}, amounting to {amount} TND."
+      }
+    }
+  }
