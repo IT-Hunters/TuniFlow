@@ -14,7 +14,7 @@ const ObjectivesList = () => {
   const [objectives, setObjectives] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState(''); // Added for success feedback
+  const [successMessage, setSuccessMessage] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -98,7 +98,6 @@ const ObjectivesList = () => {
   };
 
   const handleDelete = async (objectifId) => {
-    // Show a confirmation dialog before deleting
     const confirmDelete = window.confirm('Are you sure you want to delete this objective?');
     if (!confirmDelete) return;
 
@@ -115,9 +114,7 @@ const ObjectivesList = () => {
 
       if (response.data.success) {
         setSuccessMessage('Objective deleted successfully');
-        // Remove the deleted objective from the state
         setObjectives((prev) => prev.filter((obj) => obj._id !== objectifId));
-        // Reset pagination if necessary
         if (paginatedObjectives.length === 1 && currentPage > 1) {
           setCurrentPage((prev) => prev - 1);
         }
@@ -201,134 +198,123 @@ const ObjectivesList = () => {
 
           {/* Objectives List and Add Button */}
           {selectedProject && !loading && !error && (
-            <>
-             
+            <div className="objectives-list">
+              <div className="objectives-header">
+                <h2>Objectives</h2>
+                <div className="add-objective-section">
+                  <button
+                    className="create-button"
+                    onClick={handleAddObjective}
+                    disabled={loading}
+                  >
+                    <span>
+                      <svg
+                        height="24"
+                        width="24"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z" fill="currentColor"></path>
+                      </svg>
+                      Create
+                    </span>
+                  </button>
+                </div>
+              </div>
 
               {objectives.length > 0 ? (
-                <div className="objectives-list">
-                  <div className="objectives-header">
-                    <h2>Objectives</h2>
-                    <div className="add-objective-section">
-                      <button
-                        className="create-button"
-                        onClick={handleAddObjective}
-                        
-                      >
-                        <span>
-                          <svg
-                            height="24"
-                            width="24"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z" fill="currentColor"></path>
-                          </svg>
-                          Create
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="objectives-grid">
-                    
-                    {paginatedObjectives.map(objective => (
-                      <div key={objective._id} className="obj-card">
-                        <div className="obj-container">
-                          <div className="obj-type">
-                            {objective.objectivetype}
+                <div className="objectives-grid">
+                  {paginatedObjectives.map(objective => (
+                    <div key={objective._id} className="obj-card">
+                      <div className="obj-container">
+                        <div className="obj-type">
+                          {objective.objectivetype}
+                        </div>
+                        <h3 className="obj-title">{objective.name}</h3>
+                        <p className="obj-description">{objective.description}</p>
+                        <div className="progress-section">
+                          <div className="progress-label">
+                            <span>Progress</span>
+                            <span>{objective.progress}%</span>
                           </div>
-                          
-                          <h3 className="obj-title">{objective.name}</h3>
-                          <p className="obj-description">{objective.description}</p>
-                          
-                          <div className="progress-section">
-                            <div className="progress-label">
-                              <span>Progress</span>
-                              <span>{objective.progress}%</span>
-                            </div>
-                            <div className="progress-bar">
-                              <div
-                                className="progress-fill"
-                                style={{ width: `${objective.progress}%` }}
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="due-date">
-                            <span>Due date:</span>
-                            <span>{new Date(objective.datefin).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
-                          </div>
-
-                          <div className="obj-actions">
-                            <button
-                              className="obj-btn obj-btn-view"
-                              onClick={() => handleViewDetails(objective)}
-                              disabled={loading}
-                            >
-                              View Details
-                            </button>
-                            <button
-                              className="obj-btn obj-btn-delete"
-                              onClick={() => handleDelete(objective._id)}
-                              disabled={loading}
-                            >
-                              Delete
-                            </button>
+                          <div className="progress-bar">
+                            <div
+                              className="progress-fill"
+                              style={{ width: `${objective.progress}%` }}
+                            />
                           </div>
                         </div>
+                        <div className="due-date">
+                          <span>Due date:</span>
+                          <span>{new Date(objective.datefin).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                        <div className="obj-actions">
+                          <button
+                            className="obj-btn obj-btn-view"
+                            onClick={() => handleViewDetails(objective)}
+                            disabled={loading}
+                          >
+                            View Details
+                          </button>
+                          <button
+                            className="obj-btn obj-btn-delete"
+                            onClick={() => handleDelete(objective._id)}
+                            disabled={loading}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Pagination Controls */}
-                  {totalPages > 1 && (
-                    <div className="pagination">
-                      <button
-                        className={`pagination-prev ${currentPage === 1 ? "disabled" : ""}`}
-                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </button>
-
-                      <div className="pagination-numbers">
-                        {getPaginationItems().map((item) => {
-                          if (item === "ellipsis-start" || item === "ellipsis-end") {
-                            return (
-                              <span key={item} className="pagination-ellipsis">
-                                ...
-                              </span>
-                            );
-                          }
-
-                          return (
-                            <button
-                              key={item}
-                              className={`pagination-number ${currentPage === item ? "active" : ""}`}
-                              onClick={() => setCurrentPage(item)}
-                            >
-                              {item}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <button
-                        className={`pagination-next ${currentPage === totalPages ? "disabled" : ""}`}
-                        onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </button>
                     </div>
-                  )}
+                  ))}
                 </div>
               ) : (
                 <div className="no-objectives">
                   <p>No objectives found for this project.</p>
                 </div>
               )}
-            </>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    className={`pagination-prev ${currentPage === 1 ? "disabled" : ""}`}
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <div className="pagination-numbers">
+                    {getPaginationItems().map((item) => {
+                      if (item === "ellipsis-start" || item === "ellipsis-end") {
+                        return (
+                          <span key={item} className="pagination-ellipsis">
+                            ...
+                          </span>
+                        );
+                      }
+                      return (
+                        <button
+                          key={item}
+                          className={`pagination-number ${currentPage === item ? "active" : ""}`}
+                          onClick={() => setCurrentPage(item)}
+                        >
+                          {item}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    className={`pagination-next ${currentPage === totalPages ? "disabled" : ""}`}
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
