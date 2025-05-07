@@ -147,7 +147,9 @@ exports.transfer = async (req, res) => {
 
 exports.getTransactions = async (req, res) => {
   try {
-    const { walletId } = req.params;
+    //const { walletId } = req.params;
+    const walletId = "681aa801c014b93b9b45aa94";
+    
     const transactions = await Transaction.find({ wallet_id: walletId });
     res.status(200).json(transactions);
   } catch (err) {
@@ -331,7 +333,8 @@ exports.getRevenue = async (req, res) => {
       if (!project.wallet) {
           return res.status(404).json({ message: "No wallet associated with this project" });
       }
-      const walletId = project.wallet;
+      //const walletId = project.wallet;
+      const walletId = "681aa801c014b93b9b45aa94";
       console.log("Wallet ID:", walletId);
 
       // Fetch all income transactions for the wallet
@@ -407,7 +410,8 @@ exports.getExpenses = async (req, res) => {
         if (!project.wallet) {
             return res.status(404).json({ message: "No wallet associated with this project" });
         }
-        const walletId = project.wallet;
+       // const walletId = project.wallet;
+        const walletId = "681aa801c014b93b9b45aa94";
         console.log("Wallet ID:", walletId);
 
         const today = new Date();
@@ -458,7 +462,7 @@ exports.getTransactionByWalletId = async (req, res) => {
     const { walletId } = req.params;
 
     const transaction = await Transaction.find({
-      wallet_id: walletId
+      wallet_id: "681aa801c014b93b9b45aa94"
     });
 
     if (!transaction) {

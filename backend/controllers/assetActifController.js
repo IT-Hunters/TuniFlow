@@ -59,7 +59,7 @@ exports.deleteAsset = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-const createSpecificAsset = async (assetData) => {
+const createSpecificAsset = async (assetData) => {  
     let assetModel;
     
     switch (assetData.type_actif) {

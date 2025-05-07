@@ -212,7 +212,7 @@ const ObjectivesList = () => {
                       <button
                         className="create-button"
                         onClick={handleAddObjective}
-                        disabled={loading}
+                        
                       >
                         <span>
                           <svg

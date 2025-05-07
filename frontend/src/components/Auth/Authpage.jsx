@@ -122,7 +122,9 @@ const AuthPage = () => {
           password: formData.password,
         });
 
-        const { token, role } = response.data;
+        const { token, role,userId } = response.data;
+        localStorage.setItem("userId", userId);
+        localStorage.setItem("role", role);
         localStorage.setItem("token", token);
         redirectPath = role === "ADMIN" ? "/dashboard" : "/user";
       } else {

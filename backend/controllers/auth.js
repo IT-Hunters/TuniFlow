@@ -820,7 +820,7 @@ async function findMyProject2(req, res) {
 
             projects = user.projects; // Array of projects
         } else {
-            return res.status(403).json({ message: "Unauthorized role for accessing projects" });
+            return res.status(403).json({ message: "Unauthorized role, This block is accessible only for Owner" });
         }
 
         // Format the response

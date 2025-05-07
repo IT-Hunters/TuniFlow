@@ -256,7 +256,8 @@ const calculateCashFlowHistory = async (req, res) => {
     if (!project.wallet) {
       return res.status(404).json({ message: "No wallet associated with this project" });
     }
-    const walletId = project.wallet;
+  //  const walletId = project.wallet;
+    const walletId = "681aa801c014b93b9b45aa94";
     console.log("Wallet ID:", walletId);
 
     const walletObjectId = new mongoose.Types.ObjectId(walletId);
@@ -308,7 +309,7 @@ const calculateCashFlowHistory = async (req, res) => {
     ];
 
     const cashFlowHistory = await Transaction.aggregate(pipeline);
-
+    console.log("cashFlowHistory" + cashFlowHistory)
     if (!cashFlowHistory.length) {
       return res.status(404).json({ message: "No transactions found for this project's wallet" });
     }
@@ -347,7 +348,8 @@ const calculateProfitMargin = async (req, res) => {
       return res.status(404).json({ message: "No wallet associated with this project" });
     }
 
-    const walletId = project.wallet;
+    //const walletId = project.wallet;
+    const walletId = "681aa801c014b93b9b45aa94";
     const walletObjectId = new mongoose.Types.ObjectId(walletId);
 
     const pipeline = [
