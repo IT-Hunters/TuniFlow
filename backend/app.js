@@ -254,6 +254,39 @@ server.listen(PORT, () => {
 });
 
 // 🟢 Error Handling
+app.use('/api/chatbot', express.json(), async (req, res) => {
+  try {
+    const userMessage = req.body.message;
+    if (!userMessage) {
+      console.error('[Chatbot API] No message provided in request body:', req.body);
+      return res.status(400).json({ error: 'No message provided' });
+    }
+    // Forward the message to the Rasa server
+    const fetch = require('node-fetch');
+    let rasaResponse, rasaData;
+    try {
+      rasaResponse = await fetch('http://localhost:5005/webhooks/rest/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender: 'user', message: userMessage })
+      });
+      if (!rasaResponse.ok) {
+        const text = await rasaResponse.text();
+        console.error(`[Chatbot API] Rasa server error: ${rasaResponse.status} ${rasaResponse.statusText} - ${text}`);
+        return res.status(502).json({ error: `Rasa server error: ${rasaResponse.status} ${rasaResponse.statusText}`, details: text });
+      }
+      rasaData = await rasaResponse.json();
+    } catch (rasaErr) {
+      console.error('[Chatbot API] Error connecting to Rasa server:', rasaErr);
+      return res.status(502).json({ error: 'Error connecting to Rasa server', details: rasaErr.message });
+    }
+    const reply = rasaData && rasaData.length > 0 ? rasaData.map(r => r.text).join(' ') : "Sorry, I didn't understand that.";
+    res.json({ reply });
+  } catch (err) {
+    console.error('[Chatbot API] Internal server error:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
+  }
+});
 app.use((req, res, next) => {
   next(createError(404));
 });

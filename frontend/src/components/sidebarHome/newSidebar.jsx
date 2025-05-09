@@ -27,6 +27,7 @@ const CoolSidebar = () => {
   const [showConversation, setShowConversation] = useState(false);
   const [activeItem, setActiveItem] = useState("Dashboard");
   const [error, setError] = useState(null);
+  const [chatsExpanded, setChatsExpanded] = useState(false);
   const navigate = useNavigate();
 
   // Navigation items
@@ -35,18 +36,19 @@ const CoolSidebar = () => {
     { title: "Assets", icon: FaTachometerAlt, href: "/Assets" },
     { title: "Notifications", icon: FaBell, href: "#", badge: 2 },
     { title: "Objective", icon: FaCog, href: "/ObjectiveManagement" },
-    { title: "Chat", icon: FaComments, href: "/chat" },
+    { title: "Chat", icon: FaQuestionCircle, href: "/chat" },
     { title: "Financial Statements", icon: FaFileInvoice, href: "/financial-statements" },
     { title: "Wallet", icon: FaWallet, href: "/Transaction" },
-    { title: "Help", icon: FaQuestionCircle, href: "#" },
     { title: "Invoice", icon: FaFileInvoice, href: userData?.userType === "BusinessOwner" ? "/owner-invoices" : "/invoice" },
     { title: "Add Project", icon: FaPlus, href: "/AddProject" },
     { title: "My Project", icon: FaProjectDiagram, href: "/MyProject" },
     { title: "Manager List", icon: FaUserFriends, href: "/ManagerList" },
     { title: "ProjectView", icon: FaUserFriends, href: "/ProjectView" },
     { title: "OwnerProjectsView", icon: FaUserFriends, href: "/OwnerProjectsView" },
-    { title: "Conversation Du Projet", icon: FaComments, href: "/conversation" },
+    { title: "Project Chat", icon: FaComments, href: "/conversation" },
     { title: "ToDoList", icon: FaComments, href: "/todolist" },
+    { title: "ChatBot", icon: FaComments, href: "/chatbot" },
+
   ];
 
   // Filter nav items based on user role
@@ -95,6 +97,10 @@ const CoolSidebar = () => {
 
   const toggleConversation = () => {
     setShowConversation((prev) => !prev);
+  };
+
+  const toggleChats = () => {
+    setChatsExpanded((prev) => !prev);
   };
 
   useEffect(() => {
@@ -155,6 +161,25 @@ const CoolSidebar = () => {
                 </a>
               </li>
             ))}
+            {chatsExpanded && (
+              <ul>
+                {chatItems.map((subItem) => (
+                  <li key={subItem.title}>
+                    <a
+                      href={subItem.href}
+                      className={activeItem === subItem.title ? "active" : ""}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleNavigation(subItem);
+                      }}
+                    >
+                      <subItem.icon />
+                      <span className={collapsed ? "hidden" : ""}>{subItem.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </ul>
           <div className="sidebar-home-footer">
             <a href="#" className="logout-btn" onClick={handleLogout}>

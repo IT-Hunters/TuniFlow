@@ -45,7 +45,7 @@ import Conversation from "./components/Project/Conversation";
 import Room from './components/Project/Room';
 import CreateRoomModal from './components/Project/CreateRoomModal';
 import ToDoList from './components/Project/ToDoList';
-
+import ChatBot from './components/Chatbot/Chatbot';
 function App() {
   return (
     <Router>
@@ -106,6 +106,8 @@ function App() {
         <Route path="/rooms/:projectId" element={<Room />} />
         <Route path="/CreateRoomModal" element={<CreateRoomModal />} />
         <Route path="/todolist" element={<ToDoList />} />
+        <Route path="/chatbot" element={<ChatBot />} />
+
       </Routes>
     </Router>
   );

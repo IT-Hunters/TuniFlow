@@ -6,11 +6,8 @@ const logger = async (req, res, next) => {
     const originalEnd = res.end;
   res.end = function (...args) {
     const responseTime = Date.now() - start;
-    let userId = req.user ? req.user.userId : null;
-    console.log('req.user:', req.user);
-    console.log('Request URL:', req.originalUrl);
-    console.log('Request Method:', req.method);
-    let projectId = req.user && req.user.project_id ? req.user.project_id : null
+    let userId = req.user ? req.user.userId : 'defaultUserId';
+    let projectId = req.user && req.user.project_id ? req.user.project_id : 'defaultProjectId';
     if (req.method === 'POST' && req.originalUrl.includes('/login') && res.statusCode === 200) {
       try {
         const responseBody = args[0] ? JSON.parse(args[0].toString()) : {};
