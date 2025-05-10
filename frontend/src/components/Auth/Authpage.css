@@ -343,14 +343,13 @@ h2:after {
 
 /* Blue box image */
 .auth-blue-image {
-  max-width: 300px;
+  max-width: 600px;
   /* Suppression du border-radius pour l'image */
   border-radius: 0;
   object-fit: cover;
   /* Suppression de l'ombre pour un effet transparent */
   box-shadow: none;
-  transition: transform 0.3s ease;
-  transform: scale(0.95);
+  transform: scale(3.5);
   /* Augmenter l'opacité pour une meilleure visibilité */
   opacity: 0.9;
   position: relative;
@@ -358,7 +357,7 @@ h2:after {
 }
 
 .auth-blue-box:hover .auth-blue-image {
-  transform: scale(1);
+  transform: scale(1.18);
 }
 
 .auth-loading-overlay {
