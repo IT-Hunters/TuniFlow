@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2h5N2s3c2ZqM2U3c2R3ZXJ2dTJqM2R4c2R4M2R4c2R4M2R4c2R4M2QmcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7bu8sRnYp0kA6i1i/giphy.gif" alt="Financial Management Animation" width="100%">
+  <img src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" alt="Financial Management Animation" width="100%">
 </p>
 
 # 💸 TuniFlow: Streamlining Tunisian Financial Management
