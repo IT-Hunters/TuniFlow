@@ -12,10 +12,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import Deposit from "./Depossit"; // Note: Fix typo in filename if needed (Depossit → Deposit)
+import Deposit from "./Depossit"; // Fixed typo (Depossit → Deposit)
 import Withdraw from "./Withdraw";
 import Transfer from "./Transfer";
-import SalaryScheduler from "./SalaryScheduler"; // Import SalaryScheduler
+import SalaryScheduler from "./SalaryScheduler";
 import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 import "./Tessst.css";
@@ -46,7 +46,7 @@ const Wallet = () => {
   const createWallet = async (userId, token) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/wallets/addWallet",
+        "http://localhost:3000/wallets/addWallet",
         { user_id: userId, type: "personal" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -58,7 +58,7 @@ const Wallet = () => {
 
   const fetchWallet = async (userId, token) => {
     try {
-      const response = await axios.get(`http://localhost:5000/wallets/user/${userId}`, {
+      const response = await axios.get(`http://localhost:3000/wallets/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.data || !response.data._id) {
@@ -75,11 +75,14 @@ const Wallet = () => {
 
   const fetchTransactions = async (walletId, token) => {
     try {
-      const response = await axios.get(`http://localhost:5000/transactions/getTransactions/${walletId}`, {
+      console.log(`Fetching transactions for walletId: ${walletId}`); // Debug log
+      const response = await axios.get(`http://localhost:3000/transactions/getTransactions/${walletId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("Transactions fetched:", response.data); // Debug log
       return response.data;
     } catch (error) {
+      console.error("Error fetching transactions:", error); // Debug log
       throw new Error(`Erreur lors de la récupération des transactions : ${error.message}`);
     }
   };
@@ -101,7 +104,9 @@ const Wallet = () => {
         currency: wallet.currency,
         transactions: transactions,
       });
+      console.log("Updated walletData:", { balance: wallet.balance, transactions: transactions.length }); // Debug log
     } catch (error) {
+      console.error("Error in fetchWalletData:", error); // Debug log
       setError(error.message || "Erreur lors de la récupération des données.");
     }
   };
@@ -183,8 +188,7 @@ const Wallet = () => {
                   <div className="wallet-card-title-left">
                     <span className="wallet-card-icon-wrapper">
                       <svg width="20" fill="currentColor" height="20" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1362 1185q0 153-99.5 263.5t-258.5 136.5v175q0 14-9 23t-23 9h-135q-13 0-22.5-9.5t-9.5-22.5v-175q-66-9-127.5-31t-101.5-44.5-74-48-46.5-37.5-17.5-18q-17-21-2-41l103-135q7-10 23-12 15-2 24 9l2 2q113 99 243 125 37 8 74 8 81 0 142.5-43t61.5-122q0-28-15-53t-33.5-42-58.5-37.5-66-32-80-32.5q-39-16-61.5-25t-61.5-26.5-62.5-31-56.5-35.5-53.5-42.5-43.5-49-35.5-58-21-66.5-8.5-78q0-138 98-242t255-134v-180q0-13 9.5-22.5t22.5-9.5h135q14 0 23 9t9 23v176q57 6 110.5 23t87 33.5 63.5 37.5 39 29 15 14q17 18 5 38l-81 146q-8 15-23 16-14 3-27-7-3-3-14.5-12t-39-26.5-58.5-32-74.5-26-85.5-11.5q-95 0-155 43t-60 111q0 26 8.5 48t29.5 41.5 39.5 33 56 31 60.5 27 70 27.5q53 20 81 31.5t76 35 75.5 42.5 62 50 53 63.5 31.5 76.5 13 94z">
-                        </path>
+                        <path d="M1362 1185q0 153-99.5 263.5t-258.5 136.5v175q0 14-9 23t-23 9h-135q-13 0-22.5-9.5t-9.5-22.5v-175q-66-9-127.5-31t-101.5-44.5-74-48-46.5-37.5-17.5-18q-17-21-2-41l103-135q7-10 23-12 15-2 24 9l2 2q113 99 243 125 37 8 74 8 81 0 142.5-43t61.5-122q0-28-15-53t-33.5-42-58.5-37.5-66-32-80-32.5q-39-16-61.5-25t-61.5-26.5-62.5-31-56.5-35.5-53.5-42.5-43.5-49-35.5-58-21-66.5-8.5-78q0-138 98-242t255-134v-180q0-13 9.5-22.5t22.5-9.5h135q14 0 23 9t9 23v176q57 6 110.5 23t87 33.5 63.5 37.5 39 29 15 14q17 18 5 38l-81 146q-8 15-23 16-14 3-27-7-3-3-14.5-12t-39-26.5-58.5-32-74.5-26-85.5-11.5q-95 0-155 43t-60 111q0 26 8.5 48t29.5 41.5 39.5 33 56 31 60.5 27 70 27.5q53 20 81 31.5t76 35 75.5 42.5 62 50 53 63.5 31.5 76.5 13 94z"></path>
                       </svg>
                     </span>
                     <p className="wallet-card-title-text">Total Balance</p>
@@ -217,7 +221,7 @@ const Wallet = () => {
                 <div className="wallet-card-data">
                   <p className="wallet-card-amount">
                     {walletData.transactions
-                      .filter(t => t.type === "income")
+                      .filter((t) => t.type === "income")
                       .reduce((sum, t) => sum + t.amount, 0)} {walletData.currency}
                   </p>
                   <div className="wallet-card-range">
@@ -245,7 +249,7 @@ const Wallet = () => {
                 <div className="wallet-card-data">
                   <p className="wallet-card-amount">
                     {walletData.transactions
-                      .filter(t => t.type === "expense")
+                      .filter((t) => t.type === "expense")
                       .reduce((sum, t) => sum + t.amount, 0)} {walletData.currency}
                   </p>
                   <div className="wallet-card-range">

@@ -32,10 +32,23 @@ const Chatbot = () => {
         body: JSON.stringify({ message: input })
       });
       const data = await response.json();
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", text: data.reply || "Sorry, I didn't understand that." }
-      ]);
+
+      if (data.balance) {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: `Your current balance is $${data.balance}.` }
+        ]);
+      } else if (data.taxes) {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: `Based on your balance, the estimated taxes are $${data.taxes}.` }
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: data.reply || "Sorry, I didn't understand that." }
+        ]);
+      }
     } catch {
       setMessages((prev) => [
         ...prev,

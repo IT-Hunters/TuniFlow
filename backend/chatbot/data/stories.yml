@@ -23,6 +23,16 @@ stories:
       - intent: ask_penalties
       - action: utter_ask_penalties
 
+  - story: ask balance
+    steps:
+      - intent: ask_balance
+      - action: utter_ask_balance
+
+  - story: calculate taxes
+    steps:
+      - intent: calculate_taxes
+      - action: utter_calculate_taxes
+
   - story: goodbye
     steps:
       - intent: goodbye

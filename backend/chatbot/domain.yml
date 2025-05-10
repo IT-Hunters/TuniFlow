@@ -4,6 +4,8 @@ intents:
   - ask_tax_deadline
   - ask_tax_exemption
   - ask_penalties
+  - ask_balance
+  - calculate_taxes
 
 responses:
   utter_greet:
@@ -18,6 +20,10 @@ responses:
     - text: "Tax exemptions depend on various criteria. Can you specify your case?"
   utter_ask_penalties:
     - text: "Penalties may apply for late tax payments. Would you like more information?"
+  utter_ask_balance:
+    - text: "Your current balance is $[balance]."
+  utter_calculate_taxes:
+    - text: "Based on your balance, the estimated taxes are $[taxes]."
 
 session_config:
   session_expiration_time: 60

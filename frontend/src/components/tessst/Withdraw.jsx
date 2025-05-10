@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./Tessst.css";
+import Swal from "sweetalert2";
 
 const Withdraw = ({ goBack, walletId }) => {
   const [amount, setAmount] = useState("");
@@ -32,11 +33,30 @@ const Withdraw = ({ goBack, walletId }) => {
         }
       );
 
+      if (response.data.fraud) {
+        Swal.fire({
+          icon: "warning",
+          title: "Fraud Alert",
+          text: response.data.message || "Suspicious transaction detected!",
+        });
+        setMessage("");
+        return;
+      }
+
       setMessage(`Retrait réussi ! Nouveau solde : ${response.data.newBalance}`);
       setAmount("");
       setTimeout(goBack, 2000);
     } catch (error) {
-      setMessage(error.response?.data?.message || "Erreur lors du retrait");
+      if (error.response?.data?.fraud) {
+        Swal.fire({
+          icon: "warning",
+          title: "Fraud Alert",
+          text: error.response.data.message || "Suspicious transaction detected!",
+        });
+        setMessage("");
+      } else {
+        setMessage(error.response?.data?.message || "Erreur lors du retrait");
+      }
     }
   };
 

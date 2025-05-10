@@ -261,7 +261,6 @@ app.use('/api/chatbot', express.json(), async (req, res) => {
       console.error('[Chatbot API] No message provided in request body:', req.body);
       return res.status(400).json({ error: 'No message provided' });
     }
-    // Forward the message to the Rasa server
     const fetch = require('node-fetch');
     let rasaResponse, rasaData;
     try {
@@ -280,7 +279,71 @@ app.use('/api/chatbot', express.json(), async (req, res) => {
       console.error('[Chatbot API] Error connecting to Rasa server:', rasaErr);
       return res.status(502).json({ error: 'Error connecting to Rasa server', details: rasaErr.message });
     }
-    const reply = rasaData && rasaData.length > 0 ? rasaData.map(r => r.text).join(' ') : "Sorry, I didn't understand that.";
+    let reply = rasaData && rasaData.length > 0 ? rasaData.map(r => r.text).join(' ') : "Sorry, I didn't understand that.";
+ 
+     // Inject real balance if needed
+     if (reply.includes('[balance]')) {
+     // Get user id from token if available
+     let userId = null;
+     let walletId = null;
+    try {
+     // Decode token to get userId
+     const authHeader = req.headers['authorization'];
+     if (authHeader && authHeader.startsWith('Bearer ')) {
+     const token = authHeader.split(' ')[1];
+     const decoded = require('jsonwebtoken').decode(token);
+     userId = decoded && decoded.userId ? decoded.userId : null;
+     }
+     if (userId) {
+     // Fetch wallet for user
+     const fetchWallet = await fetch(`http://localhost:3000/wallets/user/${userId}`);
+     if (fetchWallet.ok) {
+     const walletData = await fetchWallet.json();
+     walletId = walletData._id;
+     }
+     }
+     if (walletId) {
+     // Fetch balance using transaction route
+     const fetchBalance = await fetch(`http://localhost:3000/transactions/balance/${walletId}`);
+     if (fetchBalance.ok) {
+     const balanceData = await fetchBalance.json();
+     if (typeof balanceData.balance !== 'undefined') {
+     reply = reply.replace('[balance]', balanceData.balance);
+   }
+     }
+     }
+     } catch (balanceErr) {
+     console.error('[Chatbot API] Error fetching user balance:', balanceErr);
+     }
+     }
+    // Inject real taxes if needed
+    if (reply.includes('[taxes]')) {
+      try {
+        let userId = null;
+        if (req.headers.authorization) {
+          const jwt = require('jsonwebtoken');
+          const token = req.headers.authorization.replace('Bearer ', '');
+          const decoded = jwt.decode(token);
+          userId = decoded && decoded.userId ? decoded.userId : null;
+        }
+        if (userId) {
+          // Fetch balance first (needed for tax calculation)
+          const fetchBalance = await fetch(`http://localhost:3000/wallets/balance/user/${userId}`);
+          let balance = 0;
+          if (fetchBalance.ok) {
+            const balanceData = await fetchBalance.json();
+            if (typeof balanceData.balance !== 'undefined') {
+              balance = balanceData.balance;
+            }
+          }
+          // Simple tax calculation (e.g., 15% corporate tax)
+          const taxes = (balance * 0.15).toFixed(2);
+          reply = reply.replace('[taxes]', taxes);
+        }
+      } catch (taxErr) {
+        console.error('[Chatbot API] Error calculating taxes:', taxErr);
+      }
+    }
     res.json({ reply });
   } catch (err) {
     console.error('[Chatbot API] Internal server error:', err);

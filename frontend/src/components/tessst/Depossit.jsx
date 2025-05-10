@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./Tessst.css";
+import Swal from "sweetalert2";
 
 const Deposit = ({ goBack, walletId }) => {
   const [amount, setAmount] = useState("");
@@ -38,13 +39,32 @@ const Deposit = ({ goBack, walletId }) => {
         }
       );
 
+      if (response.data.fraud) {
+        Swal.fire({
+          icon: "warning",
+          title: "Fraud Alert",
+          text: response.data.message || "Suspicious transaction detected!",
+        });
+        setMessage("");
+        return;
+      }
+
       setMessage(`Dépôt réussi ! Nouveau solde : ${response.data.newBalance}`);
       setAmount("");
       setIsTaxable(false);
       setVatRate(0.19);
       setTimeout(goBack, 2000);
     } catch (error) {
-      setMessage(error.response?.data?.message || "Erreur lors du dépôt");
+      if (error.response?.data?.fraud) {
+        Swal.fire({
+          icon: "warning",
+          title: "Fraud Alert",
+          text: error.response.data.message || "Suspicious transaction detected!",
+        });
+        setMessage("");
+      } else {
+        setMessage(error.response?.data?.message || "Erreur lors du dépôt");
+      }
     }
   };
 

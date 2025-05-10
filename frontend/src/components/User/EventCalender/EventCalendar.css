@@ -176,6 +176,7 @@
   background-color: #3b82f6;
   color: white;
   font-size: 18px;
+  font-weight: bold;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -191,8 +192,10 @@
 
 .add-event-btn:disabled {
   background-color: #cbd5e1;
+  color: white;
   cursor: not-allowed;
   box-shadow: none;
+  opacity: 0.6;
 }
 
 .selected-date-events {
@@ -252,6 +255,13 @@
 
 .add-event-btn:disabled {
   background-color: #cbd5e1; /* Light gray */
+  color: white;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
+.add-event-btn:disabled {
+  background-color: #cbd5e1;
   color: white;
   cursor: not-allowed;
   box-shadow: none;

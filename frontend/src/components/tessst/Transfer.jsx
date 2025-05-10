@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Tessst.css";
+import Swal from "sweetalert2";
 
 const Transfer = ({ goBack, walletId }) => {
   const [amount, setAmount] = useState("");
@@ -65,6 +66,16 @@ const Transfer = ({ goBack, walletId }) => {
         }
       );
 
+      if (response.data.fraud) {
+        Swal.fire({
+          icon: "warning",
+          title: "Fraud Alert",
+          text: response.data.message || "Suspicious transaction detected!",
+        });
+        setMessage("");
+        return;
+      }
+
       setMessage(`Transfert réussi ! Nouveau solde : ${response.data.senderTransaction.balanceAfterTransaction}`);
       setAmount("");
       setReceiverWalletId("");
@@ -72,7 +83,16 @@ const Transfer = ({ goBack, walletId }) => {
       setVatRate(0.19);
       setTimeout(goBack, 2000);
     } catch (error) {
-      setMessage(error.response?.data?.message || "Erreur lors du transfert");
+      if (error.response?.data?.fraud) {
+        Swal.fire({
+          icon: "warning",
+          title: "Fraud Alert",
+          text: error.response.data.message || "Suspicious transaction detected!",
+        });
+        setMessage("");
+      } else {
+        setMessage(error.response?.data?.message || "Erreur lors du transfert");
+      }
     }
   };
 

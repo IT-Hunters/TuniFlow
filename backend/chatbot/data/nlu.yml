@@ -36,6 +36,18 @@ nlu:
       - What happens if I pay taxes late?
       - Late declaration penalty
 
+  - intent: ask_balance
+    examples: |
+      - What is my current balance?
+      - Show me my wallet balance
+      - How much money do I have?
+
+  - intent: calculate_taxes
+    examples: |
+      - Calculate my taxes
+      - How much tax do I owe?
+      - Tax calculation based on my balance
+
   - intent: goodbye
     examples: |
       - Goodbye

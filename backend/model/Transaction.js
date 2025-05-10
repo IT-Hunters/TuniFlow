@@ -34,6 +34,14 @@ const transactionSchema = new mongoose.Schema({
     type: Number,
     default: 0, // Taux de TVA (ex. : 0.19, 0.07, 0.13, 0.0)
   },
+  is_flagged_fraud: {
+    type: Boolean,
+    default: false,
+  },
+  fraud_reason: {
+    type: String,
+    default: null,
+  },
 });
 
 module.exports = mongoose.model("Transaction", transactionSchema);
