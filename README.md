@@ -5,7 +5,6 @@
 # 💸 TuniFlow: Streamlining Tunisian Financial Management
 
 📧 Contact: tuniflow.team@gmail.com  
-🌐 [GitHub Repository](https://github.com/ITHunster/TuniFlow) *(Update with your actual repo link)*
 
 ---
 
@@ -101,21 +100,16 @@ Our mission is clear: **turn financial complexity into clarity**.
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/ITHunster/TuniFlow.git
+git clone 'https://github.com/ITHunster/TuniFlow.git'
 cd tuniflow
 
 # 2. Backend Setup
-cd tuniflow-backend
+cd backend
 npm install
 cd ..
 
 # 3. Frontend Setup
-cd tuniflow-frontend
+cd frontend
 npm install
 cd ..
 
-# 4. AI Setup
-cd tuniflow-ai
-python -m venv venv
-source venv/bin/activate     # or venv\Scripts\activate on Windows
-pip install -r requirements.txt
