@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import Navbarr from '../Navbarr/navbarr';
 import Footer from '../Footer/Footer';
@@ -6,6 +6,8 @@ import donation1 from '../assets/donation1.png';
 import donation2 from '../assets/donation2.png';
 import donation3 from '../assets/donation3.png';
 import { FaUser, FaChartLine, FaCalculator, FaBell, FaShieldAlt, FaRocket, FaLightbulb, FaHandshake, FaHeart } from 'react-icons/fa';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -250,110 +252,106 @@ const FAQItem = styled.div`
   }
 `;
 
-const Home = () => {
-    return (
-      <>
-        <GlobalStyle />
-        <Navbarr />
-        <HomeContainer>
-          {/* Hero Section */}
-          <HeroSection>
-            <HeroText>
-              <h1>TuniFlow</h1>
-              <p>
-                Your financial Status is Our Goal
-              </p>
-              <CallToAction href="/signup">Get Started</CallToAction>
-             
-            </HeroText>
-            <SliderContainer>
-              <Slide1 src={donation1} alt="Financial Precision" />
-              <Slide2 src={donation2} alt="Professional Tools" />
-              <Slide3 src={donation3} alt="Insightful Analytics" />
-            </SliderContainer>
-          </HeroSection>
+const HomePage = () => {
+  useEffect(() => {
+    AOS.init({ duration: 1200 });
+  }, []);
 
-        {/* Features Section */}
-        <SectionWrapper>
-          <SectionTitle>Why Choose TuniFlow?</SectionTitle>
+  return (
+    <>
+      <GlobalStyle />
+      <Navbarr />
+      <HomeContainer>
+        {/* HERO SECTION */}
+        <HeroSection>
+          <HeroText data-aos="fade-right">
+            <h1>Empower Your Finances with TuniFlow</h1>
+            <p>
+              Simplify your financial journey with our intuitive platform. Manage your assets, track expenses, and achieve your goals with confidence.
+            </p>
+            <CallToAction href="#features">Get Started</CallToAction>
+            <HeroStats>
+              <span>10K+ Users</span>
+              <span>99.9% Uptime</span>
+              <span>24/7 Support</span>
+            </HeroStats>
+          </HeroText>
+          <SliderContainer data-aos="fade-left">
+            <Slide1 src={donation1} alt="Donation 1" />
+            <Slide2 src={donation2} alt="Donation 2" />
+            <Slide3 src={donation3} alt="Donation 3" />
+          </SliderContainer>
+        </HeroSection>
+
+        {/* ===== FEATURES SECTION ===== */}
+        <SectionWrapper id="features">
+          <SectionTitle>Key Features</SectionTitle>
           <FeaturesGrid>
             <FeatureCard>
-              <FeatureIcon><FaUser /></FeatureIcon>
-              <FeatureTitle>Account Management</FeatureTitle>
-              <FeatureText>Effortlessly manage your accounts with advanced tools.</FeatureText>
-            </FeatureCard>
-            <FeatureCard>
               <FeatureIcon><FaChartLine /></FeatureIcon>
-              <FeatureTitle>Investment Tracking</FeatureTitle>
-              <FeatureText>Track your investments with real-time analytics.</FeatureText>
+              <FeatureTitle>Real-Time Analytics</FeatureTitle>
+              <FeatureText>Monitor your financial performance with up-to-date dashboards and insightful reports.</FeatureText>
             </FeatureCard>
             <FeatureCard>
               <FeatureIcon><FaCalculator /></FeatureIcon>
-              <FeatureTitle>Budget Planning</FeatureTitle>
-              <FeatureText>Create and manage budgets with ease.</FeatureText>
+              <FeatureTitle>Automated Invoicing</FeatureTitle>
+              <FeatureText>Generate, send, and track invoices automatically to save time and reduce errors.</FeatureText>
             </FeatureCard>
             <FeatureCard>
               <FeatureIcon><FaBell /></FeatureIcon>
-              <FeatureTitle>Smart Alerts</FeatureTitle>
-              <FeatureText>Stay informed with personalized notifications.</FeatureText>
+              <FeatureTitle>Smart Notifications</FeatureTitle>
+              <FeatureText>Stay informed with timely alerts for important deadlines, payments, and updates.</FeatureText>
             </FeatureCard>
             <FeatureCard>
               <FeatureIcon><FaShieldAlt /></FeatureIcon>
-              <FeatureTitle>Security</FeatureTitle>
-              <FeatureText>Your data is protected with top-tier security.</FeatureText>
-            </FeatureCard>
-            <FeatureCard>
-              <FeatureIcon><FaRocket /></FeatureIcon>
-              <FeatureTitle>Fast Onboarding</FeatureTitle>
-              <FeatureText>Get started in minutes with our intuitive platform.</FeatureText>
+              <FeatureTitle>Secure Data</FeatureTitle>
+              <FeatureText>Your data is protected with industry-leading security and privacy standards.</FeatureText>
             </FeatureCard>
           </FeaturesGrid>
         </SectionWrapper>
-
-        {/* Core Values Section */}
-        <CoreValuesSection>
+        {/* ===== CORE VALUES SECTION ===== */}
+        <CoreValuesSection id="core-values">
           <SectionTitle>Our Core Values</SectionTitle>
           <CoreValuesGrid>
             <ValueCard>
-              <ValueIcon><FaLightbulb /></ValueIcon>
-              <ValueTitle>Innovation</ValueTitle>
-              <ValueText>We constantly innovate to provide cutting-edge financial solutions.</ValueText>
+              <FeatureIcon><FaLightbulb /></FeatureIcon>
+              <FeatureTitle>Innovation</FeatureTitle>
+              <FeatureText>We embrace creativity and strive to deliver cutting-edge solutions for our users.</FeatureText>
             </ValueCard>
             <ValueCard>
-              <ValueIcon><FaHandshake /></ValueIcon>
-              <ValueTitle>Integrity</ValueTitle>
-              <ValueText>We prioritize honesty and transparency in everything we do.</ValueText>
+              <FeatureIcon><FaHandshake /></FeatureIcon>
+              <FeatureTitle>Integrity</FeatureTitle>
+              <FeatureText>Honesty and transparency guide every decision we make and every interaction we have.</FeatureText>
             </ValueCard>
             <ValueCard>
-              <ValueIcon><FaHeart /></ValueIcon>
-              <ValueTitle>Customer Focus</ValueTitle>
-              <ValueText>Your success is our top priority. We listen, adapt, and deliver.</ValueText>
+              <FeatureIcon><FaHeart /></FeatureIcon>
+              <FeatureTitle>Customer-Centric</FeatureTitle>
+              <FeatureText>Your satisfaction is our top priority. We listen, adapt, and grow with your needs.</FeatureText>
             </ValueCard>
           </CoreValuesGrid>
         </CoreValuesSection>
-
-        {/* FAQ Section */}
-        <FAQSection>
+        {/* ===== FAQ SECTION ===== */}
+        <SectionWrapper id="faq" align="left">
           <SectionTitle>Frequently Asked Questions</SectionTitle>
-          <FAQList>
-            <FAQItem>
-              <h3>Is TuniFlow free to use?</h3>
-              <p>Yes, TuniFlow offers a free plan with premium features available for advanced users.</p>
-            </FAQItem>
-            <FAQItem>
-              <h3>How secure is my data?</h3>
-              <p>We use industry-leading encryption and security protocols to protect your data.</p>
-            </FAQItem>
-            <FAQItem>
-              <h3>Can I use TuniFlow on multiple devices?</h3>
-              <p>Absolutely! TuniFlow is accessible on all your devices, anytime, anywhere.</p>
-            </FAQItem>
-          </FAQList>
-        </FAQSection>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <div style={{ marginBottom: '32px' }}>
+              <FeatureTitle>How secure is my data on TuniFlow?</FeatureTitle>
+              <FeatureText>We use advanced encryption and strict access controls to ensure your data is always safe and private.</FeatureText>
+            </div>
+            <div style={{ marginBottom: '32px' }}>
+              <FeatureTitle>Can I integrate TuniFlow with other tools?</FeatureTitle>
+              <FeatureText>Yes, TuniFlow supports integrations with popular accounting and productivity platforms for seamless workflows.</FeatureText>
+            </div>
+            <div style={{ marginBottom: '32px' }}>
+              <FeatureTitle>Is there customer support available?</FeatureTitle>
+              <FeatureText>Our support team is available 24/7 via email and live chat to assist you with any questions or issues.</FeatureText>
+            </div>
+          </div>
+        </SectionWrapper>
       </HomeContainer>
       <Footer />
     </>
   );
 };
 
-export default Home;
+export default HomePage;

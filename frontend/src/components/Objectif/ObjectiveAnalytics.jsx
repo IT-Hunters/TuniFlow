@@ -10,8 +10,10 @@ import {
   Title,
   Tooltip,
   Legend,
-  CategoryScale
+  CategoryScale,
+  Filler
 } from 'chart.js';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import 'chartjs-adapter-date-fns';
 
 ChartJS.register(
@@ -22,7 +24,9 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  CategoryScale
+  CategoryScale,
+  Filler,
+  annotationPlugin
 );
 
 const ObjectiveAnalytics = ({ objectiveId }) => {
@@ -96,7 +100,13 @@ const ObjectiveAnalytics = ({ objectiveId }) => {
           y: entry.progress,
         })),
         borderColor: '#5a67d8',
-        backgroundColor: 'rgba(90, 103, 216, 0.1)',
+        backgroundColor: (context) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+          gradient.addColorStop(0, 'rgba(90, 103, 216, 0.3)');
+          gradient.addColorStop(1, 'rgba(90, 103, 216, 0.05)');
+          return gradient;
+        },
         fill: true,
         tension: 0.4,
         pointBackgroundColor: analytics.progressHistory.map(entry => {
@@ -108,6 +118,18 @@ const ObjectiveAnalytics = ({ objectiveId }) => {
           return isAnomaly ? 8 : 4;
         }),
         borderWidth: 2,
+        segment: {
+          borderColor: ctx => {
+            const i = ctx.p0DataIndex;
+            const isAnomaly = anomalies.find(anomaly => analytics.progressHistory[i+1] && anomaly.date === analytics.progressHistory[i+1].date);
+            return isAnomaly ? '#f56565' : '#5a67d8';
+          },
+          borderDash: ctx => {
+            const i = ctx.p0DataIndex;
+            const isAnomaly = anomalies.find(anomaly => analytics.progressHistory[i+1] && anomaly.date === analytics.progressHistory[i+1].date);
+            return isAnomaly ? [8, 6] : undefined;
+          }
+        }
       },
     ],
   };
@@ -161,7 +183,7 @@ const ObjectiveAnalytics = ({ objectiveId }) => {
         },
       },
       tooltip: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
         titleColor: '#1a202c',
         bodyColor: '#1a202c',
         borderColor: '#e2e8f0',
@@ -171,9 +193,46 @@ const ObjectiveAnalytics = ({ objectiveId }) => {
           size: 14,
         },
         callbacks: {
-          label: (context) => `Progress: ${context.parsed.y}%`,
+          label: (context) => {
+            const anomaly = anomalies.find(a => new Date(a.date).getTime() === context.parsed.x.getTime());
+            let label = `Progress: ${context.parsed.y}%`;
+            if (anomaly) {
+              label += ` (Anomaly: ${anomaly.changePercent}% change)`;
+            }
+            return label;
+          },
         },
+        displayColors: true,
+        mode: 'nearest',
+        intersect: false,
       },
+      annotation: {
+        annotations: anomalies.map((anomaly, idx) => ({
+          type: 'line',
+          scaleID: 'x',
+          value: new Date(anomaly.date),
+          borderColor: '#f56565',
+          borderWidth: 2,
+          borderDash: [6, 6],
+          label: {
+            content: `Anomaly (${anomaly.changePercent}%)`,
+            enabled: true,
+            position: 'start',
+            backgroundColor: '#f56565',
+            color: '#fff',
+            font: { size: 10, weight: 'bold' },
+            yAdjust: -20,
+          },
+        }))
+      }
+    },
+    interaction: {
+      mode: 'nearest',
+      intersect: false,
+    },
+    hover: {
+      mode: 'nearest',
+      intersect: false,
     },
   };
 
