@@ -75,7 +75,7 @@ const server = http.createServer(app);
 
 global.io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5000"],
+    origin: ["http://localhost:5173", "http://localhost:5000",, 'https://tuniflow.netlify.app/'],
     methods: ["GET", "POST"],
   },
 });
@@ -190,6 +190,14 @@ app.use((err, req, res, next) => {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
   res.status(err.status || 500);
   res.render('error');
+});
+
+app.post('/api/test2', (req, res) => {
+  const requestBody = req.body;
+  res.status(200).json({
+    message: 'POST test endpoint working!',
+    receivedData: requestBody,
+  });
 });
 
 module.exports = app;
