@@ -23,7 +23,7 @@ const Sidebar = () => {
     };
 
   return (
-    <nav className="sidebar">
+    <nav className="sidebar_admin">
       <div className="brand">TUNIFLOW</div>
       <ul>
         <li><a href="/dashboard">Dashboard</a></li>
