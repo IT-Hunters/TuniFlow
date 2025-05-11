@@ -1,3 +1,4 @@
+"use client"
 import { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";
