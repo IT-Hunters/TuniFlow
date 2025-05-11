@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "./node_modules/.bin/netlify-lambda serve src",
     "test": "mocha 'test/*.test.js'",
-    "build": "npm install"
+    "build": "./node_modules/.bin/netlify-lambda build src"
   },
   "dependencies": {
     "bcryptjs": "^3.0.1",
