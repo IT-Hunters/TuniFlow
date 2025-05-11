@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Navbar from '../navbar/Navbar';
-import Sidebar from '../sidebar/Sidebar';
+import Navbar from '../navbarHome/NavbarHome';
+import Sidebar from '../sidebarHome/newSidebar';
 import './EditProfile.css';
 
 const EditProfile = () => {
