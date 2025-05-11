@@ -18,7 +18,7 @@ var projectRouter = require('./routes/project.router');
 var taxeRoutes = require('./routes/taxeRoutes');
 var transactionRoutes = require('./routes/transactionRoutes');
 var walletRoutes = require('./routes/walletRoutes');
-var chatRouter = require('./routes/chatRoutes');
+var chatRouter = require('./routes/ChatRoutes');
 var userLogsRoutes = require('./routes/UserLogsRoutes');
 var logsRoutes = require('./routes/logsRoutes');
 
