@@ -1,2 +1,11 @@
 [build]
-  functions = "functions"
+  base = "backend"
+  command = "npm run build"
+  publish = "backend/public"
+  functions = "backend/netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
