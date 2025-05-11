@@ -8,6 +8,7 @@ const cors = require('cors');
 const { Server } = require("socket.io");
 const logs = require('./middleware/Logger');
 var indexRouter = require('./routes/index');
+const serverless = require('serverless-http');
 var usersRouter = require('./routes/users');
 var invoiceRouter = require('./routes/invoiceRoutes');
 var ObjectifRouter = require('./routes/ObjectifRoutes');
@@ -192,4 +193,4 @@ app.use((err, req, res, next) => {
   res.render('error');
 });
 
-module.exports = app;
+module.exports.handler = serverless(app);
