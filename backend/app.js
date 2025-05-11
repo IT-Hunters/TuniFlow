@@ -199,5 +199,7 @@ app.post('/api/test2', (req, res) => {
     receivedData: requestBody,
   });
 });
+const serverless = require('serverless-http');
+module.exports.handler = serverless(app);
 
 module.exports = app;
