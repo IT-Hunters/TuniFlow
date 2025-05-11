@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "@fullcalendar/core": "^6.1.17",
+    "@fullcalendar/daygrid": "^6.1.17",
+    "@fullcalendar/interaction": "^6.1.17",
+    "@fullcalendar/react": "^6.1.17",
     "axios": "^1.8.3",
     "react-toastify": "^11.0.5",
     "socket.io-client": "^4.8.1"

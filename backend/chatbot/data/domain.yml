@@ -1,0 +1,27 @@
+version: "3.1"
+
+intents:
+  - greet
+  - ask_tax_rate
+  - ask_tax_deadline
+  - ask_tax_exemption
+  - ask_penalties
+  - goodbye
+
+responses:
+  utter_greet:
+    - text: "Hello! How can I assist you with Tunisian tax information today?"
+  utter_ask_tax_rate:
+    - text: "The VAT rate in Tunisia is typically 19%. Corporate and income tax rates vary; do you want details on a specific type?"
+  utter_ask_tax_deadline:
+    - text: "Tax declaration deadlines depend on the type of tax. For VAT, it is usually the 28th of each month."
+  utter_ask_tax_exemption:
+    - text: "Certain startups and individuals may be eligible for tax exemptions. Please specify your case for more details."
+  utter_ask_penalties:
+    - text: "Penalties for late tax payment can include fines and interest. The exact amount depends on the delay and tax type."
+  utter_goodbye:
+    - text: "Goodbye! If you have more questions about Tunisian taxes, feel free to ask."
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

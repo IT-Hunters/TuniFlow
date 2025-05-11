@@ -124,3 +124,99 @@ export default function EventCalendar() {
     </div>
   );
 }
+/*import React, { useState } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import "./EventCalendar.css";
+
+export default function EventCalendar() {
+  const [events, setEvents] = useState([
+    { id: "1", title: "Financial Review", date: "2025-03-15", color: "#4f46e5" },
+    { id: "2", title: "Budget Planning", date: "2025-03-20", color: "#0ea5e9" },
+    { id: "3", title: "Team Meeting", date: "2025-03-28", color: "#10b981" },
+  ]);
+  const [newEventTitle, setNewEventTitle] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const handleDateClick = (arg) => {
+    setSelectedDate(arg.dateStr);
+  };
+
+  const handleEventAdd = () => {
+    if (newEventTitle.trim() !== "" && selectedDate) {
+      setEvents([
+        ...events,
+        {
+          id: Date.now().toString(),
+          title: newEventTitle,
+          date: selectedDate,
+          color: getRandomColor(),
+        },
+      ]);
+      setNewEventTitle("");
+    }
+  };
+
+  const getRandomColor = () => {
+    const colors = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444"];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  return (
+    <div className="calendar-card">
+      <div className="calendar-header">
+        <h2 className="calendar-title">Event Calendar</h2>
+        <p className="calendar-description">Schedule and track important events</p>
+      </div>
+      <div className="calendar-content">
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          events={events}
+          dateClick={handleDateClick}
+          eventDisplay="block"
+          height="auto"
+        />
+      </div>
+      <div className="calendar-footer">
+        <div className="event-form">
+          <input
+            type="text"
+            className="event-input"
+            placeholder={selectedDate ? `Add event on ${selectedDate}` : "Select a date from calendar"}
+            value={newEventTitle}
+            onChange={(e) => setNewEventTitle(e.target.value)}
+            disabled={!selectedDate}
+          />
+          <button
+            className="add-event-btn"
+            onClick={handleEventAdd}
+            disabled={!selectedDate || newEventTitle.trim() === ""}
+          >
+            +
+          </button>
+        </div>
+        {selectedDate && (
+          <div className="selected-date-events">
+            <div className="selected-date">Events on {selectedDate}</div>
+            <div className="event-list">
+              {events.filter((event) => event.date === selectedDate).length === 0 ? (
+                <div className="event-item">No events</div>
+              ) : (
+                events
+                  .filter((event) => event.date === selectedDate)
+                  .map((event) => (
+                    <div key={event.id} className="event-item">
+                      <div className="event-color" style={{ backgroundColor: event.color }}></div>
+                      <span className="event-title">{event.title}</span>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}*/

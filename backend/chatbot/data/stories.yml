@@ -1,0 +1,39 @@
+version: "3.1"
+
+stories:
+  - story: greet and ask tax rate
+    steps:
+      - intent: greet
+      - action: utter_greet
+      - intent: ask_tax_rate
+      - action: utter_ask_tax_rate
+
+  - story: ask tax deadline
+    steps:
+      - intent: ask_tax_deadline
+      - action: utter_ask_tax_deadline
+
+  - story: ask tax exemption
+    steps:
+      - intent: ask_tax_exemption
+      - action: utter_ask_tax_exemption
+
+  - story: ask penalties
+    steps:
+      - intent: ask_penalties
+      - action: utter_ask_penalties
+
+  - story: ask balance
+    steps:
+      - intent: ask_balance
+      - action: utter_ask_balance
+
+  - story: calculate taxes
+    steps:
+      - intent: calculate_taxes
+      - action: utter_calculate_taxes
+
+  - story: goodbye
+    steps:
+      - intent: goodbye
+      - action: utter_goodbye

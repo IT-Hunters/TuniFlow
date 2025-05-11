@@ -1,0 +1,30 @@
+intents:
+  - greet
+  - goodbye
+  - ask_tax_deadline
+  - ask_tax_exemption
+  - ask_penalties
+  - ask_balance
+  - calculate_taxes
+
+responses:
+  utter_greet:
+    - text: "Hello! How can I help you today?"
+  utter_goodbye:
+    - text: "Goodbye! Have a great day."
+  utter_ask_tax_rate:
+    - text: "The tax rate depends on your situation. Could you provide more details?"
+  utter_ask_tax_deadline:
+    - text: "The tax deadline is usually at the end of the fiscal year. Please check the official website for exact dates."
+  utter_ask_tax_exemption:
+    - text: "Tax exemptions depend on various criteria. Can you specify your case?"
+  utter_ask_penalties:
+    - text: "Penalties may apply for late tax payments. Would you like more information?"
+  utter_ask_balance:
+    - text: "Your current balance is $[balance]."
+  utter_calculate_taxes:
+    - text: "Based on your balance, the estimated taxes are $[taxes]."
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

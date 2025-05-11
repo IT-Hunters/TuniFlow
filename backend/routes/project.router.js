@@ -79,4 +79,6 @@ router.get("/my-project",
     getMyProject
   );
   router.get("/getbyid/:id", getbyid);
+// Route for dashboard project statistics
+router.get('/stats', getProjectStats);
 module.exports = router;

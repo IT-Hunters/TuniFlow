@@ -1,6 +1,6 @@
 /* ----- Navbar ----- */
-.navbar {
-  background-color: #081c37;
+.navbar_admin {
+  background: linear-gradient(135deg, #1E3A8A, #1E90FF 100%);
   border-bottom: 1px solid #1a3b6e;
   padding: 0.75rem 1rem;
   display: flex;
@@ -9,21 +9,21 @@
   position: relative;
 }
 
-.navbar .welcome-text {
+.navbar_admin .welcome-text {
   font-size: 1.1rem;
   font-weight: 500;
   color: #fff;
 }
 
 /* ----- Profile Section ----- */
-.navbar .profile-area {
+.navbar_admin .profile-area {
   display: flex;
   align-items: center;
   gap: 1rem;
   position: relative;
 }
 
-.navbar .profile-menu {
+.navbar_admin .profile-menu {
   display: flex;
   align-items: center;
   cursor: pointer;

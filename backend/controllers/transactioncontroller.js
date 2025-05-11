@@ -4,7 +4,6 @@ const Project = require("../model/Project");
 const Transaction = require("../model/Transaction");
 const mongoose = require("mongoose");
 
-
 exports.deposit = async (req, res, io) => {
   try {
     const { walletId } = req.params;
@@ -19,8 +18,24 @@ exports.deposit = async (req, res, io) => {
       return res.status(404).json({ message: "Wallet not found" });
     }
 
-    const transactions = await Transaction.find({ wallet_id: walletId });
-    const balance = transactions.reduce((acc, t) => acc + (t.type === "income" ? t.amount : -t.amount), 0);
+    // Fraud detection logic
+    const transactions = await Transaction.find({ wallet_id: walletId, type: "income" });
+    let isFraud = false;
+    let fraudReason = null;
+    if (transactions.length >= 3) {
+      const amounts = transactions.map(t => t.amount);
+      const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+      const std = Math.sqrt(amounts.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / amounts.length);
+      if (Math.abs(amount - mean) > 2 * std) {
+        isFraud = true;
+        fraudReason = `Deposit amount deviates significantly from your usual pattern (mean: ${mean.toFixed(2)}, std: ${std.toFixed(2)}).`;
+      }
+    }
+    if (isFraud) {
+      return res.status(403).json({ message: `Transaction declined: ${fraudReason}`, fraud: true });
+    }
+
+    const balance = transactions.reduce((acc, t) => acc + t.amount, 0) + (await Transaction.find({ wallet_id: walletId, type: "expense" })).reduce((acc, t) => acc - t.amount, 0);
 
     const transaction = new Transaction({
       wallet_id: walletId,
@@ -30,6 +45,8 @@ exports.deposit = async (req, res, io) => {
       date: req.body.date || Date.now(),
       is_taxable,
       vat_rate,
+      is_flagged_fraud: false,
+      fraud_reason: null,
     });
 
     await transaction.save();
@@ -62,8 +79,24 @@ exports.withdraw = async (req, res, io) => {
       return res.status(400).json({ message: "Insufficient funds" });
     }
 
-    const transactions = await Transaction.find({ wallet_id: walletId });
-    const balance = transactions.reduce((acc, t) => acc + (t.type === "income" ? t.amount : -t.amount), 0);
+    // Fraud detection logic
+    const transactions = await Transaction.find({ wallet_id: walletId, type: "expense" });
+    let isFraud = false;
+    let fraudReason = null;
+    if (transactions.length >= 3) {
+      const amounts = transactions.map(t => t.amount);
+      const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+      const std = Math.sqrt(amounts.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / amounts.length);
+      if (Math.abs(amount - mean) > 2 * std) {
+        isFraud = true;
+        fraudReason = `Withdrawal amount deviates significantly from your usual pattern (mean: ${mean.toFixed(2)}, std: ${std.toFixed(2)}).`;
+      }
+    }
+    if (isFraud) {
+      return res.status(403).json({ message: `Transaction declined: ${fraudReason}`, fraud: true });
+    }
+
+    const balance = (await Transaction.find({ wallet_id: walletId, type: "income" })).reduce((acc, t) => acc + t.amount, 0) - transactions.reduce((acc, t) => acc + t.amount, 0);
 
     const transaction = new Transaction({
       wallet_id: walletId,
@@ -71,6 +104,8 @@ exports.withdraw = async (req, res, io) => {
       type: "expense",
       balanceAfterTransaction: balance - amount,
       date: req.body.date || Date.now(),
+      is_flagged_fraud: false,
+      fraud_reason: null,
     });
 
     await transaction.save();
@@ -105,6 +140,23 @@ exports.transfer = async (req, res) => {
       return res.status(400).json({ message: "Insufficient funds" });
     }
 
+    // Fraud detection logic for sender
+    const senderTransactions = await Transaction.find({ wallet_id: senderWalletId, type: "expense" });
+    let isFraud = false;
+    let fraudReason = null;
+    if (senderTransactions.length >= 3) {
+      const amounts = senderTransactions.map(t => t.amount);
+      const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+      const std = Math.sqrt(amounts.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / amounts.length);
+      if (Math.abs(amount - mean) > 2 * std) {
+        isFraud = true;
+        fraudReason = `Transfer amount deviates significantly from your usual pattern (mean: ${mean.toFixed(2)}, std: ${std.toFixed(2)}).`;
+      }
+    }
+    if (isFraud) {
+      return res.status(403).json({ message: `Transaction declined: ${fraudReason}`, fraud: true });
+    }
+
     const newSenderBalance = senderWallet.balance - amount;
     const newReceiverBalance = receiverWallet.balance + amount;
 
@@ -114,6 +166,8 @@ exports.transfer = async (req, res) => {
       type: "expense",
       balanceAfterTransaction: newSenderBalance,
       date: Date.now(),
+      is_flagged_fraud: false,
+      fraud_reason: null,
     });
 
     const receiverTransaction = new Transaction({
@@ -124,6 +178,8 @@ exports.transfer = async (req, res) => {
       date: Date.now(),
       is_taxable,
       vat_rate,
+      is_flagged_fraud: false,
+      fraud_reason: null,
     });
 
     await senderTransaction.save();
@@ -147,11 +203,29 @@ exports.transfer = async (req, res) => {
 
 exports.getTransactions = async (req, res) => {
   try {
-    //const { walletId } = req.params;
-    const walletId = "681aa801c014b93b9b45aa94";
-    
+    const { walletId } = req.params; // Use dynamic walletId from request
     const transactions = await Transaction.find({ wallet_id: walletId });
     res.status(200).json(transactions);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getTransactionByWalletId = async (req, res) => {
+  try {
+    const { walletId } = req.params;
+    const transaction = await Transaction.find({ wallet_id: walletId });
+
+    if (!transaction || transaction.length === 0) {
+      return res.status(404).json({ 
+        message: "Transaction not found for this wallet" 
+      });
+    }
+
+    res.status(200).json({
+      message: "Transaction retrieved successfully",
+      data: transaction
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -176,8 +250,6 @@ exports.getBalance = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
 
 exports.cancelTransaction = async (req, res) => {
   try {
@@ -333,8 +405,8 @@ exports.getRevenue = async (req, res) => {
       if (!project.wallet) {
           return res.status(404).json({ message: "No wallet associated with this project" });
       }
-      //const walletId = project.wallet;
-      const walletId = "681aa801c014b93b9b45aa94";
+      const walletId = project.wallet;
+      // const walletId = "681aa801c014b93b9b45aa94"; // Removed hardcoded value
       console.log("Wallet ID:", walletId);
 
       // Fetch all income transactions for the wallet
@@ -410,8 +482,8 @@ exports.getExpenses = async (req, res) => {
         if (!project.wallet) {
             return res.status(404).json({ message: "No wallet associated with this project" });
         }
-       // const walletId = project.wallet;
-        const walletId = "681aa801c014b93b9b45aa94";
+        const walletId = project.wallet;
+        // const walletId = "681aa801c014b93b9b45aa94"; // Removed hardcoded value
         console.log("Wallet ID:", walletId);
 
         const today = new Date();
@@ -455,27 +527,4 @@ exports.getExpenses = async (req, res) => {
         console.error("Error calculating expenses:", error.stack);
         res.status(500).json({ message: "Failed to calculate expenses", error: error.message });
     }
-};
-
-exports.getTransactionByWalletId = async (req, res) => {
-  try {
-    const { walletId } = req.params;
-
-    const transaction = await Transaction.find({
-      wallet_id: "681aa801c014b93b9b45aa94"
-    });
-
-    if (!transaction) {
-      return res.status(404).json({ 
-        message: "Transaction not found for this wallet" 
-      });
-    }
-
-    res.status(200).json({
-      message: "Transaction retrieved successfully",
-      data: transaction
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
 };

@@ -1,32 +1,32 @@
 /* ----- Sidebar ----- */
-.sidebar {
+.sidebar_admin {
     width: 240px;
-    background-color: #081c37;
+    background: linear-gradient(135deg, #1e3a8a, #1e90ff);
     border-right: 1px solid #ddd;
     display: flex;
     flex-direction: column;
     padding: 1rem;
   }
-  .sidebar .brand {
+  .sidebar_admin .brand {
     font-size: 1.4rem;
     font-weight: bold;
     margin-bottom: 2rem;
     color: #fff;
   }
-  .sidebar ul {
+  .sidebar_admin ul {
     list-style: none;
   }
-  .sidebar li {
+  .sidebar_admin li {
     margin-bottom: 1.2rem;
     font-weight: 500;
   }
-  .sidebar li a {
+  .sidebar_admin li a {
     display: block;
     padding: 0.5rem 0.8rem;
     border-radius: 4px;
     transition: background-color 0.3s;
   }
-  .sidebar li a:hover {
+  .sidebar_admin li a:hover {
     background-color: #eef3fb;
     color: #3F8CFF;
   }

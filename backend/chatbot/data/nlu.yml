@@ -1,0 +1,56 @@
+version: "3.1"
+
+nlu:
+  - intent: greet
+    examples: |
+      - Hello
+      - Hi
+      - Good morning
+      - Good evening
+      - Hey
+
+  - intent: ask_tax_rate
+    examples: |
+      - What is the VAT rate in Tunisia?
+      - How much is the corporate tax?
+      - What are the tax rates for companies?
+      - Tell me about income tax in Tunisia
+      - What is the TVA rate?
+
+  - intent: ask_tax_deadline
+    examples: |
+      - When is the tax declaration deadline?
+      - What is the deadline for VAT payment?
+      - When do I have to pay my taxes?
+      - Fiscal declaration due date?
+
+  - intent: ask_tax_exemption
+    examples: |
+      - Are there any tax exemptions for startups?
+      - Who is exempt from income tax?
+      - Tax exemption rules in Tunisia
+
+  - intent: ask_penalties
+    examples: |
+      - What are the penalties for late tax payment?
+      - What happens if I pay taxes late?
+      - Late declaration penalty
+
+  - intent: ask_balance
+    examples: |
+      - What is my current balance?
+      - Show me my wallet balance
+      - How much money do I have?
+
+  - intent: calculate_taxes
+    examples: |
+      - Calculate my taxes
+      - How much tax do I owe?
+      - Tax calculation based on my balance
+
+  - intent: goodbye
+    examples: |
+      - Goodbye
+      - Bye
+      - See you later
+      - Thanks, bye

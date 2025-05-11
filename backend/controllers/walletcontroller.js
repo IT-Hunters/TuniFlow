@@ -256,8 +256,8 @@ const calculateCashFlowHistory = async (req, res) => {
     if (!project.wallet) {
       return res.status(404).json({ message: "No wallet associated with this project" });
     }
-  //  const walletId = project.wallet;
-    const walletId = "681aa801c014b93b9b45aa94";
+    const walletId = project.wallet;
+    // const walletId = "681aa801c014b93b9b45aa94"; // Removed hardcoded value
     console.log("Wallet ID:", walletId);
 
     const walletObjectId = new mongoose.Types.ObjectId(walletId);
@@ -309,7 +309,7 @@ const calculateCashFlowHistory = async (req, res) => {
     ];
 
     const cashFlowHistory = await Transaction.aggregate(pipeline);
-    console.log("cashFlowHistory" + cashFlowHistory)
+    console.log("cashFlowHistory:", cashFlowHistory);
     if (!cashFlowHistory.length) {
       return res.status(404).json({ message: "No transactions found for this project's wallet" });
     }
@@ -321,10 +321,27 @@ const calculateCashFlowHistory = async (req, res) => {
   }
 };
 
+// 📌 Get wallet balance by user
+const getWalletBalanceByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
+    const wallet = await Wallet.findOne({ user_id: userId }).select("balance");
+    if (!wallet) {
+      return res.status(404).json({ message: "No wallet found for this user" });
+    }
+    res.status(200).json({ balance: wallet.balance });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // 📌 Calculate profit margin
 const calculateProfitMargin = async (req, res) => {
   try {
-    const { userId } = req.params; // Changed from walletId to userId
+    const { userId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid userId" });
     }
@@ -348,8 +365,8 @@ const calculateProfitMargin = async (req, res) => {
       return res.status(404).json({ message: "No wallet associated with this project" });
     }
 
-    //const walletId = project.wallet;
-    const walletId = "681aa801c014b93b9b45aa94";
+    const walletId = project.wallet;
+    // const walletId = "681aa801c014b93b9b45aa94"; // Removed hardcoded value
     const walletObjectId = new mongoose.Types.ObjectId(walletId);
 
     const pipeline = [
@@ -401,4 +418,5 @@ module.exports = {
   getCandlestickData,
   calculateCashFlowHistory,
   calculateProfitMargin,
+  getWalletBalanceByUser
 };

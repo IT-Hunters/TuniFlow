@@ -109,7 +109,7 @@ const Navbar = ({ notifications: externalNotifications }) => {
   };
 
   return (
-    <nav className="navbar">
+    <nav className="navbar_admin">
       <div className="welcome-text">{userData ? `Welcome Back, ${userData.fullname}` : "Welcome Back"}</div>
       <div className="profile-area">
         {/* Icône de notification */}
