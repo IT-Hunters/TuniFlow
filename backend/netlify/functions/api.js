@@ -190,6 +190,7 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.render('error');
 });
+app.use('/.netlify/functions/api', router); 
 
 // Export for Netlify Functions
 module.exports.handler = serverless(app);

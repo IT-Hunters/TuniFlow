@@ -3,9 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
-    "test": "mocha 'test/*.test.js'",
-    "build": "npm install"
+    "build": "netlify deploy --pod"
   },
   "dependencies": {
     "bcryptjs": "^3.0.1",
