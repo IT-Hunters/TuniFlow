@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "test": "mocha *.test.js",
-    "build": "react-scripts build",
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "test": "mocha 'test/*.test.js'",
+    "build": "echo 'No build required'"
   },
   "dependencies": {
     "bcryptjs": "^3.0.1",
