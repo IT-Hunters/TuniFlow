@@ -8,7 +8,6 @@ const cors = require('cors');
 const { Server } = require("socket.io");
 const logs = require('./middleware/Logger');
 var indexRouter = require('./routes/index');
-const serverless = require('serverless-http');
 var usersRouter = require('./routes/users');
 var invoiceRouter = require('./routes/invoiceRoutes');
 var ObjectifRouter = require('./routes/ObjectifRoutes');
@@ -22,6 +21,7 @@ var walletRoutes = require('./routes/walletRoutes');
 var chatRouter = require('./routes/chatRoutes');
 var userLogsRoutes = require('./routes/UserLogsRoutes');
 var logsRoutes = require('./routes/logsRoutes');
+const serverless = require('serverless-http'); // Added for Netlify Functions
 
 var app = express();
 var mongoose = require("mongoose");
@@ -34,7 +34,7 @@ mongoose.connect(connection.url)
 
 // 🟢 Enable CORS
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5000',"*"],
+  origin: ['http://localhost:5173', 'http://localhost:5000', "*"],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'], 
 }));
@@ -61,7 +61,7 @@ app.use('/assetCalculation', assetCalculationRoutes);
 app.use('/taxes', taxeRoutes);
 app.use('/wallets', walletRoutes);
 app.use('/transactions', transactionRoutes);
-app.use('/logs',logsRoutes);
+app.use('/logs', logsRoutes);
 app.use('/objectif', ObjectifRouter);
 app.use('/chat', chatRouter);
 app.use('/userLogs', userLogsRoutes);
@@ -76,11 +76,10 @@ const server = http.createServer(app);
 
 global.io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5000","*"],
+    origin: ["http://localhost:5173", "http://localhost:5000", "*"],
     methods: ["GET", "POST"],
   },
 });
-
 
 // 🟢 Import Models
 const Chat = require('./model/Chat');
@@ -95,11 +94,9 @@ global.io.on("connection", (socket) => {
 
   // When a user logs in, the client emits "userOnline" with the user ID.
   socket.on("userOnline", (userId) => {
-    // Store the userId on the socket so we know who to remove on disconnect
     socket.userId = userId;
     global.connectedUsers.add(userId);
     console.log('✅ Connected Users:', Array.from(global.connectedUsers));
-    // Emit the updated list of connected users to all clients
     global.io.emit("userOnline", Array.from(global.connectedUsers));
   });
 
@@ -148,6 +145,8 @@ global.io.on("connection", (socket) => {
 
   // 🔹 Typing Indicator
   socket.on("typing", async ({ chatId, senderId }) => {
+    const chatರ
+
     const chat = await Chat.findById(chatId);
     if (!chat || !chat.participants.includes(senderId)) return;
 
@@ -166,7 +165,6 @@ global.io.on("connection", (socket) => {
   // 🔹 Handle Disconnection
   socket.on("disconnect", () => {
     console.log(`🔴 Socket disconnected: ${socket.id}`);
-    // Remove the user from connectedUsers if we stored their userId
     if (socket.userId) {
       global.connectedUsers.delete(socket.userId);
       console.log(`❌ User ${socket.userId} removed. Connected Users:`, Array.from(global.connectedUsers));
@@ -175,7 +173,7 @@ global.io.on("connection", (socket) => {
   });
 });
 
-// 🟢 Start Server
+// 🟢 Start Server (Not needed for Netlify Functions, but kept for local testing)
 const PORT = 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
@@ -193,6 +191,5 @@ app.use((err, req, res, next) => {
   res.render('error');
 });
 
-
-app.use('/.netlify/functions/api', router);
+// Export for Netlify Functions
 module.exports.handler = serverless(app);

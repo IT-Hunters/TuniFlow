@@ -1,2 +1,10 @@
 [build]
-  functions = "functions"
+  command = "npm run build" # Adjust if you have a build step
+  publish = "public" # Adjust to your static files folder
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/app/:splat" # Point to the app function
+  status = 200
+  force = true
