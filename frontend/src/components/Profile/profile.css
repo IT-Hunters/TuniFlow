@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> e133a12fce104b9244e23468d30016d1386796a5
 /* profile.css */
 @tailwind base;
 @tailwind components;
@@ -465,7 +461,7 @@
   font-size: 16px;
 }
 
-.card {
+.profile_card {
   width: 220px; /* Adjusted to match the new wallet card width */
   height: 300px;
   display: flex;
@@ -480,7 +476,7 @@
   overflow: hidden;
 }
 
-.card::before {
+.profile_card::before {
   content: "";
   width: 220px; /* Adjusted to match the new card width */
   height: 100px;
@@ -493,7 +489,7 @@
   transition: all 0.5s ease;
 }
 
-.card * {
+.profile_card * {
   z-index: 1;
 }
 
@@ -537,7 +533,7 @@
   transition: all 0.5s ease;
 }
 
-.card:hover::before {
+.profile_card:hover::before {
   width: 220px; /* Adjusted to match the new card width */
   height: 300px;
   border-bottom: none;
@@ -547,11 +543,11 @@
   background: #1468BF; /* Changed to blue on hover */
 }
 
-.card:hover .card-info {
+.profile_card:hover .card-info {
   transform: translate(0%, -25%);
 }
 
-.card:hover .image {
+.profile_card:hover .image {
   transform: scale(1.3) translate(0, -20%);
 }
 
@@ -567,7 +563,7 @@
   --box-shadow-color: rgba(206, 178, 252, 0.48);
 }
 
-.card.wallet {
+.profile_card.wallet {
   width: 220px;
   height: 321px;
   background: #fff;
@@ -584,29 +580,29 @@
   margin-right: 20px;
 }
 
-.card.wallet:hover {
+.profile_card.wallet:hover {
   transform: translateY(-5px) scale(1.005) translateZ(0);
   box-shadow: 0 24px 36px rgba(0, 0, 0, 0.11), 0 24px 46px var(--box-shadow-color);
 }
 
-.card.wallet:hover .overlay {
+.profile_card.wallet:hover .overlay {
   transform: scale(4) translateZ(0);
 }
 
-.card.wallet:hover .circle {
+.carprofile_cardd.wallet:hover .circle {
   border-color: var(--bg-color-light);
   background: var(--bg-color);
 }
 
-.card.wallet:hover .circle:after {
+.profile_card.wallet:hover .circle:after {
   background: var(--bg-color-light);
 }
 
-.card.wallet:hover p {
+.profile_card.wallet:hover p {
   color: var(--text-color-hover);
 }
 
-.card.wallet p {
+.profile_card.wallet p {
   font-size: 17px;
   color: #4c5656;
   margin-top: 30px;

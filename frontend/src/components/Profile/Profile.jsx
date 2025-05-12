@@ -176,7 +176,7 @@ const ViewProfile = () => {
         <div className="profile-container flex justify-center items-start gap-6 p-6">
           <div className="profile-cards-row">
             {/* Profile Image and Name Card */}
-            <div className="card">
+            <div className="profile_card">
               <div
                 className="image"
                 style={{

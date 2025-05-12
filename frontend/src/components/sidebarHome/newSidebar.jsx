@@ -36,7 +36,7 @@ const CoolSidebar = () => {
     { title: "Assets", icon: FaTachometerAlt, href: "/Assets" },
     { title: "Notifications", icon: FaBell, href: "#", badge: 2 },
     { title: "Objective", icon: FaCog, href: "/ObjectiveManagement" },
-    { title: "Chat", icon: FaQuestionCircle, href: "/chat" },
+    { title: "Chat", icon: FaComments, href: "/chat" },
     { title: "Financial Statements", icon: FaFileInvoice, href: "/financial-statements" },
     { title: "Wallet", icon: FaWallet, href: "/Transaction" },
     { title: "Invoice", icon: FaFileInvoice, href: userData?.userType === "BusinessOwner" ? "/owner-invoices" : "/invoice" },
