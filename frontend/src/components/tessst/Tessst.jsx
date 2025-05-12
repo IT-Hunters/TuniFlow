@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendar } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendar, FaChartBar } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -26,10 +26,13 @@ const Wallet = () => {
   const [activeScreen, setActiveScreen] = useState("main");
   const [walletData, setWalletData] = useState({ balance: 0, currency: "TND", transactions: [] });
   const [walletId, setWalletId] = useState("");
+  const [projectId, setProjectId] = useState(""); // State for dynamic projectId
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCharts, setShowCharts] = useState(false);
+  const [predictionUrl, setPredictionUrl] = useState("");
+  const [isPredicting, setIsPredicting] = useState(false);
   const transactionsPerPage = 5;
 
   const fetchUserProfile = async (token) => {
@@ -40,6 +43,20 @@ const Wallet = () => {
       return response.data._id;
     } catch (error) {
       throw new Error(`Erreur lors de la récupération du profil : ${error.message}`);
+    }
+  };
+
+  const fetchUserProject = async (token) => {
+    try {
+      const response = await axios.get("http://localhost:3000/users/findMyProject", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.data.id) {
+        throw new Error("Aucun projet trouvé pour cet utilisateur.");
+      }
+      return response.data.id; // Extract project ID
+    } catch (error) {
+      throw new Error(`Erreur lors de la récupération du projet : ${error.message}`);
     }
   };
 
@@ -75,14 +92,14 @@ const Wallet = () => {
 
   const fetchTransactions = async (walletId, token) => {
     try {
-      console.log(`Fetching transactions for walletId: ${walletId}`); // Debug log
+      console.log(`Fetching transactions for walletId: ${walletId}`);
       const response = await axios.get(`http://localhost:3000/transactions/getTransactions/${walletId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Transactions fetched:", response.data); // Debug log
+      console.log("Transactions fetched:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error fetching transactions:", error); // Debug log
+      console.error("Error fetching transactions:", error);
       throw new Error(`Erreur lors de la récupération des transactions : ${error.message}`);
     }
   };
@@ -96,6 +113,8 @@ const Wallet = () => {
         return;
       }
       const userId = await fetchUserProfile(token);
+      const projectId = await fetchUserProject(token); // Fetch projectId
+      setProjectId(projectId); // Store projectId
       const wallet = await fetchWallet(userId, token);
       setWalletId(wallet._id);
       const transactions = await fetchTransactions(wallet._id, token);
@@ -104,10 +123,36 @@ const Wallet = () => {
         currency: wallet.currency,
         transactions: transactions,
       });
-      console.log("Updated walletData:", { balance: wallet.balance, transactions: transactions.length }); // Debug log
+      console.log("Updated walletData:", { balance: wallet.balance, transactions: transactions.length });
     } catch (error) {
-      console.error("Error in fetchWalletData:", error); // Debug log
+      console.error("Error in fetchWalletData:", error);
       setError(error.message || "Erreur lors de la récupération des données.");
+    }
+  };
+
+  const handlePredict = async () => {
+    if (!projectId) {
+      setError("Aucun projet sélectionné pour la prédiction.");
+      return;
+    }
+    setIsPredicting(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Veuillez vous connecter pour effectuer une prédiction.");
+        return;
+      }
+      const response = await axios.get(`http://localhost:3000/predict/predict/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPredictionUrl(response.data.url);
+      window.open(response.data.url, "_blank");
+    } catch (error) {
+      console.error("Error during prediction:", error);
+      setError(error.response?.data?.error || "Erreur lors de la prédiction.");
+    } finally {
+      setIsPredicting(false);
     }
   };
 
@@ -182,7 +227,6 @@ const Wallet = () => {
             </div>
 
             <div className="wallet-cards-container">
-              {/* Balance Card */}
               <div className="wallet-card balance">
                 <div className="wallet-card-title">
                   <div className="wallet-card-title-left">
@@ -202,7 +246,6 @@ const Wallet = () => {
                 </div>
               </div>
 
-              {/* Income Card */}
               <div className="wallet-card income">
                 <div className="wallet-card-title">
                   <div className="wallet-card-title-left">
@@ -230,7 +273,6 @@ const Wallet = () => {
                 </div>
               </div>
 
-              {/* Expenses Card */}
               <div className="wallet-card expenses">
                 <div className="wallet-card-title">
                   <div className="wallet-card-title-left">
@@ -284,7 +326,19 @@ const Wallet = () => {
                 </div>
                 <p>Salary Scheduler</p>
               </div>
+              <div className="action" onClick={handlePredict} disabled={isPredicting || !projectId}>
+                <div className="action-icon">
+                  <FaChartBar />
+                </div>
+                <p>{isPredicting ? "Predicting..." : "Predict"}</p>
+              </div>
             </div>
+
+            {predictionUrl && (
+              <div className="prediction-result">
+                <p>Prediction generated! <a href={predictionUrl} target="_blank" rel="noopener noreferrer">View Prediction</a></p>
+              </div>
+            )}
 
             <div className="transaction-history">
               <h3>
