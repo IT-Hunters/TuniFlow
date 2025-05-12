@@ -29,6 +29,7 @@ const financialStatementRoutes = require("./routes/financialStatementRoutes");
 const roomRoutes = require('./routes/roomRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
 const taskRoutes = require('./routes/taskes');
+const predictRoutes = require('./routes/predict');
 var app = express();
 var mongoose = require("mongoose");
 var connection = require("./config/database.json");
@@ -80,6 +81,7 @@ app.use("/financial_statements", financialStatementRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/', calendarRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/predict', predictRoutes);
 // 🟢 Test API
 app.get('/api/test', (req, res) => {
   res.status(200).json({ message: 'Project tested' });
