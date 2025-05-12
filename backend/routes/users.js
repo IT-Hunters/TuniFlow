@@ -66,6 +66,4 @@ router.put('/update-firstlogin', authenticateJWT, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-// Route for dashboard statistics
-router.get('/stats', getUserStats);
 module.exports = router;
