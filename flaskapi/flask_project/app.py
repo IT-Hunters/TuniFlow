@@ -190,9 +190,6 @@ def predict():
             most_common_pred = xgb_pred
 
         return jsonify({
-            'Random Forest Prediction': rf_pred,
-            'XGBoost Prediction': xgb_pred,
-            'Logistic Regression Prediction': lr_pred,
             'Best Prediction': most_common_pred
         })
     except Exception as e:
@@ -245,14 +242,10 @@ def recommend_project():
 
         return jsonify({
             'project_id': str(project_id),
-            'Random Forest Prediction': rf_pred,
-            'XGBoost Prediction': xgb_pred,
-            'Logistic Regression Prediction': lr_pred,
             'Best Recommendation': most_common_pred
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
 
 @app.route('/predict_priority', methods=['POST'])
 def predict_priority():
@@ -287,9 +280,6 @@ def predict_priority():
             most_common_pred = xgb_pred
 
         return jsonify({
-            'Random Forest Prediction': rf_pred,
-            'XGBoost Prediction': xgb_pred,
-            'Logistic Regression Prediction': lr_pred,
             'Best Prediction': most_common_pred
         })
     except Exception as e:
@@ -330,10 +320,6 @@ def predict_spending_behavior():
             most_common_pred = xgb_pred
 
         return jsonify({
-            'KNN Prediction': knn_pred,
-            'SVM Prediction': svm_pred,
-            'Decision Tree Prediction': dt_pred,
-            'XGBoost Prediction': xgb_pred,
             'Best Prediction': most_common_pred
         })
     except Exception as e:
