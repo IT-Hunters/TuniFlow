@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendar, FaChartBar } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendar, FaChartBar, FaTimes } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -12,6 +12,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Deposit from "./Depossit"; // Fixed typo (Depossit → Deposit)
 import Withdraw from "./Withdraw";
 import Transfer from "./Transfer";
@@ -26,12 +28,13 @@ const Wallet = () => {
   const [activeScreen, setActiveScreen] = useState("main");
   const [walletData, setWalletData] = useState({ balance: 0, currency: "TND", transactions: [] });
   const [walletId, setWalletId] = useState("");
-  const [projectId, setProjectId] = useState(""); // State for dynamic projectId
+  const [projectId, setProjectId] = useState("");
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCharts, setShowCharts] = useState(false);
-  const [predictionUrl, setPredictionUrl] = useState("");
+  const [predictionHtml, setPredictionHtml] = useState("");
+  const [showPrediction, setShowPrediction] = useState(false);
   const [isPredicting, setIsPredicting] = useState(false);
   const transactionsPerPage = 5;
 
@@ -54,7 +57,7 @@ const Wallet = () => {
       if (!response.data.id) {
         throw new Error("Aucun projet trouvé pour cet utilisateur.");
       }
-      return response.data.id; // Extract project ID
+      return response.data.id;
     } catch (error) {
       throw new Error(`Erreur lors de la récupération du projet : ${error.message}`);
     }
@@ -109,12 +112,16 @@ const Wallet = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setError("Veuillez vous connecter pour voir votre portefeuille.");
+        toast.error("Veuillez vous connecter pour voir votre portefeuille.", {
+          position: 'top-center',
+          autoClose: 5000,
+          theme: 'colored',
+        });
         return;
       }
       const userId = await fetchUserProfile(token);
-      const projectId = await fetchUserProject(token); // Fetch projectId
-      setProjectId(projectId); // Store projectId
+      const projectId = await fetchUserProject(token);
+      setProjectId(projectId);
       const wallet = await fetchWallet(userId, token);
       setWalletId(wallet._id);
       const transactions = await fetchTransactions(wallet._id, token);
@@ -126,13 +133,21 @@ const Wallet = () => {
       console.log("Updated walletData:", { balance: wallet.balance, transactions: transactions.length });
     } catch (error) {
       console.error("Error in fetchWalletData:", error);
-      setError(error.message || "Erreur lors de la récupération des données.");
+      toast.error(error.message || "Erreur lors de la récupération des données.", {
+        position: 'top-center',
+        autoClose: 5000,
+        theme: 'colored',
+      });
     }
   };
 
   const handlePredict = async () => {
     if (!projectId) {
-      setError("Aucun projet sélectionné pour la prédiction.");
+      toast.error("Aucun projet sélectionné pour la prédiction.", {
+        position: 'top-center',
+        autoClose: 5000,
+        theme: 'colored',
+      });
       return;
     }
     setIsPredicting(true);
@@ -140,20 +155,33 @@ const Wallet = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        setError("Veuillez vous connecter pour effectuer une prédiction.");
+        toast.error("Veuillez vous connecter pour effectuer une prédiction.", {
+          position: 'top-center',
+          autoClose: 5000,
+          theme: 'colored',
+        });
         return;
       }
       const response = await axios.get(`http://localhost:3000/predict/predict/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setPredictionUrl(response.data.url);
-      window.open(response.data.url, "_blank");
+      setPredictionHtml(response.data.html);
+      setShowPrediction(true);
     } catch (error) {
       console.error("Error during prediction:", error);
-      setError(error.response?.data?.error || "Erreur lors de la prédiction.");
+      toast.error(error.response?.data?.error || "Erreur lors de la prédiction.", {
+        position: 'top-center',
+        autoClose: 5000,
+        theme: 'colored',
+      });
     } finally {
       setIsPredicting(false);
     }
+  };
+
+  const closePrediction = () => {
+    setShowPrediction(false);
+    setPredictionHtml("");
   };
 
   useEffect(() => {
@@ -216,6 +244,7 @@ const Wallet = () => {
 
   return (
     <div className="app-container">
+      <ToastContainer />
       <CoolSidebar />
       <div className="elyess-content">
         <Navbar />
@@ -223,7 +252,6 @@ const Wallet = () => {
           <div className="wallet-container">
             <div className="wallet-header">
               <h2>Wallet</h2>
-              {error && <p className="error-message">{error}</p>}
             </div>
 
             <div className="wallet-cards-container">
@@ -334,9 +362,28 @@ const Wallet = () => {
               </div>
             </div>
 
-            {predictionUrl && (
-              <div className="prediction-result">
-                <p>Prediction generated! <a href={predictionUrl} target="_blank" rel="noopener noreferrer">View Prediction</a></p>
+            {showPrediction && (
+              <div className="prediction-container">
+                <div className="prediction-header">
+                  <h3>Prediction Results for Project {projectId.slice(-4)}</h3>
+                  <button className="close-prediction" onClick={closePrediction}>
+                    <FaTimes />
+                  </button>
+                </div>
+                <div className="prediction-content">
+                  {isPredicting ? (
+                    <div className="loading-spinner">
+                      <span className="spinner-icon"></span> Generating prediction...
+                    </div>
+                  ) : (
+                    <iframe
+                      srcDoc={predictionHtml}
+                      title="Prediction Chart"
+                      className="prediction-iframe"
+                      sandbox="allow-scripts"
+                    />
+                  )}
+                </div>
               </div>
             )}
 
