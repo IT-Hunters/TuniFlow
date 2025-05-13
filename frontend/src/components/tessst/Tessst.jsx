@@ -89,8 +89,7 @@ const Wallet = () => {
       throw new Error(`Erreur lors de la récupération des transactions : ${error.message}`);
     }
   };
-
-  const fetchWalletData = async () => {
+const fetchWalletData = async () => {
     setError("");
     try {
       const token = localStorage.getItem("token");
@@ -99,24 +98,46 @@ const Wallet = () => {
         return;
       }
       const userProfile = await fetchUserProfile(token);
-      const projectId = userProfile.role === "BUSINESS_OWNER" ? userProfile.projects[0] : userProfile.project;
-      if (!projectId) {
-        throw new Error("Aucun projet associé à cet utilisateur.");
+
+      // Cas Business Owner : utilise directement le wallet_id stocké
+      if (userProfile.role === "BUSINESS_OWNER") {
+        if (!userProfile.wallet_id) {
+          throw new Error("Aucun portefeuille associé à ce compte Business Owner.");
+        }
+        setWalletId(userProfile.wallet_id);
+
+        const transactions = await fetchTransactions(userProfile.wallet_id, token);
+
+        // Récupérer balance via wallet direct
+        const wallet = await fetchWallet(userProfile._id, token);
+
+        setWalletData({
+          balance: wallet.balance,
+          currency: wallet.currency,
+          transactions: transactions,
+        });
+
+        // Tu peux aussi stocker projectId si tu veux utiliser les prédictions
+        setProjectId(userProfile.projects.length > 0 ? userProfile.projects[0] : "");
+
+      } else {
+        // Cas utilisateur normal
+        const wallet = await fetchWallet(userProfile._id, token);
+        setWalletId(wallet._id);
+
+        const transactions = await fetchTransactions(wallet._id, token);
+
+        setWalletData({
+          balance: wallet.balance,
+          currency: wallet.currency,
+          transactions: transactions,
+        });
       }
-      setProjectId(projectId);
-      setWalletId(userProfile.wallet_id || ""); // Use wallet_id from profile if available
-      const wallet = await fetchWallet(userProfile._id, token);
-      setWalletId(wallet._id); // Override with fetched wallet ID if different
-      const transactions = await fetchTransactions(wallet._id, token);
-      setWalletData({
-        balance: wallet.balance,
-        currency: wallet.currency,
-        transactions: transactions,
-      });
     } catch (error) {
       setError(error.message || "Erreur lors de la récupération des données.");
     }
   };
+
 
   const handlePredict = async () => {
     if (!projectId) {
