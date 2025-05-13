@@ -1,29 +1,30 @@
-const Bill = require('../model/Bill');
-const User = require('../model/user');
-const Wallet = require('../model/wallet');
-const Project = require('../model/Project');
+const path = require("path");
+const fs = require("fs").promises; // Use promises for async file operations
+const { PythonShell } = require("python-shell");
+const Bill = require("../model/Bill");
+const User = require("../model/user");
+const Wallet = require("../model/wallet");
+const Project = require("../model/Project");
 const nodemailer = require("nodemailer");
 const PDFDocument = require("pdfkit");
-const fs = require("fs");
-const path = require("path");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const QRCode = require("qrcode");
 const cron = require("node-cron");
-const multer = require('multer');
+const multer = require("multer");
 
 // Configurer Multer pour le téléchargement de fichiers
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/logos');
+    const uploadDir = path.join(__dirname, "../uploads/logos");
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
+  },
 });
 
 const upload = multer({
@@ -38,28 +39,29 @@ const upload = multer({
       cb(new Error("Only JPEG and PNG files are allowed!"));
     }
   },
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-exports.uploadLogo = upload.single('logo');
+exports.uploadLogo = upload.single("logo");
 
 // Configurer Nodemailer
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
 });
 
 const generateDescription = (amount, category, project) => {
-  const templates = require(path.join(__dirname, '../data/invoice-descriptions.json')).templates;
+  const templates = require(path.join(__dirname, "../data/invoice-descriptions.json")).templates;
   const categoryTemplates = templates[category || "N/A"];
-  const threshold = Object.keys(categoryTemplates).find(t => {
+  const threshold = Object.keys(categoryTemplates).find((t) => {
     if (t.startsWith("<")) return amount < parseInt(t.slice(1));
     if (t.startsWith(">=")) return amount >= parseInt(t.slice(2));
     return false;
   }) || ">=1500"; // Par défaut pour les montants élevés
   let description = categoryTemplates[threshold];
-  description = description.replace("{amount}", amount)
-                           .replace("{project}", project?.status || "N/A");
+  description = description
+    .replace("{amount}", amount)
+    .replace("{project}", project?.status || "N/A");
   return description;
 };
 
@@ -69,33 +71,74 @@ exports.generateDescription = async (req, res) => {
   res.status(200).json({ description });
 };
 
-const generateInvoicePDF = async (invoice) => {
-  const pdfPath = path.join(__dirname, '../invoices', `invoice_${invoice._id}.pdf`);
-  console.log('Attempting to generate PDF at:', pdfPath);
+exports.predictPaymentLikelihood = async (req, res) => {
+  try {
+    const { amount, due_date, category, project_status } = req.body;
 
-  const dir = path.join(__dirname, '../invoices');
+    const days_to_due = Math.max(
+      0,
+      Math.ceil((new Date(due_date) - new Date()) / (1000 * 60 * 60 * 24))
+    );
+
+    const inputData = {
+      amount: Number(amount),
+      days_to_due,
+      category: category || "N/A",
+      project_status: project_status || "N/A",
+    };
+
+    const options = {
+      mode: "text",
+      pythonPath: 'python',  // Use system Python path
+      pythonOptions: ["-u"],
+      scriptPath: path.join(__dirname, "../ml"),
+      args: [JSON.stringify(inputData)],
+    };
+
+    PythonShell.run("predict_payment.py", options, (err, results) => {
+      if (err) {
+          console.error("Erreur lors de la prédiction:", err);
+          return res.status(500).json({ message: "Erreur lors de la prédiction", error: err.message });
+      }
+  
+      const predictionResult = JSON.parse(results[0]);
+      console.log("Prediction result sent to frontend:", predictionResult);  // Debugging line
+      res.status(200).json(predictionResult);
+  });
+  
+  } catch (error) {
+    console.error("Erreur dans predictPaymentLikelihood:", error.message);
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+const generateInvoicePDF = async (invoice) => {
+  const pdfPath = path.join(__dirname, "../invoices", `invoice_${invoice._id}.pdf`);
+  console.log("Attempting to generate PDF at:", pdfPath);
+
+  const dir = path.join(__dirname, "../invoices");
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
-    console.log('Invoices directory created:', dir);
+    console.log("Invoices directory created:", dir);
   }
 
   const doc = new PDFDocument();
   const stream = fs.createWriteStream(pdfPath);
 
   return new Promise((resolve, reject) => {
-    stream.on('finish', () => {
-      console.log('PDF generated successfully at:', pdfPath);
+    stream.on("finish", () => {
+      console.log("PDF generated successfully at:", pdfPath);
       resolve(pdfPath);
     });
-    stream.on('error', (err) => {
-      console.error('Error writing PDF:', err);
+    stream.on("error", (err) => {
+      console.error("Error writing PDF:", err);
       reject(err);
     });
 
     doc.pipe(stream);
 
     if (invoice.logoUrl) {
-      const logoPath = path.join(__dirname, '../', invoice.logoUrl);
+      const logoPath = path.join(__dirname, "../", invoice.logoUrl);
       if (fs.existsSync(logoPath)) {
         doc.image(logoPath, 50, 50, { width: 100 });
       }
@@ -104,12 +147,14 @@ const generateInvoicePDF = async (invoice) => {
     doc.moveDown(5);
     doc.fontSize(20).text("Invoice", { align: "center" });
     doc.moveDown();
-    doc.fontSize(12).text(`ID: ${invoice._id}`);
-    doc.text(`Creator: ${invoice.creator_id.fullname}`);
-    doc.text(`Recipient: ${invoice.recipient_id.fullname}`);
-    doc.text(`Amount: ${invoice.amount} TND`);
-    doc.text(`Due Date: ${invoice.due_date.toLocaleDateString()}`);
-    doc.text(`Category: ${invoice.category || "N/A"}`);
+    doc
+      .fontSize(12)
+      .text(`ID: ${invoice._id}`)
+      .text(`Creator: ${invoice.creator_id.fullname}`)
+      .text(`Recipient: ${invoice.recipient_id.fullname}`)
+      .text(`Amount: ${invoice.amount} TND`)
+      .text(`Due Date: ${invoice.due_date.toLocaleDateString()}`)
+      .text(`Category: ${invoice.category || "N/A"}`);
 
     if (invoice.customNotes) {
       doc.moveDown();
@@ -237,7 +282,8 @@ const sendUpcomingReminders = async () => {
       }
 
       const isHighAmount = bill.amount > 500;
-      const isLastDay = new Date(bill.due_date).toDateString() === threeDaysFromNow.toDateString();
+      const isLastDay =
+        new Date(bill.due_date).toDateString() === threeDaysFromNow.toDateString();
       if (isHighAmount || isLastDay) {
         await sendReminderEmail(recipient.email, bill, "UPCOMING");
 
@@ -280,11 +326,11 @@ exports.createInvoice = async (req, res) => {
     const { amount, due_date, category, logoUrl, customNotes } = req.body;
     const creator_id = req.user.userId;
 
-    console.log('Received data:', { amount, due_date, category, logoUrl, customNotes });
-    console.log('Creator ID:', creator_id);
+    console.log("Received data:", { amount, due_date, category, logoUrl, customNotes });
+    console.log("Creator ID:", creator_id);
 
-    const project = await Project.findOne({ businessManager: creator_id }).populate('businessOwner');
-    console.log('Project found:', project);
+    const project = await Project.findOne({ businessManager: creator_id }).populate("businessOwner");
+    console.log("Project found:", project);
     if (!project) {
       return res.status(404).json({ message: "No project found for this Business Manager" });
     }
@@ -293,10 +339,12 @@ exports.createInvoice = async (req, res) => {
     }
 
     const recipient_id = project.businessOwner._id;
-    console.log('Recipient ID:', recipient_id);
+    console.log("Recipient ID:", recipient_id);
 
     // Générer une description si customNotes est vide ou non fourni
-    const generatedDescription = customNotes ? customNotes : generateDescription(Number(amount), category, project);
+    const generatedDescription = customNotes
+      ? customNotes
+      : generateDescription(Number(amount), category, project);
 
     const newInvoice = new Bill({
       id: uuidv4(),
@@ -308,19 +356,19 @@ exports.createInvoice = async (req, res) => {
       status: "PENDING",
       project_id: project._id,
       logoUrl,
-      customNotes: generatedDescription, // Utiliser la description générée ou la note personnalisée
+      customNotes: generatedDescription,
       history: [
         {
           action: "CREATED",
           date: new Date(),
-          user: creator_id
-        }
-      ]
+          user: creator_id,
+        },
+      ],
     });
-    console.log('New invoice before saving:', newInvoice);
+    console.log("New invoice before saving:", newInvoice);
 
     await newInvoice.save();
-    console.log('Invoice saved successfully');
+    console.log("Invoice saved successfully");
 
     res.status(201).json({ message: "Invoice created successfully", invoice: newInvoice });
   } catch (error) {
@@ -388,10 +436,14 @@ exports.sendInvoice = async (req, res) => {
               <td style="padding: 10px; border: 1px solid #ddd;">${invoice.category || "N/A"}</td>
             </tr>
           </table>
-          ${invoice.customNotes ? `
+          ${
+            invoice.customNotes
+              ? `
             <p style="color: #555;"><strong>Custom Notes:</strong></p>
             <p style="color: #555;">${invoice.customNotes}</p>
-          ` : ""}
+          `
+              : ""
+          }
           <p style="color: #555;">Scan the QR code below to accept and pay this invoice:</p>
           <img src="cid:qr_code" alt="QR Code" style="display: block; margin: 20px auto; width: 200px;"/>
           <p style="color: #555;">Please find the invoice PDF attached.</p>
@@ -403,8 +455,8 @@ exports.sendInvoice = async (req, res) => {
       `,
       attachments: [
         { filename: `invoice_${invoice._id}.pdf`, path: pdfPath },
-        { filename: `qr_${invoiceId}.png`, path: qrCodePath, cid: "qr_code" }
-      ]
+        { filename: `qr_${invoiceId}.png`, path: qrCodePath, cid: "qr_code" },
+      ],
     };
 
     await transporter.sendMail(mailOptions);
@@ -413,11 +465,13 @@ exports.sendInvoice = async (req, res) => {
     invoice.history.push({
       action: "SENT",
       date: new Date(),
-      user: req.user.userId
+      user: req.user.userId,
     });
     await invoice.save();
 
-    res.status(200).json({ message: "Invoice sent successfully to the Business Owner with QR code!" });
+    res
+      .status(200)
+      .json({ message: "Invoice sent successfully to the Business Owner with QR code!" });
   } catch (error) {
     console.error("Error sending invoice:", error.message);
     res.status(500).json({ message: "Error sending invoice", error: error.message });
@@ -436,20 +490,22 @@ exports.acceptInvoice = async (req, res) => {
     if (invoice.recipient_id._id.toString() !== userId) {
       return res.status(403).json({ message: "You are not authorized to accept this invoice" });
     }
-    
+
     if (invoice.status === "CANCELLED") {
-      return res.status(400).json({ message: "This invoice can no longer be accepted as it is cancelled" });
+      return res
+        .status(400)
+        .json({ message: "This invoice can no longer be accepted as it is cancelled" });
     }
     if (invoice.status === "PAID") {
       return res.status(400).json({ message: "The invoice is already paid" });
     }
 
     invoice.status = "PAID";
-    
+
     invoice.history.push({
       action: "PAID",
       date: new Date(),
-      user: userId
+      user: userId,
     });
 
     await invoice.save();
@@ -491,7 +547,7 @@ exports.acceptInvoice = async (req, res) => {
             <a href="http://localhost:3000" style="padding: 10px 20px; background-color: #28a745; color: #fff; text-decoration: none; border-radius: 5px;">View My Dashboard</a>
           </div>
         </div>
-      `
+      `,
     };
 
     await transporter.sendMail(mailOptions);
@@ -505,7 +561,7 @@ exports.acceptInvoice = async (req, res) => {
 
 exports.getMyInvoices = async (req, res) => {
   try {
-    const userId = req.user.userId; 
+    const userId = req.user.userId;
     const invoices = await Bill.find({ recipient_id: userId })
       .populate("creator_id", "fullname lastname")
       .populate("project_id", "status")
@@ -518,7 +574,10 @@ exports.getMyInvoices = async (req, res) => {
 
 exports.getBusinessOwners = async (req, res) => {
   try {
-    const businessOwners = await User.find({ role: "BUSINESS_OWNER" }, "fullname lastname email");
+    const businessOwners = await User.find(
+      { role: "BUSINESS_OWNER" },
+      "fullname lastname email"
+    );
     res.status(200).json(businessOwners);
   } catch (error) {
     console.error("Error retrieving Business Owners:", error.message);
@@ -569,44 +628,59 @@ exports.getInvoiceStatistics = async (req, res) => {
 
     console.log("User ID:", userId);
     console.log("User Role:", user.role);
-    console.log("Invoices found:", invoices.map(invoice => ({
-      id: invoice._id,
-      due_date: invoice.due_date,
-      amount: invoice.amount,
-      creator_id: invoice.creator_id,
-      recipient_id: invoice.recipient_id,
-    })));
+    console.log(
+      "Invoices found:",
+      invoices.map((invoice) => ({
+        id: invoice._id,
+        due_date: invoice.due_date,
+        amount: invoice.amount,
+        creator_id: invoice.creator_id,
+        recipient_id: invoice.recipient_id,
+      }))
+    );
 
     const totalPaid = invoices
-      .filter(invoice => invoice.status === "PAID")
+      .filter((invoice) => invoice.status === "PAID")
       .reduce((sum, invoice) => sum + invoice.amount, 0);
 
     const totalPending = invoices
-      .filter(invoice => invoice.status === "PENDING")
+      .filter((invoice) => invoice.status === "PENDING")
       .reduce((sum, invoice) => sum + invoice.amount, 0);
 
     const today = new Date();
     const totalOverdue = invoices
-      .filter(invoice => invoice.status === "PENDING" && new Date(invoice.due_date) < today)
+      .filter(
+        (invoice) => invoice.status === "PENDING" && new Date(invoice.due_date) < today
+      )
       .reduce((sum, invoice) => sum + invoice.amount, 0);
 
     const overdueInvoices = invoices
-      .filter(invoice => invoice.status === "PENDING" && new Date(invoice.due_date) < today)
-      .map(invoice => ({
+      .filter(
+        (invoice) => invoice.status === "PENDING" && new Date(invoice.due_date) < today
+      )
+      .map((invoice) => ({
         id: invoice._id,
         amount: invoice.amount,
         due_date: invoice.due_date,
         category: invoice.category,
-        recipient: user.role === "BUSINESS_MANAGER" ? `${invoice.recipient_id.fullname} ${invoice.recipient_id.lastname}` : null,
-        creator: user.role === "BUSINESS_OWNER" ? `${invoice.creator_id.fullname} ${invoice.creator_id.lastname}` : null,
+        recipient:
+          user.role === "BUSINESS_MANAGER"
+            ? `${invoice.recipient_id.fullname} ${invoice.recipient_id.lastname}`
+            : null,
+        creator:
+          user.role === "BUSINESS_OWNER"
+            ? `${invoice.creator_id.fullname} ${invoice.creator_id.lastname}`
+            : null,
       }));
 
     let chartData = {};
     if (period === "month") {
       const monthlyData = Array(12).fill(0);
-      invoices.forEach(invoice => {
+      invoices.forEach((invoice) => {
         const dueDate = new Date(invoice.due_date);
-        console.log(`Invoice ${invoice._id}: due_date=${invoice.due_date}, year=${dueDate.getFullYear()}, month=${dueDate.getMonth()}`);
+        console.log(
+          `Invoice ${invoice._id}: due_date=${invoice.due_date}, year=${dueDate.getFullYear()}, month=${dueDate.getMonth()}`
+        );
         if (dueDate.getFullYear() === year) {
           const month = dueDate.getMonth();
           monthlyData[month] += invoice.amount;
@@ -617,10 +691,10 @@ exports.getInvoiceStatistics = async (req, res) => {
         data: monthlyData,
       };
     } else if (period === "year") {
-      const years = [...new Set(invoices.map(invoice => new Date(invoice.due_date).getFullYear()))].sort();
-      const yearlyData = years.map(year => {
+      const years = [...new Set(invoices.map((invoice) => new Date(invoice.due_date).getFullYear()))].sort();
+      const yearlyData = years.map((year) => {
         return invoices
-          .filter(invoice => new Date(invoice.due_date).getFullYear() === year)
+          .filter((invoice) => new Date(invoice.due_date).getFullYear() === year)
           .reduce((sum, invoice) => sum + invoice.amount, 0);
       });
       chartData = {
@@ -629,7 +703,7 @@ exports.getInvoiceStatistics = async (req, res) => {
       };
     } else if (period === "week") {
       const weeklyData = Array(52).fill(0);
-      invoices.forEach(invoice => {
+      invoices.forEach((invoice) => {
         const dueDate = new Date(invoice.due_date);
         if (dueDate.getFullYear() === year) {
           const week = getWeekNumber(dueDate);
@@ -647,7 +721,7 @@ exports.getInvoiceStatistics = async (req, res) => {
 
     console.log("Chart Data:", chartData);
 
-    const availableYears = [...new Set(invoices.map(invoice => new Date(invoice.due_date).getFullYear()))].sort();
+    const availableYears = [...new Set(invoices.map((invoice) => new Date(invoice.due_date).getFullYear()))].sort();
     console.log("Available Years:", availableYears);
 
     res.status(200).json({
@@ -663,60 +737,70 @@ exports.getInvoiceStatistics = async (req, res) => {
     res.status(500).json({ message: "Error retrieving invoice statistics", error: error.message });
   }
 };
+
 exports.exportInvoices = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { status } = req.query; // Ajouter un paramètre de filtrage par statut
+    const { status } = req.query;
 
-    // Construire la requête de recherche
     let query = { $or: [{ creator_id: userId }, { recipient_id: userId }] };
     if (status) {
-      query.status = status; // Filtrer par statut si fourni
+      query.status = status;
     }
 
     const invoices = await Bill.find(query)
-      .populate('creator_id', 'fullname lastname')
-      .populate('recipient_id', 'fullname lastname');
+      .populate("creator_id", "fullname lastname")
+      .populate("recipient_id", "fullname lastname")
+      .populate("project_id", "status");
 
-    // Préparer les en-têtes du CSV
     const csvData = [
       [
-        'ID',
-        'Amount',
-        'Due Date',
-        'Category',
-        'Status',
-        'Creator',
-        'Recipient',
-        'Custom Notes',
-        'History'
+        "ID",
+        "Amount",
+        "Due Date",
+        "Category",
+        "Status",
+        "Creator",
+        "Recipient",
+        "Custom Notes",
+        "History",
+        "created_at",
+        "project_status",
       ],
-      ...invoices.map(invoice => [
+      ...invoices.map((invoice) => [
         invoice._id,
         invoice.amount,
-        new Date(invoice.due_date).toISOString().split('T')[0],
-        invoice.category || 'N/A',
+        new Date(invoice.due_date).toISOString().split("T")[0],
+        invoice.category || "N/A",
         invoice.status,
-        `${invoice.creator_id?.fullname || 'N/A'} ${invoice.creator_id?.lastname || ''}`,
-        `${invoice.recipient_id?.fullname || 'N/A'} ${invoice.recipient_id?.lastname || ''}`,
-        invoice.customNotes || 'N/A',
+        `${invoice.creator_id?.fullname || "N/A"} ${invoice.creator_id?.lastname || ""}`,
+        `${invoice.recipient_id?.fullname || "N/A"} ${invoice.recipient_id?.lastname || ""}`,
+        invoice.customNotes || "N/A",
         invoice.history
           ? invoice.history
-              .map(entry => `${entry.action} by ${entry.user?.fullname || 'Unknown'} on ${new Date(entry.date).toLocaleString()}`)
-              .join('; ')
-          : 'No history'
+              .map(
+                (entry) =>
+                  `${entry.action} by ${entry.user?.fullname || "Unknown"} on ${new Date(
+                    entry.date
+                  ).toLocaleString()}`
+              )
+              .join("; ")
+          : "No history",
+        invoice.created_at.toISOString().split("T")[0],
+        invoice.project_id?.status || "N/A",
       ]),
     ];
 
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="invoices_export.csv"');
+    const csvContent = csvData.map((row) => row.join(",")).join("\n");
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", 'attachment; filename="invoices_export.csv"');
     res.status(200).send(csvContent);
   } catch (error) {
     console.error("Error exporting invoices:", error.message);
-    res.status(500).json({ message: 'Failed to export invoices', error: error.message });
+    res.status(500).json({ message: "Failed to export invoices", error: error.message });
   }
 };
+
 exports.testUpcomingReminders = async (req, res) => {
   try {
     await sendUpcomingReminders();
@@ -724,5 +808,106 @@ exports.testUpcomingReminders = async (req, res) => {
   } catch (error) {
     console.error("Error testing upcoming reminders:", error.message);
     res.status(500).json({ message: "Error testing upcoming reminders", error: error.message });
+  }
+};
+
+exports.batchPredictPaymentLikelihood = async (req, res) => {
+  try {
+    console.log("Starting batchPredictPaymentLikelihood");
+    
+    const invoices = req.body.invoices;
+    if (!Array.isArray(invoices) || invoices.length === 0) {
+      return res.status(400).json({ 
+        message: "Invalid input: invoices must be a non-empty array",
+        received: invoices 
+      });
+    }
+
+    const inputData = invoices.map(invoice => ({
+      amount: Number(invoice.amount) || 0,
+      days_to_due: Math.max(
+        0,
+        Math.ceil((new Date(invoice.due_date) - new Date()) / (1000 * 60 * 60 * 24))
+      ),
+      category: String(invoice.category || "N/A"),
+      project_status: String(invoice.project_id?.status || "N/A")
+    }));
+
+    // Utiliser child_process au lieu de python-shell
+    const { spawn } = require('child_process');
+    const pythonPath = 'python';  // Use system Python directly
+    const scriptPath = path.join(__dirname, "../ml/predict_payment_batch.py");
+
+    console.log('Executing Python script with:', {
+      pythonPath,
+      scriptPath,
+      inputData: JSON.stringify(inputData)
+    });
+
+    const pythonProcess = spawn(pythonPath, [scriptPath]);
+    let dataString = '';
+    let errorString = '';
+
+    // Envoyer les données au script Python
+    pythonProcess.stdin.write(JSON.stringify(inputData));
+    pythonProcess.stdin.end();
+
+    // Collecter la sortie
+    pythonProcess.stdout.on('data', (data) => {
+      dataString += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      errorString += data.toString();
+      console.error('Python stderr:', data.toString());
+    });
+
+    // Gérer la fin du processus
+    const processResult = await new Promise((resolve, reject) => {
+      pythonProcess.on('close', (code) => {
+        console.log(`Python process exited with code ${code}`);
+        if (code !== 0) {
+          reject(new Error(`Python process failed with code ${code}\nError: ${errorString}`));
+        } else {
+          resolve(dataString);
+        }
+      });
+
+      // Ajouter un timeout de 30 secondes
+      setTimeout(() => {
+        pythonProcess.kill();
+        reject(new Error('Python script execution timed out after 30 seconds'));
+      }, 30000);
+    });
+
+    // Traiter les résultats
+    if (!processResult) {
+      throw new Error("No prediction results received from Python script");
+    }
+
+    const predictions = JSON.parse(processResult);
+    
+    if (!Array.isArray(predictions) || predictions.length !== invoices.length) {
+      throw new Error("Invalid prediction results format");
+    }
+
+    const response = invoices.map((invoice, index) => ({
+      invoice_id: invoice._id || invoice.id,
+      prediction: predictions[index]
+    }));
+
+    return res.status(200).json({
+      success: true,
+      predictions: response
+    });
+
+  } catch (error) {
+    console.error("Error in batchPredictPaymentLikelihood:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to predict payment likelihood",
+      error: error.message,
+      details: error.stack
+    });
   }
 };

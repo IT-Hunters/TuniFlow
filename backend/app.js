@@ -8,6 +8,7 @@ const cors = require('cors');
 const { Server } = require("socket.io");
 
 var indexRouter = require('./routes/index');
+var recommendationRouter = require('./routes/RecommendationRoutes');
 var usersRouter = require('./routes/users');
 var invoiceRouter = require('./routes/invoiceRoutes');
 var ObjectifRouter = require('./routes/ObjectifRoutes');
@@ -75,6 +76,7 @@ app.use('/wallets', walletRoutes);
 app.use('/transactions', transactionRoutes);
 app.use('/objectif', ObjectifRouter);
 app.use('/chat', chatRouter);
+app.use('/recommendation', recommendationRouter);
 app.use('/userLogs', userLogsRoutes);
 app.use('/salary-scheduler', salarySchedulerRoutes);
 app.use("/financial_statements", financialStatementRoutes);

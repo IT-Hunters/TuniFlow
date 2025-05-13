@@ -41,4 +41,6 @@ router.post("/upload-logo", authenticateJWT, invoiceController.uploadLogo, (req,
 router.get('/export', authenticateJWT, invoiceController.exportInvoices);
 router.get("/test-upcoming-reminders", invoiceController.testUpcomingReminders);
 router.post('/generate-description', invoiceController.generateDescription);
+router.post('/predict-payment', invoiceController.predictPaymentLikelihood);
+router.post('/batch-predict-payment', invoiceController.batchPredictPaymentLikelihood);
 module.exports = router;
