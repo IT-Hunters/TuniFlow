@@ -8,7 +8,7 @@ client = pymongo.MongoClient("mongodb://localhost:27017/")
 db = client["TuniFlow"]
 
 # ID du projet
-project_id = ObjectId("67e62d89b1415c6f72e1286a")
+project_id = ObjectId("67d0a704c5ca8b94e7512c8e")
 
 # Nombre de transactions à ajouter
 nb_transactions = 50

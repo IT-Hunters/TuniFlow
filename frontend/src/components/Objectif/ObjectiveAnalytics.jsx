@@ -290,6 +290,12 @@ const ObjectiveAnalytics = ({ objectiveId }) => {
           <Line data={chartData} options={chartOptions} height={400} />
         </div>
       </div>
+      <div className="analytics-summary">
+        <h3>Objective Analytics Summary</h3>
+        <p>Success Rate: {analytics.successRate?.toFixed(2)}%</p>
+        <p>Time Remaining: {analytics.timeRemaining} days</p>
+        <p>Failure Risk (Heuristic): {analytics.failureRisk}</p>
+      </div>
     </div>
   );
 };
