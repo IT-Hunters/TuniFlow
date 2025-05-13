@@ -6,34 +6,19 @@ import AssetForm from "../../components/Formulaire/AddAssetActifForm";
 import AddLiabilityForm from "../../components/Formulaire/AddLiabilityForm"; 
 import { getAllAssets } from "../../services/AssetActifService";
 import { getAllLiabilities } from "../../services/LiabilityService";
-import { fetchProject }  from "../../services/ProjectService";
 import Sidebar from "../../components/sidebarHome/newSidebar";
 import Navbar from "../../components/navbarHome/NavbarHome";
 import Popup from "reactjs-popup";
 import  "../../components/assetActif/assetActifComponent.css";
 import "reactjs-popup/dist/index.css";
 
-
 const AssetsDashboard = () => {
   const [assets, setAssets] = useState([]);
   const [liabilities, setLiabilities] = useState([]);
-  const [project, setProject] = useState([]);
+  const projectId = "67e8cad500e54584114910e8";
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedForm, setSelectedForm] = useState("asset"); 
   
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await fetchProject(localStorage.getItem("userId"));
-        console.log("Projecttttttttttt:", response);
-        setProject(response);
-      } catch (error) {
-        console.error("Failed to fetch assets:", error);
-      }
-    };
-    fetchProjects();
-  }, []);
-
   useEffect(() => {
     const fetchAssets = async () => {
       try {
@@ -73,7 +58,7 @@ const AssetsDashboard = () => {
                       <div className="assetcard">
                         <div className="card-body">
                           <h4 className="card-title">Most Valuable Actif Assets</h4>
-                          <TopValuableAssetsChart assets={assets.slice(0, 5)} projectId={project._id}/>
+                          <TopValuableAssetsChart assets={assets.slice(0, 5)} projectId={projectId}/>
                         </div>
                       </div>
                     </div>
@@ -81,7 +66,7 @@ const AssetsDashboard = () => {
                       <div className="assetcard">
                         <div className="card-body">
                           <h4 className="card-title">Most Valuable Liabilities</h4>
-                          <TopValuableAssetsChart assets={liabilities.slice(0, 5)}  projectId={project._id}/>
+                          <TopValuableAssetsChart assets={liabilities.slice(0, 5)}  projectId={projectId}/>
                         </div>
                       </div>
                     </div>
@@ -90,7 +75,7 @@ const AssetsDashboard = () => {
                     <div className="col-lg-12 stretch-card">
                   <div className="assetcard WorkingCapitalDashboard">
                     <div className="card-body">
-                      <CandlestickCashFlowChart projectId={project._id}/>
+                      <CandlestickCashFlowChart projectId={projectId}/>
                     </div>
                   </div>
                 </div>
@@ -99,7 +84,7 @@ const AssetsDashboard = () => {
                 <div className="col-lg-4 stretch-card">
                   <div className="assetcard WorkingCapitalDashboard">
                     <div className="card-body">
-                      <WorkingCapitalDashboard projectId={project._id} />
+                      <WorkingCapitalDashboard projectId={projectId} />
                     </div>
                   </div>
                 </div>
@@ -143,9 +128,9 @@ const AssetsDashboard = () => {
                       </div>
                       <div key={selectedForm}>
                         {selectedForm === "asset" ? (
-                          <AssetForm handleClose={() => setIsPopupOpen(false)} projectId={project._id} />
+                          <AssetForm handleClose={() => setIsPopupOpen(false)} projectId={projectId} />
                         ) : (
-                          <AddLiabilityForm handleClose={() => setIsPopupOpen(false)} projectId={project._id} />
+                          <AddLiabilityForm handleClose={() => setIsPopupOpen(false)} projectId={projectId} />
                         )}
                       </div>
 

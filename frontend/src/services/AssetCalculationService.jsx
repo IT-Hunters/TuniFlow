@@ -1,7 +1,7 @@
 const token = localStorage.getItem("token");
-export const fetchWorkingCapital = async (userId) => {
+export const fetchWorkingCapital = async (projectId) => {
     try {
-      const response = await fetch(`http://localhost:3000/assetCalculation/${userId}`, {
+      const response = await fetch(`http://localhost:3000/assetCalculation/${projectId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -22,7 +22,7 @@ export const fetchWorkingCapital = async (userId) => {
   };
   export const fetchCandlestickData = async (userId) => {
     try {
-      console.log("sssssssssssssssssssssssssssss" + userId);
+      
       const response = await fetch(`http://localhost:5000/wallets/cashflow/candlestick2/${userId}`, {
         method: "GET",
         headers: {
@@ -53,11 +53,10 @@ export const fetchWorkingCapital = async (userId) => {
       console.error("Error fetching candlestick data:", error);
     }
   };
-  export const fetchWorkingCapitalStatus = async (userId) => {
+  export const fetchWorkingCapitalStatus = async (projectId) => {
     try {
         // Adjusting the URL to the new endpoint
-        
-        const response = await fetch(`http://localhost:5000/assetCalculation/WorkingCapitalStatus/${userId}`, {
+        const response = await fetch(`http://localhost:5000/assetCalculation/WorkingCapitalStatus/${projectId}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

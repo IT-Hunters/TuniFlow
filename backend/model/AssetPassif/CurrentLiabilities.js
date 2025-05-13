@@ -3,7 +3,7 @@ const Liability = require("./Liability");
 const CurrentLiabilitiesSchema = new mongoose.Schema({
     category: {
         type: String,
-        enum: ["trade_payables", "tax_liabilities", "social_security_liabilities", "other_liabilities"],
+        enum: ["trade_payables", "tax_liabilities", "social_liabilities", "other_liabilities"],
         required: true
     }
 });

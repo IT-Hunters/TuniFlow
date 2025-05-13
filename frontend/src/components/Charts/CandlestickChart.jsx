@@ -10,7 +10,7 @@ const CandlestickCashFlowChart = ( {projectId}) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-
+        console.log("projeeeeeeet " + projectId)
         const data = await fetchCandlestickData(localStorage.getItem("userId"));
         if (data) {
           setChartData(data);

@@ -226,42 +226,36 @@ const getCandlestickData = async (req, res) => {
 };
 
 // 📌 Calculate cash flow history
+
 const calculateCashFlowHistory = async (req, res) => {
   try {
     const { userId } = req.params;
     const { interval = 1 } = req.query;
 
+    // Validate userId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid userId" });
     }
     const userObjectId = new mongoose.Types.ObjectId(userId);
     console.log("User ID:", userObjectId);
 
-    const user = await userModel.findById(userObjectId).select("project");
+    // Find user and select wallet_id
+    const user = await userModel.findById(userObjectId).select("wallet_id");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    console.log("User retrieved:", { _id: user._id, project: user.project });
+    console.log("User retrieved:", { _id: user._id, wallet_id: user.wallet_id });
 
-    if (!user.project) {
-      return res.status(404).json({ message: "No project associated with this user" });
+    // Check if user has a wallet
+    if (!user.wallet_id) {
+      return res.status(404).json({ message: "No wallet associated with this user" });
     }
-
-    const project = await Project.findById(user.project).select("wallet");
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-    console.log("Project retrieved:", project);
-
-    if (!project.wallet) {
-      return res.status(404).json({ message: "No wallet associated with this project" });
-    }
-    const walletId = project.wallet;
-    // const walletId = "681aa801c014b93b9b45aa94"; // Removed hardcoded value
+    const walletId = user.wallet_id;
     console.log("Wallet ID:", walletId);
 
     const walletObjectId = new mongoose.Types.ObjectId(walletId);
 
+    // Aggregation pipeline to calculate cash flow
     const pipeline = [
       { $match: { wallet_id: walletObjectId } },
       {
@@ -311,7 +305,7 @@ const calculateCashFlowHistory = async (req, res) => {
     const cashFlowHistory = await Transaction.aggregate(pipeline);
     console.log("cashFlowHistory:", cashFlowHistory);
     if (!cashFlowHistory.length) {
-      return res.status(404).json({ message: "No transactions found for this project's wallet" });
+      return res.status(404).json({ message: "No transactions found for this user's wallet" });
     }
 
     res.status(200).json(cashFlowHistory);
