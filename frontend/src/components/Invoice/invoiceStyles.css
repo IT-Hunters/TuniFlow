@@ -788,3 +788,59 @@ textarea.invoice-input {
 .generate-button:hover {
   background-color: #0056b3;
 }
+.prediction-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+.prediction-status {
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-align: center;
+}
+.prediction-paid {
+  background-color: #d4edda;
+  color: #155724;
+}
+.prediction-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+.prediction-overdue {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+.prediction-cancelled {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+.prediction-confidence {
+  font-size: 0.85em;
+  color: #6c757d;
+  text-align: center;
+}
+.prediction-details {
+  display: none;
+  font-size: 0.8em;
+  background-color: white;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 4px;
+}
+.prediction-container:hover .prediction-details {
+  display: block;
+}
+.probability-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+.prediction-error {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.9em;
+}
