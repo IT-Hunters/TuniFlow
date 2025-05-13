@@ -219,23 +219,23 @@ const Room = () => {
         <div className="project-details-wrapper">
           <header className="project-header">
             <GoogleTranslate />
-            <h1 className="project-title">Réunions du projet</h1>
+            <h1 className="project-title">Project meetings</h1>
             <div className="action-buttons">
               {/* Vous pouvez ajouter des boutons d'action ici si nécessaire */}
             </div>
           </header>
           <section className="project-details">
             <div className="detail-card">
-              <h2 className="card-title">Liste des réunions</h2>
+              <h2 className="card-title">Reunion List</h2>
               {rooms.length === 0 ? (
-                <p className="no-data">Aucune réunion trouvée pour ce projet.</p>
+                <p className="no-data">No meetings found for this project.</p>
               ) : (
                 <ul className="room-list">
                   {rooms.map((room) => (
                     <li key={room.roomId} className="room-item">
                       <h3>{room.title || `Réunion ${room.roomId}`}</h3>
                       <p>Date: {formatDateTime(room.date)}</p>
-                      <p>Statut: <span className={`status ${room.status.toLowerCase()}`}>{room.status}</span></p>
+                      <p>Status: <span className={`status ${room.status.toLowerCase()}`}>{room.status}</span></p>
                       <p>Participants: {room.participants.length}</p>
                       <div className="room-actions">
                         <button
@@ -243,14 +243,14 @@ const Room = () => {
                           className="action-btn join-btn"
                           disabled={room.status === 'ended' || new Date(room.date) > new Date(new Date().getTime() + 5 * 60 * 1000)}
                         >
-                          Rejoindre
+                          Join
                         </button>
                         <button
                           onClick={() => leaveRoom(room.roomId)}
                           className="action-btn leave-btn"
                           disabled={room.status === 'ended'}
                         >
-                          Quitter
+                          Exit
                         </button>
                         <button
                           onClick={() => deleteRoom(room.roomId)}
