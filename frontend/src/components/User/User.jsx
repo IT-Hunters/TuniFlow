@@ -48,7 +48,7 @@ export default function Dashboard() {
     const fetchMyProjects = async () => {
       try {
        // const role = localStorage.getItem("role")
-        setUserRole("role")
+        setUserRole(localStorage.getItem("role"));
         setLoading(true);
         const response = await axios.get(`${API_USERS}/findMyProject2`, {
           headers: {
@@ -95,14 +95,12 @@ export default function Dashboard() {
         <div className="main-panel">
           <div className="content-wrapper">
             {/* Row 1: StatsCards (full width) */}
-            {userRole === 'BUSINESS_OWNER' && (
               <div className="row">
                 <h2 className="section-title">Overview Across All Projects Owned</h2>
                 <div className="col-lg-12 grid-margin stretch-card">
                   <StatsCards />
                 </div>
               </div>
-            )}
 
             {/* Row 2: Project Selection */}
             <div className="row">

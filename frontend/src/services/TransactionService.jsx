@@ -11,8 +11,8 @@ export const getRevenueData = async (userId) => {
       });
       return response.json(); 
   };
-  export const calculateProfitMargin = async (projectId) => {
-    const response = await fetch(`http://localhost:3000/wallets/calculateProfitMargin/${projectId}`, {
+  export const calculateProfitMargin = async (userId) => {
+    const response = await fetch(`http://localhost:3000/wallets/calculateProfitMargin/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -22,10 +22,10 @@ export const getRevenueData = async (userId) => {
     });
     return response.json(); 
 };
-export const getExpenseData = async (projectId) => {
+export const getExpenseData = async (userId) => {
   try {
     // Current period (last 7 days)
-    const currentResponse = await fetch(`${API_URL}/expenses/${projectId}?period=current`, {
+    const currentResponse = await fetch(`${API_URL}/expenses/${userId}?period=current`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -36,12 +36,12 @@ export const getExpenseData = async (projectId) => {
     const currentData = await currentResponse.json();
 
     // Previous period (previous 7 days)
-    const previousResponse = await fetch(`${API_URL}/expenses/${projectId}?period=previous`, {
+    const previousResponse = await fetch(`${API_URL}/expenses/${userId}?period=previous`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-cache",  
       },
     });
     const previousData = await previousResponse.json();
@@ -82,9 +82,9 @@ export const getTransactions = async (walletId, startDate, endDate) => {
     return [];
   }
 };
-export const getTransactionById = async (walletId) => {
+export const getTransactionById = async (userId) => {
   try {
-      const response = await fetch(`${API_URL}/getTransactionByWalletId/${walletId}`, {
+      const response = await fetch(`${API_URL}/getTransactionByWalletId/${userId}`, {
           method: "GET",
           headers: {
               "Content-Type": "application/json",

@@ -23,8 +23,7 @@ export default function TransactionChart({ walletId }) {
       setError(null);
 
       try {
-        console.log("sssssssssssssssss" , localStorage.getItem("userId"))
-        const data = await getTransactionById("681aa801c014b93b9b45aa94");
+        const data = await getTransactionById(localStorage.getItem("userId"));
         console.log("Transaction data:", data);
         if (!data || !data.data || !Array.isArray(data.data)) {
           throw new Error("Invalid transaction data received");

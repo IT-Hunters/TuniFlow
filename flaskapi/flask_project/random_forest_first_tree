@@ -1,0 +1,33 @@
+digraph Tree {
+node [shape=box, style="filled, rounded", color="black", fontname="helvetica"] ;
+edge [fontname="helvetica"] ;
+0 [label=<avg_amount &le; 3.162<br/>gini = 0.111<br/>samples = 174<br/>value = [11.0, 5.0, 260.0]<br/>class = Medium>, fillcolor="#8945e7"] ;
+1 [label=<Day_of_Month &le; 2.071<br/>gini = 0.092<br/>samples = 173<br/>value = [8, 5, 260]<br/>class = Medium>, fillcolor="#8743e6"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label=<avg_amount &le; -1.348<br/>gini = 0.037<br/>samples = 167<br/>value = [0, 5, 260]<br/>class = Medium>, fillcolor="#833de6"] ;
+1 -> 2 ;
+3 [label=<total_amount &le; -0.951<br/>gini = 0.346<br/>samples = 7<br/>value = [0, 2, 7]<br/>class = Medium>, fillcolor="#a572ec"] ;
+2 -> 3 ;
+4 [label=<transaction_count &le; -1.481<br/>gini = 0.219<br/>samples = 6<br/>value = [0, 1, 7]<br/>class = Medium>, fillcolor="#9355e9"] ;
+3 -> 4 ;
+5 [label=<gini = 0.444<br/>samples = 3<br/>value = [0, 1, 2]<br/>class = Medium>, fillcolor="#c09cf2"] ;
+4 -> 5 ;
+6 [label=<gini = 0.0<br/>samples = 3<br/>value = [0, 0, 5]<br/>class = Medium>, fillcolor="#8139e5"] ;
+4 -> 6 ;
+7 [label=<gini = 0.0<br/>samples = 1<br/>value = [0, 1, 0]<br/>class = Low>, fillcolor="#39e581"] ;
+3 -> 7 ;
+8 [label=<avg_amount &le; -0.665<br/>gini = 0.023<br/>samples = 160<br/>value = [0, 3, 253]<br/>class = Medium>, fillcolor="#823be5"] ;
+2 -> 8 ;
+9 [label=<trans_freq_ratio &le; 0.53<br/>gini = 0.097<br/>samples = 34<br/>value = [0, 3, 56]<br/>class = Medium>, fillcolor="#8844e6"] ;
+8 -> 9 ;
+10 [label=<gini = 0.127<br/>samples = 27<br/>value = [0, 3, 41]<br/>class = Medium>, fillcolor="#8a47e7"] ;
+9 -> 10 ;
+11 [label=<gini = 0.0<br/>samples = 7<br/>value = [0, 0, 15]<br/>class = Medium>, fillcolor="#8139e5"] ;
+9 -> 11 ;
+12 [label=<gini = 0.0<br/>samples = 126<br/>value = [0, 0, 197]<br/>class = Medium>, fillcolor="#8139e5"] ;
+8 -> 12 ;
+13 [label=<gini = 0.0<br/>samples = 6<br/>value = [8, 0, 0]<br/>class = High>, fillcolor="#e58139"] ;
+1 -> 13 ;
+14 [label=<gini = 0.0<br/>samples = 1<br/>value = [3, 0, 0]<br/>class = High>, fillcolor="#e58139"] ;
+0 -> 14 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+}

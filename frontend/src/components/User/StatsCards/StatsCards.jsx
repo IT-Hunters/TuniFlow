@@ -14,10 +14,10 @@ export default function StatsCards() {
   useEffect(() => {
     const getStatsData = async () => {
       const userId = localStorage.getItem("userId");
-      const walletId = "67d15c34ea844b95d23a1788";
+      const projectId = "682382272a3034ef461e1911";
 
       try {
-        const workingCapital = await fetchWorkingCapitalStatus(userId);
+        const workingCapital = await fetchWorkingCapitalStatus(projectId);
         setWorkingCapitalStatus(workingCapital);
 
         const revenue = await getRevenueData(userId);
