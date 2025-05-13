@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from bson import ObjectId
 from prophet import Prophet
 import plotly.offline as pyo
+import os
 
 # ✅ Correction Unicode Windows
 sys.stdout.reconfigure(encoding='utf-8')
@@ -41,11 +42,12 @@ def train_and_predict_for_project(project_id, periods=30):
 
 def main():
     try:
-        if len(sys.argv) != 2:
-            print("❌ Erreur : Merci de fournir l'ID du projet comme argument.")
+        if len(sys.argv) != 3:
+            print("❌ Erreur : Merci de fournir l'ID du projet et le chemin de sortie comme arguments.")
             sys.exit(1)
 
         project_id_input = sys.argv[1]
+        output_dir = sys.argv[2]  # Get the output directory from command-line argument
         forecast_future = train_and_predict_for_project(project_id_input)
 
         min_row = forecast_future.loc[forecast_future['yhat'].idxmin()]
@@ -136,12 +138,14 @@ def main():
             ]
         )
 
-        output_file = f"public/predictions/prediction_project_{project_id_input}.html"
+        # Use the provided output directory
+        output_file = os.path.join(output_dir, f"prediction_project_{project_id_input}.html")
         pyo.plot(fig, filename=output_file, auto_open=False)
         print(f"✅ Graphique interactif généré dans : {output_file}")
 
     except Exception as e:
         print(f"❌ Erreur : {e}")
+        sys.exit(1)
 
     finally:
         client.close()

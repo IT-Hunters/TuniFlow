@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendar } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendar, FaChartBar, FaTimes } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -12,10 +12,12 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Deposit from "./Depossit"; // Note: Fix typo in filename if needed (Depossit → Deposit)
 import Withdraw from "./Withdraw";
 import Transfer from "./Transfer";
-import SalaryScheduler from "./SalaryScheduler"; // Import SalaryScheduler
+import SalaryScheduler from "./SalaryScheduler";
 import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 import "./Tessst.css";
@@ -26,10 +28,14 @@ const Wallet = () => {
   const [activeScreen, setActiveScreen] = useState("main");
   const [walletData, setWalletData] = useState({ balance: 0, currency: "TND", transactions: [] });
   const [walletId, setWalletId] = useState("");
+  const [projectId, setProjectId] = useState("");
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCharts, setShowCharts] = useState(false);
+  const [predictionHtml, setPredictionHtml] = useState("");
+  const [showPrediction, setShowPrediction] = useState(false);
+  const [isPredicting, setIsPredicting] = useState(false);
   const transactionsPerPage = 5;
 
   const fetchUserProfile = async (token) => {
@@ -37,7 +43,7 @@ const Wallet = () => {
       const response = await axios.get("http://localhost:3000/users/findMyProfile", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data._id;
+      return response.data;
     } catch (error) {
       throw new Error(`Erreur lors de la récupération du profil : ${error.message}`);
     }
@@ -92,9 +98,15 @@ const Wallet = () => {
         setError("Veuillez vous connecter pour voir votre portefeuille.");
         return;
       }
-      const userId = await fetchUserProfile(token);
-      const wallet = await fetchWallet(userId, token);
-      setWalletId(wallet._id);
+      const userProfile = await fetchUserProfile(token);
+      const projectId = userProfile.role === "BUSINESS_OWNER" ? userProfile.projects[0] : userProfile.project;
+      if (!projectId) {
+        throw new Error("Aucun projet associé à cet utilisateur.");
+      }
+      setProjectId(projectId);
+      setWalletId(userProfile.wallet_id || ""); // Use wallet_id from profile if available
+      const wallet = await fetchWallet(userProfile._id, token);
+      setWalletId(wallet._id); // Override with fetched wallet ID if different
       const transactions = await fetchTransactions(wallet._id, token);
       setWalletData({
         balance: wallet.balance,
@@ -104,6 +116,54 @@ const Wallet = () => {
     } catch (error) {
       setError(error.message || "Erreur lors de la récupération des données.");
     }
+  };
+
+  const handlePredict = async () => {
+    if (!projectId) {
+      toast.error("Aucun projet sélectionné pour la prédiction.", {
+        position: 'top-center',
+        autoClose: 5000,
+        theme: 'colored',
+      });
+      return;
+    }
+    setIsPredicting(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Veuillez vous connecter pour effectuer une prédiction.", {
+          position: 'top-center',
+          autoClose: 5000,
+          theme: 'colored',
+        });
+        return;
+      }
+      const response = await axios.get(`http://localhost:3000/predict/predict/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPredictionHtml(response.data.html);
+      setShowPrediction(true);
+    } catch (error) {
+      console.error("Error during prediction:", error);
+      toast.error(error.response?.data?.error || "Erreur lors de la prédiction.", {
+        position: 'top-center',
+        autoClose: 5000,
+        theme: 'colored',
+      });
+    } finally {
+      setIsPredicting(false);
+    }
+  };
+
+  const closePrediction = () => {
+    setShowPrediction(false);
+    setPredictionHtml("");
+  };
+
+  const refreshWalletData = () => {
+    fetchWalletData();
+    setActiveScreen("main");
   };
 
   useEffect(() => {
@@ -117,11 +177,6 @@ const Wallet = () => {
       isMounted = false;
     };
   }, []);
-
-  const refreshWalletData = () => {
-    fetchWalletData();
-    setActiveScreen("main");
-  };
 
   const filteredTransactions = walletData.transactions.filter((transaction) =>
     filter === "all" ? true : transaction.type === filter
@@ -166,6 +221,7 @@ const Wallet = () => {
 
   return (
     <div className="app-container">
+      <ToastContainer />
       <CoolSidebar />
       <div className="elyess-content">
         <Navbar />
@@ -176,15 +232,71 @@ const Wallet = () => {
               {error && <p className="error-message">{error}</p>}
             </div>
 
+            <div className="wallet-actions">
+              <div className="action" onClick={() => setActiveScreen("deposit")}>
+                <div className="action-icon">
+                  <FaArrowDown />
+                </div>
+                <p>Deposit</p>
+              </div>
+              <div className="action" onClick={() => setActiveScreen("withdraw")}>
+                <div className="action-icon">
+                  <FaArrowUp />
+                </div>
+                <p>Withdrawal</p>
+              </div>
+              <div className="action" onClick={() => setActiveScreen("transfer")}>
+                <div className="action-icon">
+                  <FaExchangeAlt />
+                </div>
+                <p>Transfer</p>
+              </div>
+              <div className="action" onClick={() => setActiveScreen("scheduler")}>
+                <div className="action-icon">
+                  <FaCalendar />
+                </div>
+                <p>Salary Scheduler</p>
+              </div>
+              <div className="action" onClick={handlePredict} disabled={isPredicting || !projectId}>
+                <div className="action-icon">
+                  <FaChartBar />
+                </div>
+                <p>{isPredicting ? "Predicting..." : "Predict"}</p>
+              </div>
+            </div>
+
+            {showPrediction && (
+              <div className="prediction-container">
+                <div className="prediction-header">
+                  <h3>Prediction Results for Project {projectId.slice(-4)}</h3>
+                  <button className="close-prediction" onClick={closePrediction}>
+                    <FaTimes />
+                  </button>
+                </div>
+                <div className="prediction-content">
+                  {isPredicting ? (
+                    <div className="loading-spinner">
+                      <span className="spinner-icon"></span> Generating prediction...
+                    </div>
+                  ) : (
+                    <iframe
+                      srcDoc={predictionHtml}
+                      title="Prediction Chart"
+                      className="prediction-iframe"
+                      sandbox="allow-scripts"
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="wallet-cards-container">
-              {/* Balance Card */}
               <div className="wallet-card balance">
                 <div className="wallet-card-title">
                   <div className="wallet-card-title-left">
                     <span className="wallet-card-icon-wrapper">
                       <svg width="20" fill="currentColor" height="20" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1362 1185q0 153-99.5 263.5t-258.5 136.5v175q0 14-9 23t-23 9h-135q-13 0-22.5-9.5t-9.5-22.5v-175q-66-9-127.5-31t-101.5-44.5-74-48-46.5-37.5-17.5-18q-17-21-2-41l103-135q7-10 23-12 15-2 24 9l2 2q113 99 243 125 37 8 74 8 81 0 142.5-43t61.5-122q0-28-15-53t-33.5-42-58.5-37.5-66-32-80-32.5q-39-16-61.5-25t-61.5-26.5-62.5-31-56.5-35.5-53.5-42.5-43.5-49-35.5-58-21-66.5-8.5-78q0-138 98-242t255-134v-180q0-13 9.5-22.5t22.5-9.5h135q14 0 23 9t9 23v176q57 6 110.5 23t87 33.5 63.5 37.5 39 29 15 14q17 18 5 38l-81 146q-8 15-23 16-14 3-27-7-3-3-14.5-12t-39-26.5-58.5-32-74.5-26-85.5-11.5q-95 0-155 43t-60 111q0 26 8.5 48t29.5 41.5 39.5 33 56 31 60.5 27 70 27.5q53 20 81 31.5t76 35 75.5 42.5 62 50 53 63.5 31.5 76.5 13 94z">
-                        </path>
+                        <path d="M1362 1185q0 153-99.5 263.5t-258.5 136.5v175q0 14-9 23t-23 9h-135q-13 0-22.5-9.5t-9.5-22.5v-175q-66-9-127.5-31t-101.5-44.5-74-48-46.5-37.5-17.5-18q-17-21-2-41l103-135q7-10 23-12 15-2 24 9l2 2q113 99 243 125 37 8 74 8 81 0 142.5-43t61.5-122q0-28-15-53t-33.5-42-58.5-37.5-66-32-80-32.5q-39-16-61.5-25t-61.5-26.5-62.5-31-56.5-35.5-53.5-42.5-43.5-49-35.5-58-21-66.5-8.5-78q0-138 98-242t255-134v-180q0-13 9.5-22.5t22.5-9.5h135q14 0 23 9t9 23v176q57 6 110.5 23t87 33.5 63.5 37.5 39 29 15 14q17 18 5 38l-81 146q-8 15-23 16-14 3-27-7-3-3-14.5-12t-39-26.5-58.5-32-74.5-26-85.5-11.5q-95 0-155 43t-60 111q0 26 8.5 48t29.5 41.5 39.5 33 56 31 60.5 27 70 27.5q53 20 81 31.5t76 35 75.5 42.5 62 50 53 63.5 31.5 76.5 13 94z"></path>
                       </svg>
                     </span>
                     <p className="wallet-card-title-text">Total Balance</p>
@@ -198,7 +310,6 @@ const Wallet = () => {
                 </div>
               </div>
 
-              {/* Income Card */}
               <div className="wallet-card income">
                 <div className="wallet-card-title">
                   <div className="wallet-card-title-left">
@@ -226,7 +337,6 @@ const Wallet = () => {
                 </div>
               </div>
 
-              {/* Expenses Card */}
               <div className="wallet-card expenses">
                 <div className="wallet-card-title">
                   <div className="wallet-card-title-left">
@@ -252,33 +362,6 @@ const Wallet = () => {
                     <div className="wallet-card-range-fill"></div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="wallet-actions">
-              <div className="action" onClick={() => setActiveScreen("deposit")}>
-                <div className="action-icon">
-                  <FaArrowDown />
-                </div>
-                <p>Deposit</p>
-              </div>
-              <div className="action" onClick={() => setActiveScreen("withdraw")}>
-                <div className="action-icon">
-                  <FaArrowUp />
-                </div>
-                <p>Withdrawal</p>
-              </div>
-              <div className="action" onClick={() => setActiveScreen("transfer")}>
-                <div className="action-icon">
-                  <FaExchangeAlt />
-                </div>
-                <p>Transfer</p>
-              </div>
-              <div className="action" onClick={() => setActiveScreen("scheduler")}>
-                <div className="action-icon">
-                  <FaCalendar />
-                </div>
-                <p>Salary Scheduler</p>
               </div>
             </div>
 
@@ -375,10 +458,14 @@ const Wallet = () => {
           </div>
         )}
 
-        {activeScreen === "deposit" && <Deposit goBack={refreshWalletData} walletId={walletId} />}
-        {activeScreen === "withdraw" && <Withdraw goBack={refreshWalletData} walletId={walletId} />}
-        {activeScreen === "transfer" && <Transfer goBack={refreshWalletData} walletId={walletId} />}
-        {activeScreen === "scheduler" && <SalaryScheduler goBack={refreshWalletData} walletId={walletId} />}
+        {activeScreen !== "main" && (
+          <>
+            {activeScreen === "deposit" && <Deposit goBack={refreshWalletData} walletId={walletId} />}
+            {activeScreen === "withdraw" && <Withdraw goBack={refreshWalletData} walletId={walletId} />}
+            {activeScreen === "transfer" && <Transfer goBack={refreshWalletData} walletId={walletId} />}
+            {activeScreen === "scheduler" && <SalaryScheduler goBack={refreshWalletData} walletId={walletId} />}
+          </>
+        )}
       </div>
     </div>
   );
