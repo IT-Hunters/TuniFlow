@@ -212,22 +212,41 @@ exports.getTransactions = async (req, res) => {
 };
 
 exports.getTransactionByWalletId = async (req, res) => {
-  try {
-    const { walletId } = req.params;
-    const transaction = await Transaction.find({ wallet_id: walletId });
+ try {
+    const { userId } = req.params;
 
-    if (!transaction || transaction.length === 0) {
-      return res.status(404).json({ 
-        message: "Transaction not found for this wallet" 
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
+
+    // Find user and select wallet_id
+    const user = await User.findById(userId).select("wallet_id");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if user has a wallet
+    if (!user.wallet_id) {
+      return res.status(404).json({ message: "No wallet associated with this user" });
+    }
+
+    // Find transactions for the user's wallet
+    const transactions = await Transaction.find({ wallet_id: user.wallet_id });
+
+    if (!transactions || transactions.length === 0) {
+      return res.status(404).json({
+        message: "No transactions found for this user's wallet",
       });
     }
 
     res.status(200).json({
-      message: "Transaction retrieved successfully",
-      data: transaction
+      message: "Transactions retrieved successfully",
+      data: transactions,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Error retrieving transactions:", err.stack);
+    res.status(500).json({ message: "Failed to retrieve transactions", error: err.message });
   }
 };
 

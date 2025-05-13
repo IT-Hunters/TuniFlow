@@ -13,7 +13,7 @@ router.post("/withdraw/:walletId", transactioncontroller.withdraw);
 router.get("/balance/:walletId", transactioncontroller.getBalance);
 
 router.get("/getTransactions/:walletId", transactioncontroller.getTransactions); 
-router.get("/getTransactionByWalletId/:walletId", transactioncontroller.getTransactionByWalletId);
+router.get("/getTransactionByWalletId/:userId", transactioncontroller.getTransactionByWalletId);
 
 // 📌 Annuler une transaction
 router.put("/cancelTransaction/:transactionId", transactioncontroller.cancelTransaction); 
