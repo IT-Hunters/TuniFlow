@@ -3,7 +3,7 @@ import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
 import { FaPaperPlane, FaSmile, FaPaperclip, FaEllipsisH } from "react-icons/fa";
 import { jwtDecode } from "jwt-decode";
-import ChatService from "../../services/ChatService"; // Ajustez le chemin
+import ChatService from "../../services/ChatService";
 import axios from "axios";
 import "./chat.css";
 
@@ -17,10 +17,13 @@ const Chat = () => {
     const [typingUser, setTypingUser] = useState(null);
     const [error, setError] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [adminId, setAdminId] = useState(null);
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const fileInputRef = useRef(null);
-    const ADMIN_ID = "681a152d206ec575db21fbed";
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -34,7 +37,21 @@ const Chat = () => {
             const decodedToken = jwtDecode(token);
             setSenderId(decodedToken.userId);
             setSocket(ChatService.initializeSocket());
-            initializeChat(token, decodedToken.userId);
+            
+            // Récupérer l'ID de l'admin
+            const fetchAdminId = async () => {
+                try {
+                    const response = await axios.get("http://localhost:5000/users/admin", {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setAdminId(response.data._id);
+                    initializeChat(token, decodedToken.userId, response.data._id);
+                } catch (error) {
+                    setError("Erreur lors de la récupération de l'admin : " + error.message);
+                }
+            };
+            
+            fetchAdminId();
             ChatService.emitUserOnline(decodedToken.userId);
         } catch (error) {
             setError("Erreur lors du décodage du token : " + error.message);
@@ -88,12 +105,12 @@ const Chat = () => {
         };
     }, [socket, chatId, senderId]);
 
-    const initializeChat = async (token, userId) => {
+    const initializeChat = async (token, userId, adminId) => {
         try {
             const chats = await ChatService.getUserChats();
             const existingChat = chats.find(chat =>
                 chat.participants.some(p => p._id.toString() === userId) &&
-                chat.participants.some(p => p._id.toString() === ADMIN_ID)
+                chat.participants.some(p => p._id.toString() === adminId)
             );
 
             if (existingChat) {
@@ -163,11 +180,63 @@ const Chat = () => {
         }
     };
 
-    const handleTyping = (e) => {
-        setMessageInput(e.target.value);
-        if (chatId && senderId) {
-            ChatService.emitTyping(chatId, senderId, e.target.value.length > 0);
+    const generateAISuggestions = async (text) => {
+        if (!text || text.length < 2) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return;
         }
+
+        setIsLoadingSuggestions(true);
+        try {
+            const response = await axios.post(
+                "http://localhost:5001/suggest",
+                { text },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                }
+            );
+
+            if (response.data && response.data.suggestions) {
+                setSuggestions(response.data.suggestions);
+                setShowSuggestions(true);
+            }
+        } catch (error) {
+            console.error("Erreur lors de la génération des suggestions:", error);
+            // Fallback aux suggestions de base en cas d'erreur
+            const fallbackSuggestions = [
+                `${text}...`,
+                `${text} please`,
+                `${text} thank you`,
+            ];
+            setSuggestions(fallbackSuggestions);
+            setShowSuggestions(true);
+        } finally {
+            setIsLoadingSuggestions(false);
+        }
+    };
+
+    const handleTyping = (e) => {
+        const text = e.target.value;
+        setMessageInput(text);
+        
+        // Debounce pour éviter trop d'appels API
+        const timeoutId = setTimeout(() => {
+            generateAISuggestions(text);
+        }, 300);
+
+        if (chatId && senderId) {
+            ChatService.emitTyping(chatId, senderId, text.length > 0);
+        }
+
+        return () => clearTimeout(timeoutId);
+    };
+
+    const selectSuggestion = (suggestion) => {
+        setMessageInput(suggestion);
+        setShowSuggestions(false);
     };
 
     const scrollToBottom = () => {
@@ -282,22 +351,43 @@ const Chat = () => {
                             type="file"
                             ref={fileInputRef}
                             style={{ display: "none" }}
-                            accept="image/png,image/jpeg,image/jpg,image/jfif,application/pdf" // Accepter images et PDF
+                            accept="image/png,image/jpeg,image/jpg,image/jfif,application/pdf"
                             onChange={handleFileUpload}
                         />
-                        <input
-                            type="text"
-                            placeholder="Write a message..."
-                            value={messageInput}
-                            onChange={handleTyping}
-                            onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                        />
+                        <div className="input-container">
+                            <input
+                                type="text"
+                                placeholder="Write a message..."
+                                value={messageInput}
+                                onChange={handleTyping}
+                                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                            />
+                            {showSuggestions && suggestions.length > 0 && (
+                                <div className="suggestions-container">
+                                    {isLoadingSuggestions ? (
+                                        <div className="suggestion-loading">
+                                            <span>AI is thinking...</span>
+                                        </div>
+                                    ) : (
+                                        suggestions.map((suggestion, index) => (
+                                            <div
+                                                key={index}
+                                                className="suggestion-item"
+                                                onClick={() => selectSuggestion(suggestion)}
+                                            >
+                                                {suggestion}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                        </div>
                         <FaSmile
                             className="input-icon"
                             onClick={() => setShowEmojiPicker((prev) => !prev)}
                         />
                         {showEmojiPicker && (
-                            <div className="emoji-picker" style={{ position: "absolute", bottom: "60px", right: "20px" }}>
+                            <div className="emoji-picker">
                                 {emojis.map((emoji, index) => (
                                     <span
                                         key={index}

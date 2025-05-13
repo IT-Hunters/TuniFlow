@@ -3,7 +3,7 @@ var router = express.Router();
 const { Register,Login,getAll,findMyProfile,deleteprofilbyid,deletemyprofile,acceptAutorisation,getAvailableAndAssignedBusinessManagers
   ,updateProfile,AddPicture,getAllBusinessManagers,getAllAccountants,getAllFinancialManagers,findMyProjectsOwner,updateFirstLogin,
   getAllRH,findMyProject,Registerwithproject,resetPassword,forgotPassword,verifyCode,sendVerificationCode,getAllempl,addEmployeesFromExcel,deleteById,
-  getAllBusinessOwners,fetchProjectByUser,findMyProject2,addEmployee,downloadEvidence,RegisterManger,getAllRoles,findMyPicture,logout,getbyid,updateById} = require('../controllers/auth');
+  getAllBusinessOwners,fetchProjectByUser,findMyProject2,addEmployee,downloadEvidence,RegisterManger,getAllRoles,findMyPicture,logout,getbyid,updateById, getAdmin } = require('../controllers/auth');
   const multerImage = require("../config/multer-picture");
   const multerImageAndPdf = require("../config/multer-picture-pdf");
   const multerExcel = require("../config/multer-excel");
@@ -66,4 +66,5 @@ router.put('/update-firstlogin', authenticateJWT, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+router.get("/admin", getAdmin);
 module.exports = router;

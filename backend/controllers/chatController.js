@@ -2,6 +2,15 @@ const Chat = require("../model/Chat");
 const userModel = require("../model/user");
 const BusinessOwner = require("../model/BusinessOwner");
 
+// Fonction utilitaire pour obtenir l'ID de l'admin
+const getAdminId = async () => {
+    const admin = await userModel.findOne({ role: "ADMIN" });
+    if (!admin) {
+        throw new Error("Admin not found");
+    }
+    return admin._id;
+};
+
 const startChat = async (req, res) => {
     try {
         const { recipientId, projectId } = req.body;
@@ -41,9 +50,9 @@ const sendMessage = async (req, res) => {
     console.log("sendMessage appelé avec:", req.body, "Utilisateur:", req.user);
     const { content, chatId } = req.body;
     const senderId = req.user.userId;
-    const adminId = "681a152d206ec575db21fbed";
 
     try {
+        const adminId = await getAdminId();
         let chat;
         if (chatId) {
             chat = await Chat.findById(chatId);

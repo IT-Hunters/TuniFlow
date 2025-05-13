@@ -25,7 +25,6 @@ const ChatAdmin = () => {
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const fileInputRef = useRef(null);
-    const ADMIN_ID = "681a152d206ec575db21fbed";
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -37,7 +36,7 @@ const ChatAdmin = () => {
         try {
             const decodedToken = jwtDecode(token);
             setSenderId(decodedToken.userId);
-            if (decodedToken.userId !== ADMIN_ID) {
+            if (decodedToken.role !== "ADMIN") {
                 setError("Vous n'êtes pas autorisé à accéder à cette page.");
                 return;
             }
@@ -58,7 +57,7 @@ const ChatAdmin = () => {
         ChatService.joinChat(chatId);
 
         const handleNewChat = (data) => {
-            if (data.participants.includes(ADMIN_ID)) {
+            if (data.participants.includes(senderId)) {
                 console.log("Nouveau chat détecté pour l'Admin:", data);
                 loadChats(localStorage.getItem("token"));
             }
@@ -115,36 +114,26 @@ const ChatAdmin = () => {
     const loadChats = async (token) => {
         try {
             const chats = await ChatService.getUserChats();
-            const adminChats = chats.filter(chat =>
-                chat.participants.some(p => p._id.toString() === ADMIN_ID)
-            );
-
-            const businessOwnerIds = adminChats.map(chat =>
-                chat.participants.find(p => p._id.toString() !== ADMIN_ID)._id.toString()
-            );
-
             const response = await axios.get("http://localhost:5000/users/getAllBusinessOwners", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const allBusinessOwners = response.data;
-            const relevantBusinessOwners = allBusinessOwners.filter(owner =>
-                businessOwnerIds.includes(owner._id.toString())
-            );
 
-            const updatedOwners = relevantBusinessOwners.map(owner => {
-                const chat = adminChats.find(c =>
-                    c.participants.some(p => p._id.toString() === owner._id)
+            const updatedOwners = allBusinessOwners.map(owner => {
+                const chat = chats.find(c =>
+                    c.participants.some(p => p._id.toString() === owner._id) &&
+                    c.participants.some(p => p._id.toString() === senderId)
                 );
-                return { ...owner, chatId: chat._id, hasChat: true };
+                return { ...owner, chatId: chat ? chat._id : null, hasChat: !!chat };
             });
 
             setBusinessOwners(updatedOwners);
 
             const unread = {};
-            adminChats.forEach(chat => {
-                const businessOwnerId = chat.participants.find(id => id.toString() !== ADMIN_ID);
+            chats.forEach(chat => {
+                const businessOwnerId = chat.participants.find(id => id.toString() !== senderId);
                 unread[businessOwnerId] = chat.messages.filter(
-                    msg => msg.sender.toString() !== ADMIN_ID && !msg.read
+                    msg => msg.sender.toString() !== senderId && !msg.read
                 ).length;
             });
             setUnreadMessages(unread);
@@ -158,7 +147,6 @@ const ChatAdmin = () => {
         setSelectedUser(user);
         setError(null);
 
-        // Masquer la sidebar uniquement si on est sur mobile (≤ 768px)
         if (window.innerWidth <= 768) {
             setIsSidebarVisible(false);
         }
@@ -171,17 +159,29 @@ const ChatAdmin = () => {
             setUnreadMessages((prev) => ({ ...prev, [user._id]: 0 }));
             scrollToBottom();
         } else {
-            setMessages([]);
-            setChatId("");
-            setError("Aucune conversation existante avec cet utilisateur.");
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.post(
+                    "http://localhost:5000/chat/create",
+                    { participants: [senderId, user._id] },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                const newChat = response.data;
+                setChatId(newChat._id);
+                ChatService.joinChat(newChat._id);
+                setMessages([]);
+                loadChats(token);
+            } catch (error) {
+                setError("Erreur lors de la création du chat : " + error.message);
+            }
         }
     };
 
     const showSidebar = () => {
-        setIsSidebarVisible(true); // Afficher la sidebar
-        setSelectedUser(null); // Désélectionner l’utilisateur pour revenir à la liste
-        setMessages([]); // Vider les messages
-        setChatId(""); // Réinitialiser le chatId
+        setIsSidebarVisible(true);
+        setSelectedUser(null);
+        setMessages([]);
+        setChatId("");
     };
 
     const sendMessage = () => {

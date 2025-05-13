@@ -1789,13 +1789,25 @@ const fetchProjectByUser = async (req, res) => {
     }
   };
 
+const getAdmin = async (req, res) => {
+    try {
+        const admin = await userModel.findOne({ role: "ADMIN" });
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+        res.status(200).json(admin);
+    } catch (error) {
+        console.error("Error retrieving admin:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
 
 module.exports = {
-    Register, Login, getAll,getAvailableAndAssignedBusinessManagers,
+    Register, Login, getAll, getAvailableAndAssignedBusinessManagers,
     findMyProfile, deleteprofilbyid, deletemyprofile,
     acceptAutorisation, updateProfile, AddPicture, getBusinessOwnerFromToken,
     getAllBusinessManagers, getAllAccountants, getAllFinancialManagers, getAllRH, findMyProject, Registerwithproject,
-    resetPassword, forgotPassword, verifyCode, sendVerificationCode, getAllempl, addEmployeesFromExcel, getAllBusinessOwners, addEmployee, downloadEvidence, RegisterManger,           // New
-     getAllRoles, findMyPicture, logout, getbyid, deleteById, updateById, findMyProjectsOwner, updateFirstLogin,findMyProject2,fetchProjectByUser   // New
-   
+    resetPassword, forgotPassword, verifyCode, sendVerificationCode, getAllempl, addEmployeesFromExcel, getAllBusinessOwners, addEmployee, downloadEvidence, RegisterManger,
+    getAllRoles, findMyPicture, logout, getbyid, deleteById, updateById, findMyProjectsOwner, updateFirstLogin, findMyProject2, fetchProjectByUser,
+    getAdmin
 };
