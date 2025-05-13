@@ -1,3 +1,6 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-pydantic==2.4.2 
+flask==2.0.1
+flask-cors==3.0.10
+werkzeug==2.0.1
+pydantic==1.8.2
+python-multipart==0.0.5
+typing-extensions==3.10.0.2

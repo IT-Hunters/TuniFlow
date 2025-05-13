@@ -271,37 +271,62 @@ exports.forecastTaxes = async (req, res) => {
       return res.status(401).json({ message: "Utilisateur non authentifié" });
     }
 
+    // Récupérer les 12 derniers états financiers pour l'entraînement
     const statements = await FinancialStatement.find({ wallet_id: walletId })
       .populate("taxes")
       .sort({ date: -1 })
-      .limit(3);
+      .limit(12);
 
     if (statements.length === 0) {
       return res.status(404).json({ message: "Aucun état financier trouvé pour la prévision" });
     }
 
-    const avgRevenue =
-      statements.reduce((sum, s) => sum + s.total_revenue, 0) / statements.length;
-    const avgNetProfit =
-      statements.reduce((sum, s) => sum + s.net_profit, 0) / statements.length;
+    // Préparer les données pour le modèle
+    const historicalData = statements.map(statement => ({
+      total_revenue: statement.total_revenue,
+      total_expenses: statement.total_expenses,
+      net_profit: statement.net_profit,
+      taxes: statement.taxes.map(tax => ({
+        type: tax.type,
+        rate: tax.rate,
+        amount: tax.amount
+      }))
+    }));
 
-    const taxTypes = [...new Set(statements.flatMap((s) => s.taxes.map((t) => t.type)))];
-    const taxes = [];
+    // Appeler le service Python pour les prédictions
+    const response = await fetch('http://localhost:5001/forecast-taxes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        historical_data: historicalData,
+        current_data: historicalData[0] // Utiliser les données les plus récentes
+      })
+    });
 
-    for (const type of taxTypes) {
-      const rates = statements
-        .flatMap((s) => s.taxes.filter((t) => t.type === type))
-        .map((t) => t.rate);
-      const avgRate = rates.reduce((sum, r) => sum + r, 0) / rates.length;
-      const amount = type === "Corporate Tax" ? avgNetProfit * avgRate : avgRevenue * avgRate;
-      taxes.push({
-        type,
-        rate: avgRate,
-        amount: amount > 0 ? amount : 0,
-      });
+    if (!response.ok) {
+      throw new Error('Erreur lors de la prédiction des taxes');
     }
 
-    res.status(200).json({ taxes });
+    const predictions = await response.json();
+
+    // Formater les résultats
+    const taxTypes = [...new Set(statements[0].taxes.map(t => t.type))];
+    const forecastedTaxes = taxTypes.map((type, index) => ({
+      type,
+      predicted_amount: predictions[index],
+      confidence: 0.85 // Niveau de confiance fixe pour l'exemple
+    }));
+
+    res.status(200).json({
+      forecasted_taxes: forecastedTaxes,
+      historical_trends: {
+        avg_revenue: statements.reduce((sum, s) => sum + s.total_revenue, 0) / statements.length,
+        avg_expenses: statements.reduce((sum, s) => sum + s.total_expenses, 0) / statements.length,
+        avg_net_profit: statements.reduce((sum, s) => sum + s.net_profit, 0) / statements.length
+      }
+    });
   } catch (error) {
     console.error("Erreur lors de la prévision des taxes:", error);
     res.status(500).json({ message: error.message });

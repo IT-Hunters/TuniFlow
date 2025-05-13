@@ -311,16 +311,79 @@ const FinancialStatements = () => {
         setError("Veuillez vous connecter pour prévoir les taxes.");
         return;
       }
-      const response = await axios.post(
-        "http://localhost:3000/financial_statements/forecast",
-        { walletId },
+
+      // Récupérer les états financiers pour les données historiques
+      const statements = await axios.get(
+        `http://localhost:3000/financial_statements/wallet/${walletId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setForecastData(response.data);
+
+      console.log("États financiers récupérés:", statements.data);
+
+      // Préparer les données pour le modèle
+      const historicalData = statements.data.slice(0, 12).map(statement => {
+        console.log("Traitement de l'état financier:", statement);
+        return {
+          total_revenue: Number(statement.total_revenue) || 0,
+          total_expenses: Number(statement.total_expenses) || 0,
+          net_profit: Number(statement.net_profit) || 0,
+          taxes: statement.taxes.map(tax => ({
+            type: tax.type,
+            rate: Number(tax.rate) || 0,
+            amount: Number(tax.amount) || 0
+          }))
+        };
+      });
+
+      console.log("Données historiques préparées:", historicalData);
+
+      // Utiliser les données les plus récentes comme données actuelles
+      const currentData = historicalData[0] || {
+        total_revenue: 0,
+        total_expenses: 0,
+        net_profit: 0,
+        taxes: []
+      };
+
+      console.log("Données actuelles:", currentData);
+
+      // Appeler le service de prédiction Flask
+      const response = await axios.post(
+        "http://192.168.100.111:5001/forecast-taxes",
+        {
+          historical_data: historicalData,
+          current_data: currentData
+        }
+      );
+
+      console.log("Réponse du service de prédiction:", response.data);
+
+      // Formater les résultats
+      const taxTypes = [...new Set(historicalData[0]?.taxes.map(t => t.type) || [])];
+      const forecastedTaxes = taxTypes.map((type, index) => {
+        const prediction = response.data[index];
+        console.log(`Prédiction pour ${type}:`, prediction);
+        return {
+          type,
+          predicted_amount: Number(prediction?.predicted_amount) || 0,
+          confidence: Number(prediction?.confidence) || 0.5
+        };
+      });
+
+      console.log("Taxes prévues formatées:", forecastedTaxes);
+
+      setForecastData({
+        forecasted_taxes: forecastedTaxes,
+        historical_trends: {
+          avg_revenue: historicalData.reduce((sum, s) => sum + s.total_revenue, 0) / historicalData.length,
+          avg_expenses: historicalData.reduce((sum, s) => sum + s.total_expenses, 0) / historicalData.length,
+          avg_net_profit: historicalData.reduce((sum, s) => sum + s.net_profit, 0) / historicalData.length
+        }
+      });
       setError("");
     } catch (error) {
+      console.error("Erreur détaillée:", error);
       setError(error.response?.data?.message || "Erreur lors de la prévision des taxes.");
-      console.error("Erreur frontend:", error.response?.data);
     }
   };
 
@@ -498,10 +561,23 @@ const FinancialStatements = () => {
             </div>
             {forecastData && (
               <div className="forecast-results">
-                {forecastData.taxes.map((tax, index) => (
-                  <p key={`forecast-tax-${index}`}>
-                    {tax.type}: {tax.amount.toFixed(2)} {walletData.currency} (Taux: {(tax.rate * 100).toFixed(2)}%)
-                  </p>
+                {forecastData.forecasted_taxes.map((tax, index) => (
+                  <div key={`forecast-tax-${index}`} className="forecast-tax-item">
+                    <h4>{tax.type}</h4>
+                    <p className="predicted-amount">
+                      Montant prévu : {Number(tax.predicted_amount || 0).toFixed(2)} {walletData.currency}
+                    </p>
+                    <p className="confidence-level">
+                      Niveau de confiance : {Math.round((tax.confidence || 0) * 100)}%
+                      <span className="confidence-explanation">
+                        {(tax.confidence || 0) >= 0.9 ? " (Très fiable)" :
+                         (tax.confidence || 0) >= 0.8 ? " (Fiable)" :
+                         (tax.confidence || 0) >= 0.7 ? " (Assez fiable)" :
+                         (tax.confidence || 0) >= 0.6 ? " (Modérément fiable)" :
+                         " (Peu fiable)"}
+                      </span>
+                    </p>
+                  </div>
                 ))}
               </div>
             )}
