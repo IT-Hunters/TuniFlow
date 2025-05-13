@@ -391,159 +391,123 @@ exports.transfer = async (req, res) => {
   }
 };
 
-// 📌 Get the total revenue (income transactions)
 exports.getRevenue = async (req, res) => {
   try {
-      const { userId } = req.params;
+    const { userId } = req.params;
 
-      // Validate userId
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-          return res.status(400).json({ message: "Invalid userId" });
-      }
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
 
-      // Fetch user and their project field
-      const user = await User.findById(userId).select("project");
-      if (!user) {
-          return res.status(404).json({ message: "User not found" });
-      }
-      console.log('User retrieved:', user);
+    // Find user and select wallet_id
+    const user = await User.findById(userId).select("wallet_id");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-      // Check if user has a project assigned
-      if (!user.project) {
-          return res.status(404).json({ message: "No project associated with this user" });
-      }
-      console.log('Project ID:', user.project);
+    // Check if user has a wallet
+    if (!user.wallet_id) {
+      return res.status(404).json({ message: "No wallet associated with this user" });
+    }
+    const walletId = user.wallet_id;
 
-      // Fetch the project and its wallet
-      const project = await Project.findById(user.project).select("wallet");
-      if (!project) {
-          return res.status(404).json({ message: "Project not found" });
-      }
-      console.log("Project retrieved:", project);
+    // Fetch all income transactions for the user's wallet
+    const transactions = await Transaction.find({ wallet_id: walletId, type: "income" });
 
-      if (!project.wallet) {
-          return res.status(404).json({ message: "No wallet associated with this project" });
-      }
-      const walletId = project.wallet;
-      // const walletId = "681aa801c014b93b9b45aa94"; // Removed hardcoded value
-      console.log("Wallet ID:", walletId);
+    // Calculate total revenue by summing the amounts of all income transactions
+    const totalRevenue = transactions.reduce((acc, t) => acc + t.amount, 0);
 
-      // Fetch all income transactions for the wallet
-      const transactions = await Transaction.find({
-          wallet_id: new mongoose.Types.ObjectId(walletId),
-          type: "income",
-      });
+    // Calculate the change in revenue
+    const previousWeekRevenue = await getPreviousWeekRevenue(walletId);
+    const revenueChange = totalRevenue - previousWeekRevenue;
 
-      // Calculate total revenue
-      const totalRevenue = transactions.reduce((acc, t) => acc + t.amount, 0);
-
-      // Calculate the change in revenue
-      const previousWeekRevenue = await getPreviousWeekRevenue([walletId]);
-      const revenueChange = totalRevenue - previousWeekRevenue;
-
-      res.status(200).json({
-          totalRevenue,
-          revenueChange,
-      });
-  } catch (error) {
-      console.error("Error calculating revenue:", error.stack);
-      res.status(500).json({ message: "Failed to calculate revenue", error: error.message });
+    res.status(200).json({
+      totalRevenue,
+      revenueChange,
+    });
+  } catch (err) {
+    console.error("Error retrieving revenue:", err.stack);
+    res.status(500).json({ message: "Failed to retrieve revenue", error: err.message });
   }
 };
 
-// 📌 Helper function to fetch the previous week's revenue
-const getPreviousWeekRevenue = async (walletIds) => {
-  const today = new Date();
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - 14);
-  const endDate = new Date(today);
-  endDate.setDate(today.getDate() - 7);
+// Helper function to fetch the previous week's revenue
+async function getPreviousWeekRevenue(walletId) {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-  const transactions = await Transaction.find({
-    wallet_id: { $in: walletIds.map(id => new mongoose.Types.ObjectId(id)) },
+  const previousWeekTransactions = await Transaction.find({
+    wallet_id: walletId,
     type: "income",
-    date: { $gte: startDate, $lte: endDate },
+    date: { $gte: oneWeekAgo },
   });
 
-  return transactions.reduce((acc, t) => acc + t.amount, 0);
-};
+  return previousWeekTransactions.reduce((acc, t) => acc + t.amount, 0);
+}
 
 exports.getExpenses = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { period } = req.query;
+  try {
+    const { userId } = req.params;
+    const { period } = req.query;
 
-        // Validate userId
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: "Invalid userId" });
-        }
-
-        // Fetch user and their project field
-        const user = await User.findById(userId).select("project");
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        console.log('User retrieved:', user);
-
-        // Check if user has a project assigned
-        if (!user.project) {
-            return res.status(404).json({ message: "No project associated with this user" });
-        }
-        console.log('Project ID:', user.project);
-
-        // Fetch the project and its wallet
-        const project = await Project.findById(user.project).select("wallet");
-        if (!project) {
-            return res.status(404).json({ message: "Project not found" });
-        }
-        console.log("Project retrieved:", project);
-
-        if (!project.wallet) {
-            return res.status(404).json({ message: "No wallet associated with this project" });
-        }
-        const walletId = project.wallet;
-        // const walletId = "681aa801c014b93b9b45aa94"; // Removed hardcoded value
-        console.log("Wallet ID:", walletId);
-
-        const today = new Date();
-        let startDate, endDate;
-
-        if (period === 'current') {
-            // Last 7 days
-            startDate = new Date(today);
-            startDate.setDate(today.getDate() - 7);
-            endDate = today;
-        } else if (period === 'previous') {
-            // Previous 7 days before last week
-            startDate = new Date(today);
-            startDate.setDate(today.getDate() - 14);
-            endDate = new Date(today);
-            endDate.setDate(today.getDate() - 7);
-        } else {
-            return res.status(400).json({ message: "Invalid period parameter. Use 'current' or 'previous'" });
-        }
-
-        const expenses = await Transaction.aggregate([
-            {
-                $match: {
-                    wallet_id: new mongoose.Types.ObjectId(walletId),
-                    type: 'expense',
-                    date: { $gte: startDate, $lte: endDate },
-                },
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalExpenses: { $sum: '$amount' },
-                },
-            },
-        ]);
-
-        const totalExpenses = expenses.length > 0 ? expenses[0].totalExpenses : 0;
-
-        res.status(200).json({ totalExpenses });
-    } catch (error) {
-        console.error("Error calculating expenses:", error.stack);
-        res.status(500).json({ message: "Failed to calculate expenses", error: error.message });
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId" });
     }
+
+    // Find user and select wallet_id
+    const user = await User.findById(userId).select("wallet_id");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if user has a wallet
+    if (!user.wallet_id) {
+      return res.status(404).json({ message: "No wallet associated with this user" });
+    }
+    const walletId = user.wallet_id;
+    const walletObjectId = new mongoose.Types.ObjectId(walletId);
+
+    const today = new Date();
+    let startDate, endDate;
+
+    if (period === "current") {
+      // Last 7 days
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 7);
+      endDate = today;
+    } else if (period === "previous") {
+      // Previous 7 days before last week
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 14);
+      endDate = new Date(today);
+      endDate.setDate(today.getDate() - 7);
+    } else {
+      return res.status(400).json({ message: "Invalid period parameter. Use 'current' or 'previous'" });
+    }
+
+    const expenses = await Transaction.aggregate([
+      {
+        $match: {
+          wallet_id: walletObjectId,
+          type: "expense",
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalExpenses: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    const totalExpenses = expenses.length > 0 ? expenses[0].totalExpenses : 0;
+
+    res.status(200).json({ totalExpenses });
+  } catch (error) {
+    console.error("Error calculating expenses:", error.stack);
+    res.status(500).json({ message: "Failed to retrieve expenses", error: error.message });
+  }
 };

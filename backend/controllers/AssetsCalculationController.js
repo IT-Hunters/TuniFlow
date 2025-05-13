@@ -3,7 +3,7 @@ const AssetActif = require('../model/AssetActif/AssetActif');
 const Liability = require("../model/AssetPassif/Liability");
 
 async function calculateWorkingCapital(req, res) {
-    try {
+   try {
         const objectId = new mongoose.Types.ObjectId(req.params.id);
        // console.log('ObjectId:', objectId);
          
@@ -74,7 +74,7 @@ async function calculateWorkingCapital(req, res) {
     }
 }
 async function calculateWorkingCapitalStatus(req, res) {
-    try {
+      try {
         const objectId = new mongoose.Types.ObjectId(req.params.id);
         console.log('Project ID:', objectId); // Log the project ID for debugging
         

@@ -333,34 +333,29 @@ const getWalletBalanceByUser = async (req, res) => {
 };
 
 // 📌 Calculate profit margin
+
 const calculateProfitMargin = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    // Validate userId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid userId" });
     }
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
-    const user = await userModel.findById(userObjectId).select("project");
+    // Find user and select wallet_id
+    const user = await userModel.findById(userObjectId).select("wallet_id");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (!user.project) {
-      return res.status(404).json({ message: "No project associated with this user" });
+    // Check if user has a wallet
+    if (!user.wallet_id) {
+      return res.status(404).json({ message: "No wallet associated with this user" });
     }
 
-    const project = await Project.findById(user.project).select("wallet");
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-
-    if (!project.wallet) {
-      return res.status(404).json({ message: "No wallet associated with this project" });
-    }
-
-    const walletId = project.wallet;
-    // const walletId = "681aa801c014b93b9b45aa94"; // Removed hardcoded value
+    const walletId = user.wallet_id;
     const walletObjectId = new mongoose.Types.ObjectId(walletId);
 
     const pipeline = [
@@ -381,7 +376,7 @@ const calculateProfitMargin = async (req, res) => {
     const result = await Transaction.aggregate(pipeline);
 
     if (!result || result.length === 0) {
-      return res.status(404).json({ message: "No transactions found for this wallet" });
+      return res.status(404).json({ message: "No transactions found for this user's wallet" });
     }
 
     const totalIncome = result[0].totalIncome;
@@ -390,14 +385,14 @@ const calculateProfitMargin = async (req, res) => {
     const profitMargin = totalIncome !== 0 ? (netIncome / totalIncome) * 100 : 0;
 
     res.status(200).json({
-      profitMargin: profitMargin.toFixed(2) + "%",
+      profitMargin: profitMargin.toFixed(2) + "",
       totalIncome,
       totalExpenses,
       netIncome,
     });
   } catch (error) {
-    console.error("Error calculating profit margin:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error calculating profit margin:", error.stack);
+    res.status(500).json({ message: "Failed to calculate profit margin", error: error.message });
   }
 };
 
