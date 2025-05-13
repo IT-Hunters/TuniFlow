@@ -76,7 +76,7 @@ const ProjectView = () => {
 
   const generateReport = async (projectId) => {
     if (!projectId) {
-      toast.error("Impossible de générer le rapport : ID du projet manquant", {
+      toast.error("Impossible to generate  rapport : ID du projet manquant", {
         position: 'top-center',
         autoClose: 7000,
         theme: 'colored'
@@ -344,7 +344,7 @@ const ProjectView = () => {
     return (
       <div className="state-container loading">
         <div className="spinner"></div>
-        <p>Chargement du projet...</p>
+        <p>Chargement of project...</p>
       </div>
     );
   }
@@ -352,10 +352,11 @@ const ProjectView = () => {
   if (error) {
     return (
       <div className="state-container error">
-        <h3>Oups, quelque chose s'est mal passé</h3>
+        <h3>Oops, something went wrong</h3>
         <p>{error}</p>
         <button onClick={() => window.location.reload()} className="action-btn retry-btn">
-          Réessayer
+          
+Try again
         </button>
       </div>
     );
@@ -364,8 +365,8 @@ const ProjectView = () => {
   if (!project) {
     return (
       <div className="state-container empty">
-        <h3>Aucun projet assigné</h3>
-        <p>Vous n'êtes actuellement assigné à aucun projet.</p>
+        <h3>No projet assigned</h3>
+        <p>You are not currently assigned to any project.</p>
       </div>
     );
   }
@@ -388,7 +389,7 @@ const ProjectView = () => {
                     onClick={() => navigate('/add-employee')} 
                     className="action-btn add-employee-btn"
                   >
-                    Ajouter Employé
+                    Add Employe
                   </button>
                   <div style={{ position: 'relative', display: 'inline-block' }}>
                     <input
@@ -408,7 +409,7 @@ const ProjectView = () => {
                         cursor: isUploading ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      {isUploading ? 'Import en cours...' : 'Ajouter Employés via Excel'}
+                      {isUploading ? 'Import en cours...' : 'Add Employes With Excel'}
                     </label>
                     {isUploading && (
                       <div style={{
@@ -428,28 +429,28 @@ const ProjectView = () => {
                 className="action-btn generate-report-btn"
                 style={{ backgroundColor: '#4CAF50', color: 'white' }}
               >
-                Générer Rapport
+                Generate Rapport
               </button>
               <button 
                 onClick={() => navigate('/findemploye')} 
                 className="action-btn show-employees-btn"
                 style={{ backgroundColor: '#2196F3', color: 'white' }}
               >
-                Voir Employés
+                Show Employes
               </button>
               <button 
                 onClick={() => setIsModalOpen(true)}
                 className="action-btn create-room-btn"
                 style={{ backgroundColor: '#9c27b0', color: 'white' }}
               >
-                Créer Réunion
+                Create Meeting
               </button>
               <Link 
                 to={`/rooms/${project.id}`} 
                 className="action-btn view-rooms-btn"
                 style={{ backgroundColor: '#3f51b5', color: 'white' }}
               >
-                Voir toutes les réunions
+                View all meetings
               </Link>
             </div>
           </header>
@@ -460,7 +461,7 @@ const ProjectView = () => {
                 <h2>Créer une nouvelle réunion</h2>
                 <form onSubmit={(e) => { e.preventDefault(); createRoom(); }}>
                   <div className="form-group">
-                    <label htmlFor="title">Titre de la réunion</label>
+                    <label htmlFor="title">Meeting title</label>
                     <input
                       type="text"
                       id="title"
@@ -471,7 +472,7 @@ const ProjectView = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="date">Date et heure</label>
+                    <label htmlFor="date">Date and time</label>
                     <input
                       type="datetime-local"
                       id="date"
@@ -491,13 +492,13 @@ const ProjectView = () => {
                       }}
                       className="action-btn cancel-btn"
                     >
-                      Annuler
+                      Cancel
                     </button>
                     <button
                       type="submit"
                       className="action-btn submit-btn"
                     >
-                      Créer
+                      Create
                     </button>
                   </div>
                 </form>
@@ -508,7 +509,7 @@ const ProjectView = () => {
           <div className="project-layout">
             <section className="project-details">
               <div className="detail-card">
-                <h2 className="card-title">Informations du Projet</h2>
+                <h2 className="card-title">Project Information</h2>
                 <ul className="detail-list">
                   <li className="detail-item">
                     <span className="label">Statut</span>
@@ -517,18 +518,18 @@ const ProjectView = () => {
                     </span>
                   </li>
                   <li className="detail-item">
-                    <span className="label">Date de début</span>
+                    <span className="label">Start Date</span>
                     <span>{formatDate(project.startDate)}</span>
                   </li>
                   <li className="detail-item">
-                    <span className="label">Date de fin</span>
+                    <span className="label">End Date</span>
                     <span>{formatDate(project.endDate) || 'En cours'}</span>
                   </li>
                 </ul>
               </div>
 
               <div className="detail-card">
-                <h2 className="card-title">Description</h2>
+                <h2 className="card-title">Descreption</h2>
                 <p className="description">
                   {project.description || 'Aucune description fournie.'}
                 </p>
@@ -542,7 +543,7 @@ const ProjectView = () => {
                       <div key={objectif._id} className="objectif-card">
                         <div className="objectif-header">
                           <h3>{objectif.name}</h3>
-                          <span>Statut: </span>
+                          <span>Status: </span>
                           <span className={`status-badge ${objectif.status.toLowerCase()}`}>
                             {objectif.status}
                           </span>
@@ -555,12 +556,12 @@ const ProjectView = () => {
                               style={{ width: `${objectif.progress}%` }}
                             ></div>
                           </div>
-                          <span>Progrès: </span>
+                          <span>Progress: </span>
                           <span className="progress-text">{objectif.progress}%</span>
                         </div>
                         <div className="objectif-details">
                           <div className="detail-row">
-                            <span>Montant cible: </span>
+                            <span>Target amount: </span>
                             <strong>{objectif.target_amount.toLocaleString()} $</strong>
                           </div>
                           <div className="detail-row">
@@ -570,7 +571,7 @@ const ProjectView = () => {
                             </strong>
                           </div>
                           <div className="detail-row">
-                            <span>Période: </span>
+                            <span>Period: </span>
                             <strong>
                               {formatDate(objectif.datedebut)} au {formatDate(objectif.datefin)}
                             </strong>
@@ -584,7 +585,7 @@ const ProjectView = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="no-data">Aucun objectif défini</p>
+                  <p className="no-data">No objectif define</p>
                 )}
               </div>
 
@@ -596,16 +597,16 @@ const ProjectView = () => {
                       <div key={tax._id} className="info-card">
                         <h3>{tax.nom_taxe}</h3>
                         <div className="info-details">
-                          <p><strong>Catégorie: </strong> {tax.categorie}</p>
-                          <p><strong>Taux: </strong> {tax.taux}%</p>
-                          <p><strong>Date d'effet: </strong> {formatDate(tax.date_effet)}</p>
-                          <p><strong>Description: </strong> {tax.description}</p>
+                          <p><strong>Category: </strong> {tax.categorie}</p>
+                          <p><strong>Rate: </strong> {tax.taux}%</p>
+                          <p><strong>Effective date: </strong> {formatDate(tax.date_effet)}</p>
+                          <p><strong>Descrrption: </strong> {tax.description}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="no-data">Aucune taxe assignée</p>
+                  <p className="no-data">No taxe assigned</p>
                 )}
               </div>
 
@@ -618,24 +619,24 @@ const ProjectView = () => {
                         <h3>{asset.name}</h3>
                         <div className="info-details">
                           <p><strong>Type: </strong> {asset.type_actif}</p>
-                          <p><strong>Valeur: </strong> {asset.total_value}$</p>
-                          <p><strong>Date d'acquisition: </strong> {formatDate(asset.date_acquisition)}</p>
-                          <p><strong>Type corporel: </strong> {asset.type_corporel}</p>
+                          <p><strong>Value: </strong> {asset.total_value}$</p>
+                          <p><strong>Date of acquisition: </strong> {formatDate(asset.date_acquisition)}</p>
+                          <p><strong>Body type: </strong> {asset.type_corporel}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="no-data">Aucun actif enregistré</p>
+                  <p className="no-data">No actif </p>
                 )}
               </div>
             </section>
 
             <aside className="team-section">
-              <h2 className="section-title">Membres de l'équipe</h2>
+              <h2 className="section-title">Team membres</h2>
               <div className="team-list">
                 <div className="team-card">
-                  <h3 className="team-role">Propriétaire</h3>
+                  <h3 className="team-role">Busness Owner</h3>
                   <p className="team-name">
                     {project.businessOwner?.fullname || 'Non assigné'}
                   </p>
@@ -645,7 +646,7 @@ const ProjectView = () => {
                 </div>
 
                 <div className="team-card">
-                  <h3 className="team-role">Manager Commercial</h3>
+                  <h3 className="team-role">Busness Managar</h3>
                   <p className="team-name">
                     {project.teamMembers?.manager?.fullname || 'Non assigné'}
                   </p>
@@ -655,7 +656,7 @@ const ProjectView = () => {
                 </div>
 
                 <div className="team-card">
-                  <h3 className="team-role">Comptable</h3>
+                  <h3 className="team-role">Accauntant</h3>
                   {project.teamMembers?.accountants?.length > 0 ? (
                     project.teamMembers.accountants.map((acc) => (
                       <div key={acc._id} className="team-subitem">
@@ -664,12 +665,12 @@ const ProjectView = () => {
                       </div>
                     ))
                   ) : (
-                    <p className="no-members">Aucun comptable assigné</p>
+                    <p className="no-members">No Accauntant assigned</p>
                   )}
                 </div>
 
                 <div className="team-card">
-                  <h3 className="team-role">Responsables Financiers</h3>
+                  <h3 className="team-role">Busness Financial</h3>
                   {project.teamMembers?.financialManagers?.length > 0 ? (
                     project.teamMembers.financialManagers.map((fm) => (
                       <div key={fm._id} className="team-subitem">
@@ -678,12 +679,12 @@ const ProjectView = () => {
                       </div>
                     ))
                   ) : (
-                    <p className="no-members">Aucun responsable financier assigné</p>
+                    <p className="no-members">No BUSNESS Financial assigned</p>
                   )}
                 </div>
 
                 <div className="team-card">
-                  <h3 className="team-role">Responsables RH</h3>
+                  <h3 className="team-role"> RH responsible</h3>
                   {project.teamMembers?.rhManagers?.length > 0 ? (
                     project.teamMembers.rhManagers.map((rh) => (
                       <div key={rh._id} className="team-subitem">
@@ -692,7 +693,7 @@ const ProjectView = () => {
                       </div>
                     ))
                   ) : (
-                    <p className="no-members">Aucun responsable RH assigné</p>
+                    <p className="no-members">No responsible RH assigned</p>
                   )}
                 </div>
               </div>

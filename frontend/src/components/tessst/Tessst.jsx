@@ -36,6 +36,9 @@ const Wallet = () => {
   const [predictionHtml, setPredictionHtml] = useState("");
   const [showPrediction, setShowPrediction] = useState(false);
   const [isPredicting, setIsPredicting] = useState(false);
+  const [availableProjects, setAvailableProjects] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+
   const transactionsPerPage = 5;
 
   const fetchUserProfile = async (token) => {
@@ -90,64 +93,84 @@ const Wallet = () => {
     }
   };
 const fetchWalletData = async () => {
-    setError("");
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Veuillez vous connecter pour voir votre portefeuille.");
-        return;
-      }
-      const userProfile = await fetchUserProfile(token);
-
-      // Cas Business Owner : utilise directement le wallet_id stocké
-      if (userProfile.role === "BUSINESS_OWNER") {
-        if (!userProfile.wallet_id) {
-          throw new Error("Aucun portefeuille associé à ce compte Business Owner.");
-        }
-        setWalletId(userProfile.wallet_id);
-
-        const transactions = await fetchTransactions(userProfile.wallet_id, token);
-
-        // Récupérer balance via wallet direct
-        const wallet = await fetchWallet(userProfile._id, token);
-
-        setWalletData({
-          balance: wallet.balance,
-          currency: wallet.currency,
-          transactions: transactions,
-        });
-
-        // Tu peux aussi stocker projectId si tu veux utiliser les prédictions
-        setProjectId(userProfile.projects.length > 0 ? userProfile.projects[0] : "");
-
-      } else {
-        // Cas utilisateur normal
-        const wallet = await fetchWallet(userProfile._id, token);
-        setWalletId(wallet._id);
-
-        const transactions = await fetchTransactions(wallet._id, token);
-
-        setWalletData({
-          balance: wallet.balance,
-          currency: wallet.currency,
-          transactions: transactions,
-        });
-      }
-    } catch (error) {
-      setError(error.message || "Erreur lors de la récupération des données.");
-    }
-  };
-
-
-  const handlePredict = async () => {
-    if (!projectId) {
-      toast.error("Aucun projet sélectionné pour la prédiction.", {
-        position: 'top-center',
-        autoClose: 5000,
-        theme: 'colored',
-      });
+  setError("");
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Veuillez vous connecter pour voir votre portefeuille.");
       return;
     }
+
+    const userProfile = await fetchUserProfile(token);
+
+    if (userProfile.role === "BUSINESS_OWNER") {
+      console.log("🚀 Business Owner profile loaded:", userProfile);
+
+      // ✅ Sécurisation wallet_id
+      if (!userProfile.wallet_id) {
+        throw new Error("Aucun portefeuille associé à ce Business Owner.");
+      }
+      setWalletId(userProfile.wallet_id);
+
+      // ✅ Sécurisation projet
+      if (!Array.isArray(userProfile.projects) || userProfile.projects.length === 0) {
+        throw new Error("Aucun projet associé à ce Business Owner.");
+      }
+      console.log("✅ Project selected:", userProfile.projects[0]);
+      setProjectId(userProfile.projects[0]);
+
+      // Transactions et wallet
+      const transactions = await fetchTransactions(userProfile.wallet_id, token);
+      const wallet = await fetchWallet(userProfile._id, token);
+
+      setWalletData({
+        balance: wallet.balance,
+        currency: wallet.currency,
+        transactions: transactions,
+      });
+
+    } else if (["BUSINESS_MANAGER", "ACCOUNTANT", "RH", "FINANCIAL_MANAGER"].includes(userProfile.role)) {
+  const wallet = await fetchWallet(userProfile._id, token);
+  setWalletId(wallet._id);
+
+  if (!userProfile.project) {
+    throw new Error("Aucun projet associé à ce compte.");
+  }
+  setProjectId(userProfile.project);
+
+  const transactions = await fetchTransactions(wallet._id, token);
+
+  setWalletData({
+    balance: wallet.balance,
+    currency: wallet.currency,
+    transactions: transactions,
+  });
+
+
+
+    } else {
+      throw new Error("Rôle utilisateur non supporté.");
+    }
+  } catch (error) {
+    console.error("❌ Erreur WalletData:", error);
+    setError(error.message || "Erreur lors de la récupération des données.");
+  }
+};
+
+
+
+
+ const handlePredict = async () => {
+  console.log("📡 Attempting prediction for project:", projectId);
+
+  if (!projectId) {
+    toast.error("Aucun projet sélectionné pour la prédiction.", {
+      position: 'top-center',
+      autoClose: 5000,
+      theme: 'colored',
+    });
+    return;
+  }
     setIsPredicting(true);
     setError("");
     try {
@@ -290,6 +313,8 @@ const fetchWalletData = async () => {
               <div className="prediction-container">
                 <div className="prediction-header">
                   <h3>Prediction Results for Project {projectId.slice(-4)}</h3>
+                  <p>ProjectId courant : {projectId || "Aucun projet"}</p>
+
                   <button className="close-prediction" onClick={closePrediction}>
                     <FaTimes />
                   </button>

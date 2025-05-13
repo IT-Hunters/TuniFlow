@@ -215,18 +215,18 @@ const ToDoList = () => {
         <Navbar />
         <div className="update-project-wrapper">
           <header className="project-header">
-            <h1 className="project-title">Ma Liste de Tâches</h1>
+            <h1 className="project-title">My Tasks List</h1>
             <button
               className="action-btn toggle-archive-btn"
               onClick={() => setShowArchived(!showArchived)}
             >
-              {showArchived ? 'Voir Tâches Actives' : 'Voir Tâches Archivées'}
+              {showArchived ? 'Voir Active Task' : 'Voir Archived Task'}
             </button>
           </header>
 
           <section className="update-form">
             <div className="detail-card">
-              <h2 className="card-title">{showArchived ? 'Tâches Archivées' : 'Gestion des Tâches'}</h2>
+              <h2 className="card-title">{showArchived ? 'Tâches Archivées' : 'Tasks Management '}</h2>
 
               {!showArchived && (
                 <>
@@ -258,7 +258,7 @@ const ToDoList = () => {
 
                   <form onSubmit={handleAddTask} className="project-form" noValidate>
                     <div className="form-group">
-                      <label htmlFor="newTask" className="label">Nouvelle Tâche *</label>
+                      <label htmlFor="newTask" className="label">New Task *</label>
                       <input
                         type="text"
                         id="newTask"
@@ -266,10 +266,10 @@ const ToDoList = () => {
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
                         className="form-input"
-                        placeholder="Entrez une tâche..."
+                        placeholder="Enter a task..."
                         required
                       />
-                      <label htmlFor="newDueDate" className="label">Date d'Échéance (facultatif)</label>
+                      <label htmlFor="newDueDate" className="label">Due Date (facultatif)</label>
                       <input
                         type="date"
                         id="newDueDate"
@@ -285,7 +285,7 @@ const ToDoList = () => {
                       >
                         {loading ? (
                           <>
-                            <span className="spinner"></span> Ajout...
+                            <span className="spinner"></span> Add...
                           </>
                         ) : 'Ajouter Tâche'}
                       </button>
