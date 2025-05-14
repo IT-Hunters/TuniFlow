@@ -4,6 +4,7 @@ import Navbar from "../navbarHome/NavbarHome";
 import axios from "axios";
 import "./invoiceStyles.css";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 const ManagerInvoices = () => {
   const { t } = useTranslation();
@@ -14,6 +15,7 @@ const ManagerInvoices = () => {
   const [exportStatus, setExportStatus] = useState("");
   const [exporting, setExporting] = useState(false);
   const [predictions, setPredictions] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -112,29 +114,55 @@ const ManagerInvoices = () => {
           <div className="invoice-container">
             <h2 className="invoice-header">{t("My Sent Invoices")}</h2>
 
-            <div className="export-section">
-              <div className="export-filter">
-                <label htmlFor="export-status">{t("Export Filter")}:</label>
-                <select
-                  id="export-status"
-                  value={exportStatus}
-                  onChange={(e) => setExportStatus(e.target.value)}
-                >
-                  <option value="">{t("All")}</option>
-                  <option value="PENDING">{t("Pending")}</option>
-                  <option value="PAID">{t("Paid")}</option>
-                </select>
+            <div className="actions-container">
+              <div className="export-section">
+                <div className="export-filter">
+                  <label htmlFor="export-status">{t("Export Filter")}:</label>
+                  <select
+                    id="export-status"
+                    value={exportStatus}
+                    onChange={(e) => setExportStatus(e.target.value)}
+                  >
+                    <option value="">{t("All")}</option>
+                    <option value="PENDING">{t("Pending")}</option>
+                    <option value="PAID">{t("Paid")}</option>
+                  </select>
+                </div>
+                <button onClick={handleExport} className="export-button" disabled={exporting}>
+                  {exporting ? (
+                    <>
+                      <span className="loading"></span>
+                      {t("Exporting")}...
+                    </>
+                  ) : (
+                    t("Export to CSV")
+                  )}
+                </button>
               </div>
-              <button onClick={handleExport} className="export-button" disabled={exporting}>
-                {exporting ? (
-                  <>
-                    <span className="loading"></span>
-                    {t("Exporting")}...
-                  </>
-                ) : (
-                  t("Export to CSV")
-                )}
-              </button>
+              
+              <div className="ai-features-section">
+                <button 
+                  onClick={() => navigate('/invoice-ocr')} 
+                  className="ai-feature-button ocr-button"
+                >
+                  <i className="fas fa-file-image me-2"></i>
+                  {t("Extraire données par OCR")}
+                </button>
+                <button 
+                  onClick={() => navigate('/invoice-summary')} 
+                  className="ai-feature-button summary-button"
+                >
+                  <i className="fas fa-chart-pie me-2"></i>
+                  {t("Résumé intelligent")}
+                </button>
+                <button 
+                  onClick={() => navigate('/create-invoice')} 
+                  className="ai-feature-button create-button"
+                >
+                  <i className="fas fa-plus me-2"></i>
+                  {t("Créer une facture")}
+                </button>
+              </div>
             </div>
 
             {loading && (

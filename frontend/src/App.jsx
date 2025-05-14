@@ -46,6 +46,8 @@ import Room from './components/Project/Room';
 import CreateRoomModal from './components/Project/CreateRoomModal';
 import ToDoList from './components/Project/ToDoList';
 import ChatBot from './components/Chatbot/Chatbot';
+import InvoiceOCR from "./components/Invoice/InvoiceOCR";
+import InvoiceSummary from "./components/Invoice/InvoiceSummary";
 function App() {
   return (
     <Router>
@@ -107,6 +109,8 @@ function App() {
         <Route path="/CreateRoomModal" element={<CreateRoomModal />} />
         <Route path="/todolist" element={<ToDoList />} />
         <Route path="/chatbot" element={<ChatBot />} />
+        <Route path="/invoice-ocr" element={<InvoiceOCR />} />
+        <Route path="/invoice-summary" element={<InvoiceSummary />} />
 
       </Routes>
     </Router>

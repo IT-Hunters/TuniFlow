@@ -2,17 +2,21 @@ import React, { useState, useEffect } from 'react';
 import CoolSidebar from "../sidebarHome/newSidebar"; 
 import Navbar from "../navbarHome/NavbarHome"; 
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './invoiceStyles.css';
 import { useTranslation } from 'react-i18next';
 
 const CreateInvoice = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const extractedData = location.state?.extractedData;
+
+  // Initialiser avec les données OCR si disponibles
   const [invoiceData, setInvoiceData] = useState({
-    amount: '',
-    due_date: '',
+    amount: extractedData?.amount || '',
+    due_date: extractedData?.dueDate ? new Date(extractedData.dueDate).toISOString().split('T')[0] : '',
     category: '',
-    customNotes: ''
+    customNotes: extractedData?.rawText ? `Données extraites par OCR:\n\n${extractedData.rawText.substring(0, 500)}...` : ''
   });
   const [businessOwner, setBusinessOwner] = useState(null);
   const [loading, setLoading] = useState(false);

@@ -12,6 +12,8 @@ const { v4: uuidv4 } = require("uuid");
 const QRCode = require("qrcode");
 const cron = require("node-cron");
 const multer = require("multer");
+const { createWorker } = require('tesseract.js');
+const sharp = require('sharp');
 
 // Configurer Multer pour le téléchargement de fichiers
 const storage = multer.diskStorage({
@@ -915,4 +917,346 @@ exports.batchPredictPaymentLikelihood = async (req, res) => {
       details: error.stack
     });
   }
+};
+
+exports.generateInvoiceSummary = async (req, res) => {
+  try {
+    const { period, year, month } = req.query;
+    const userId = req.user.userId;
+
+    // Déterminer la plage de dates en fonction de la période
+    const startDate = new Date();
+    const endDate = new Date();
+
+    if (period === 'monthly') {
+      const targetYear = year ? parseInt(year) : new Date().getFullYear();
+      const targetMonth = month ? parseInt(month) - 1 : new Date().getMonth();
+      
+      startDate.setFullYear(targetYear, targetMonth, 1);
+      endDate.setFullYear(targetYear, targetMonth + 1, 0);
+    } else if (period === 'quarterly') {
+      const targetYear = year ? parseInt(year) : new Date().getFullYear();
+      const currentQuarter = Math.floor((month ? parseInt(month) - 1 : new Date().getMonth()) / 3);
+      
+      startDate.setFullYear(targetYear, currentQuarter * 3, 1);
+      endDate.setFullYear(targetYear, (currentQuarter + 1) * 3, 0);
+    } else if (period === 'yearly') {
+      const targetYear = year ? parseInt(year) : new Date().getFullYear();
+      
+      startDate.setFullYear(targetYear, 0, 1);
+      endDate.setFullYear(targetYear, 11, 31);
+    } else {
+      return res.status(400).json({ message: "Période invalide. Utilisez 'monthly', 'quarterly', ou 'yearly'." });
+    }
+
+    // Trouver toutes les factures de l'utilisateur dans la période donnée
+    const sentInvoices = await Bill.find({
+      creator_id: userId,
+      created_at: { $gte: startDate, $lte: endDate }
+    }).populate("recipient_id", "fullname").populate("project_id", "status");
+
+    const receivedInvoices = await Bill.find({
+      recipient_id: userId,
+      created_at: { $gte: startDate, $lte: endDate }
+    }).populate("creator_id", "fullname").populate("project_id", "status");
+
+    // Calculer les statistiques
+    const totalSent = sentInvoices.length;
+    const totalReceived = receivedInvoices.length;
+    
+    const totalAmountSent = sentInvoices.reduce((sum, invoice) => sum + invoice.amount, 0);
+    const totalAmountReceived = receivedInvoices.reduce((sum, invoice) => sum + invoice.amount, 0);
+    
+    const paidSent = sentInvoices.filter(inv => inv.status === "PAID").length;
+    const paidReceived = receivedInvoices.filter(inv => inv.status === "PAID").length;
+    
+    const pendingSent = sentInvoices.filter(inv => inv.status === "PENDING").length;
+    const pendingReceived = receivedInvoices.filter(inv => inv.status === "PENDING").length;
+
+    // Répartition par catégorie
+    const categoriesSent = {};
+    sentInvoices.forEach(invoice => {
+      const category = invoice.category || "Non catégorisé";
+      if (!categoriesSent[category]) categoriesSent[category] = { count: 0, amount: 0 };
+      categoriesSent[category].count++;
+      categoriesSent[category].amount += invoice.amount;
+    });
+
+    // Récupérer les 5 factures les plus importantes
+    const topInvoices = [...sentInvoices, ...receivedInvoices]
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5)
+      .map(invoice => ({
+        id: invoice._id,
+        amount: invoice.amount,
+        status: invoice.status,
+        due_date: invoice.due_date,
+        type: invoice.creator_id._id.toString() === userId ? "Envoyée" : "Reçue",
+        party: invoice.creator_id._id.toString() === userId 
+          ? invoice.recipient_id.fullname 
+          : invoice.creator_id.fullname
+      }));
+
+    // Générer un résumé textuel
+    const periodText = period === 'monthly' ? 'mensuel' : (period === 'quarterly' ? 'trimestriel' : 'annuel');
+    const dateRange = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+    
+    const summary = {
+      title: `Résumé ${periodText} de factures (${dateRange})`,
+      overview: `Durant cette période, vous avez ${totalSent > 0 ? `envoyé ${totalSent} facture(s) d'un montant total de ${totalAmountSent} TND` : "n'avez envoyé aucune facture"} et ${totalReceived > 0 ? `reçu ${totalReceived} facture(s) d'un montant total de ${totalAmountReceived} TND` : "n'avez reçu aucune facture"}.`,
+      sentInvoices: {
+        total: totalSent,
+        paid: paidSent,
+        pending: pendingSent,
+        totalAmount: totalAmountSent,
+        categories: categoriesSent
+      },
+      receivedInvoices: {
+        total: totalReceived,
+        paid: paidReceived,
+        pending: pendingReceived,
+        totalAmount: totalAmountReceived
+      },
+      topInvoices: topInvoices,
+      conclusions: []
+    };
+
+    // Ajouter des conclusions et recommandations intelligentes basées sur les données
+    if (pendingSent > 0) {
+      summary.conclusions.push(`Vous avez ${pendingSent} facture(s) envoyée(s) en attente de paiement. Envisagez d'envoyer des rappels pour accélérer les paiements.`);
+    }
+    
+    if (pendingReceived > 0) {
+      summary.conclusions.push(`Vous avez ${pendingReceived} facture(s) reçue(s) en attente de paiement. Planifiez vos paiements pour respecter les délais.`);
+    }
+
+    // Analyser les tendances de dépenses par catégorie
+    if (Object.keys(categoriesSent).length > 0) {
+      const topCategory = Object.entries(categoriesSent)
+        .sort((a, b) => b[1].amount - a[1].amount)[0];
+      summary.conclusions.push(`Votre catégorie de facturation principale est "${topCategory[0]}" avec ${topCategory[1].amount} TND (${topCategory[1].count} facture(s)).`);
+    }
+
+    if (totalAmountSent > totalAmountReceived * 1.5) {
+      summary.conclusions.push("Vos dépenses dépassent significativement vos revenus sur cette période. Analysez vos dépenses pour identifier des économies potentielles.");
+    }
+
+    if (summary.conclusions.length === 0) {
+      summary.conclusions.push("Aucune recommandation particulière pour cette période.");
+    }
+
+    res.status(200).json(summary);
+  } catch (error) {
+    console.error("Erreur lors de la génération du résumé des factures:", error.message);
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+// Configuration pour l'upload de factures scannées
+const scanStorage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    try {
+      const uploadDir = path.join(__dirname, "../uploads/scans");
+      if (!fs.existsSync(uploadDir)) {
+        await fsPromises.mkdir(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    } catch (error) {
+      cb(error);
+    }
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const scanUpload = multer({
+  storage: scanStorage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|pdf/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error("Seuls les fichiers JPEG, PNG et PDF sont autorisés!"));
+    }
+  },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
+
+exports.uploadScan = scanUpload.single("scan");
+
+exports.extractInvoiceData = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Aucun fichier n'a été téléchargé" });
+    }
+
+    const filePath = req.file.path;
+    let processedImagePath = filePath;
+
+    // Si le fichier est une image, prétraiter l'image pour améliorer l'OCR
+    if (/\.(jpg|jpeg|png)$/i.test(filePath)) {
+      const outputPath = `${filePath}_processed.png`;
+      await sharp(filePath)
+        .greyscale() // Convertir en niveaux de gris
+        .normalize() // Normaliser les niveaux
+        .sharpen() // Accentuer les détails
+        .threshold(128) // Binarisation
+        .toFile(outputPath);
+      
+      processedImagePath = outputPath;
+    }
+
+    // Utiliser Tesseract.js pour extraire le texte
+    const worker = await createWorker('fra+eng');
+    const { data } = await worker.recognize(processedImagePath);
+    await worker.terminate();
+
+    console.log("Texte extrait:", data.text);
+
+    // Extraire les informations clés du texte
+    const extractedData = {
+      amount: extractAmount(data.text),
+      date: extractDate(data.text),
+      dueDate: extractDueDate(data.text),
+      invoiceNumber: extractInvoiceNumber(data.text),
+      recipient: extractRecipient(data.text),
+      sender: extractSender(data.text),
+      items: extractItems(data.text),
+      rawText: data.text
+    };
+
+    // Nettoyer les fichiers temporaires
+    if (processedImagePath !== filePath) {
+      fs.unlink(processedImagePath, (err) => {
+        if (err) console.error("Erreur lors de la suppression du fichier temporaire:", err);
+      });
+    }
+
+    res.status(200).json({
+      message: "Données extraites avec succès",
+      data: extractedData
+    });
+  } catch (error) {
+    console.error("Erreur lors de l'extraction des données de la facture:", error);
+    res.status(500).json({ message: "Erreur lors de l'extraction des données", error: error.message });
+  }
+};
+
+// Fonctions d'extraction des données spécifiques
+const extractAmount = (text) => {
+  // Recherche de montants avec des formats comme "1234,56 €", "1234.56 €", "1 234,56 €", etc.
+  const amountMatches = text.match(/(\d+[\s.,]\d+|\d+)[\s]*(€|EUR|DT|TND)/gi) || [];
+  
+  if (amountMatches.length > 0) {
+    // Prendre le montant le plus élevé (souvent le total)
+    return amountMatches
+      .map(match => {
+        const numericPart = match.replace(/[^\d.,]/g, '').replace(',', '.');
+        return parseFloat(numericPart);
+      })
+      .sort((a, b) => b - a)[0] || null;
+  }
+  
+  return null;
+};
+
+const extractDate = (text) => {
+  // Recherche de dates au format JJ/MM/AAAA, JJ-MM-AAAA, etc.
+  const dateRegex = /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/g;
+  const matches = [...text.matchAll(dateRegex)];
+  
+  if (matches.length > 0) {
+    // Prendre la première date trouvée
+    const match = matches[0];
+    const day = parseInt(match[1]);
+    const month = parseInt(match[2]);
+    const year = parseInt(match[3]);
+    
+    // Ajuster l'année si elle est à 2 chiffres
+    const fullYear = year < 100 ? (year < 50 ? 2000 + year : 1900 + year) : year;
+    
+    return new Date(fullYear, month - 1, day);
+  }
+  
+  return null;
+};
+
+const extractDueDate = (text) => {
+  // Rechercher les mentions d'échéance
+  const dueDateLines = text.match(/échéance.*?(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/i) || 
+                      text.match(/date limite.*?(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/i) ||
+                      text.match(/à payer avant.*?(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/i);
+  
+  if (dueDateLines && dueDateLines.length >= 4) {
+    const day = parseInt(dueDateLines[1]);
+    const month = parseInt(dueDateLines[2]);
+    const year = parseInt(dueDateLines[3]);
+    
+    // Ajuster l'année si elle est à 2 chiffres
+    const fullYear = year < 100 ? (year < 50 ? 2000 + year : 1900 + year) : year;
+    
+    return new Date(fullYear, month - 1, day);
+  }
+  
+  // Si aucune date d'échéance spécifique n'est trouvée, on peut estimer à 30 jours après la date de facture
+  const invoiceDate = extractDate(text);
+  if (invoiceDate) {
+    const dueDate = new Date(invoiceDate);
+    dueDate.setDate(dueDate.getDate() + 30);
+    return dueDate;
+  }
+  
+  return null;
+};
+
+const extractInvoiceNumber = (text) => {
+  // Rechercher les numéros de facture courants
+  const invoiceMatches = text.match(/facture\s*(?:n[o°]?)?\s*:?\s*([A-Za-z0-9\-_\/]+)/i) ||
+                         text.match(/invoice\s*(?:n[o°]?)?\s*:?\s*([A-Za-z0-9\-_\/]+)/i) ||
+                         text.match(/n[o°]?\s*(?:facture|invoice)\s*:?\s*([A-Za-z0-9\-_\/]+)/i);
+  
+  if (invoiceMatches && invoiceMatches.length > 1) {
+    return invoiceMatches[1].trim();
+  }
+  
+  return null;
+};
+
+const extractRecipient = (text) => {
+  // Rechercher les sections courantes où on trouve les informations du destinataire
+  const recipientBlockRegex = /client\s*:([^]*?)(?:facture|montant|date|total)/i;
+  const recipientMatches = text.match(recipientBlockRegex);
+  
+  if (recipientMatches && recipientMatches.length > 1) {
+    return recipientMatches[1].trim();
+  }
+  
+  return null;
+};
+
+const extractSender = (text) => {
+  // Les informations de l'émetteur sont souvent en haut de la facture
+  const firstLines = text.split('\n').slice(0, 10).join('\n');
+  return firstLines;
+};
+
+const extractItems = (text) => {
+  // Tenter d'extraire une liste d'articles facturés
+  // C'est complexe car chaque facture a un format différent, mais on peut chercher des motifs typiques
+  const itemRegex = /(\d+|\d+[.,]\d+)\s*x\s*([^]*?)\s*(\d+[.,]\d+)/g;
+  const matches = [...text.matchAll(itemRegex)];
+  
+  if (matches.length > 0) {
+    return matches.map(match => ({
+      quantity: parseFloat(match[1].replace(',', '.')),
+      description: match[2].trim(),
+      unitPrice: parseFloat(match[3].replace(',', '.'))
+    }));
+  }
+  
+  return [];
 };

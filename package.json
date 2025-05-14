@@ -6,6 +6,7 @@
     "@fullcalendar/react": "^6.1.17",
     "axios": "^1.8.3",
     "react-toastify": "^11.0.5",
+    "sharp": "^0.34.1",
     "socket.io-client": "^4.8.1"
   }
 }

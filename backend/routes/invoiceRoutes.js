@@ -43,4 +43,6 @@ router.get("/test-upcoming-reminders", invoiceController.testUpcomingReminders);
 router.post('/generate-description', invoiceController.generateDescription);
 router.post('/predict-payment', invoiceController.predictPaymentLikelihood);
 router.post('/batch-predict-payment', invoiceController.batchPredictPaymentLikelihood);
+router.get('/summary', authenticateJWT, invoiceController.generateInvoiceSummary);
+router.post('/extract-ocr', authenticateJWT, invoiceController.uploadScan, invoiceController.extractInvoiceData)
 module.exports = router;
