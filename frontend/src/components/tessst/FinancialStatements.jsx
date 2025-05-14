@@ -349,7 +349,7 @@ const FinancialStatements = () => {
 
       // Appeler le service de prédiction Flask
       const response = await axios.post(
-        "http://192.168.100.111:5001/forecast-taxes",
+        "http://localhost:5001/forecast-taxes",
         {
           historical_data: historicalData,
           current_data: currentData
@@ -430,11 +430,11 @@ const FinancialStatements = () => {
           cell: (info) => info.getValue(),
         }),
         columnHelper.accessor("rate", {
-          header: "Taux (%)",
+          header: "Rate (%)",
           cell: (info) => (isNaN(info.getValue()) ? "0" : (info.getValue() * 100).toFixed(2)),
         }),
         columnHelper.accessor("amount", {
-          header: "Montant",
+          header: "Amount",
           cell: (info) => `${info.getValue()} ${walletData.currency}`,
         }),
       ],
@@ -495,38 +495,38 @@ const FinancialStatements = () => {
         <Navbar />
         <div className="wallet-container">
           <div className="wallet-header">
-            <h2>États Financiers</h2>
+            <h2>Financial Statements</h2>
           </div>
           <div className="card form-container">
             <label>
-              Période :
+              Period:
               <select value={period} onChange={(e) => setPeriod(e.target.value.toLowerCase())}>
-                <option value="mensuel">Mensuel</option>
-                <option value="annuel">Annuel</option>
+                <option value="mensuel">Monthly</option>
+                <option value="annuel">Annual</option>
               </select>
             </label>
             <label>
-              Date de début :
+              Start Date:
               <input
                 type="date"
                 value={statementDate}
                 onChange={(e) => setStatementDate(e.target.value)}
               />
             </label>
-            <h4>Taxes personnalisées</h4>
+            <h4>Custom Taxes</h4>
             {customTaxes.map((tax, index) => (
               <div key={`custom-tax-${index}`} className="custom-tax">
                 <label>
-                  Type :
+                  Type:
                   <input
                     type="text"
                     value={tax.type}
                     onChange={(e) => updateCustomTax(index, "type", e.target.value)}
-                    placeholder="ex: TVA, Impôt"
+                    placeholder="ex: VAT, Income Tax"
                   />
                 </label>
                 <label>
-                  Taux (%) :
+                  Rate (%):
                   <input
                     type="number"
                     step="0.01"
@@ -537,26 +537,26 @@ const FinancialStatements = () => {
                   />
                 </label>
                 <button className="remove-tax-button" onClick={() => removeCustomTax(index)}>
-                  Supprimer
+                  Remove
                 </button>
               </div>
             ))}
             <button className="add-tax-button" onClick={addCustomTax}>
-              Ajouter une taxe
+              Add Tax
             </button>
             <button
               className="submit-button"
               onClick={generateFinancialStatement}
               disabled={isGenerating}
             >
-              {isGenerating ? "Génération en cours..." : "Générer État Financier"}
+              {isGenerating ? "Generating..." : "Generate Financial Statement"}
             </button>
           </div>
           <div className="card forecast-section">
             <div className="section-header">
-              <h3>Prévision des taxes</h3>
+              <h3>Tax Forecast</h3>
               <button className="forecast-button" onClick={forecastTaxes}>
-                Prévoir
+                Forecast
               </button>
             </div>
             {forecastData && (
@@ -565,16 +565,16 @@ const FinancialStatements = () => {
                   <div key={`forecast-tax-${index}`} className="forecast-tax-item">
                     <h4>{tax.type}</h4>
                     <p className="predicted-amount">
-                      Montant prévu : {Number(tax.predicted_amount || 0).toFixed(2)} {walletData.currency}
+                      Predicted Amount: {Number(tax.predicted_amount || 0).toFixed(2)} {walletData.currency}
                     </p>
                     <p className="confidence-level">
-                      Niveau de confiance : {Math.round((tax.confidence || 0) * 100)}%
+                      Confidence Level: {Math.round((tax.confidence || 0) * 100)}%
                       <span className="confidence-explanation">
-                        {(tax.confidence || 0) >= 0.9 ? " (Très fiable)" :
-                         (tax.confidence || 0) >= 0.8 ? " (Fiable)" :
-                         (tax.confidence || 0) >= 0.7 ? " (Assez fiable)" :
-                         (tax.confidence || 0) >= 0.6 ? " (Modérément fiable)" :
-                         " (Peu fiable)"}
+                        {(tax.confidence || 0) >= 0.9 ? " (Very Reliable)" :
+                         (tax.confidence || 0) >= 0.8 ? " (Reliable)" :
+                         (tax.confidence || 0) >= 0.7 ? " (Fairly Reliable)" :
+                         (tax.confidence || 0) >= 0.6 ? " (Moderately Reliable)" :
+                         " (Low Reliability)"}
                       </span>
                     </p>
                   </div>
@@ -584,11 +584,11 @@ const FinancialStatements = () => {
           </div>
           <div className="card tax-trend-chart">
             <div className="section-header">
-              <h3>Évolution des taxes</h3>
+              <h3>Tax Evolution</h3>
               <span
                 className="toggle-icon"
                 onClick={() => setShowCharts(!showCharts)}
-                title={showCharts ? "Masquer le graphique" : "Afficher le graphique"}
+                title={showCharts ? "Hide Chart" : "Show Chart"}
               >
                 {showCharts ? <FaEyeSlash /> : <FaEye />}
               </span>
@@ -605,12 +605,12 @@ const FinancialStatements = () => {
                       title: { display: true, text: "Date" },
                     },
                     y: {
-                      title: { display: true, text: `Montant (${walletData.currency})` },
+                      title: { display: true, text: `Amount (${walletData.currency})` },
                     },
                   },
                   plugins: {
                     legend: { position: "top" },
-                    title: { display: true, text: "Tendances des Taxes" },
+                    title: { display: true, text: "Tax Trends" },
                   },
                 }}
               />
@@ -637,9 +637,9 @@ const FinancialStatements = () => {
                   <div key={statement._id} className="card financial-statement-item">
                     {editingStatement === statement._id ? (
                       <div className="edit-form">
-                        <h3>Modifier l'état financier</h3>
+                        <h3>Edit Financial Statement</h3>
                         <label>
-                          Revenus :
+                          Revenue:
                           <input
                             type="number"
                             value={editForm.total_revenue}
@@ -649,7 +649,7 @@ const FinancialStatements = () => {
                           />
                         </label>
                         <label>
-                          Dépenses :
+                          Expenses:
                           <input
                             type="number"
                             value={editForm.total_expenses}
@@ -659,7 +659,7 @@ const FinancialStatements = () => {
                           />
                         </label>
                         <label>
-                          Bénéfice Net :
+                          Net Profit:
                           <input
                             type="number"
                             value={editForm.net_profit}
@@ -668,11 +668,11 @@ const FinancialStatements = () => {
                             }
                           />
                         </label>
-                        <h4>Taxes :</h4>
+                        <h4>Taxes:</h4>
                         {editForm.taxes.map((tax, index) => (
                           <div key={tax._id || `tax-edit-${index}`} className="tax-edit">
                             <label>
-                              Type :
+                              Type:
                               <input
                                 type="text"
                                 value={tax.type}
@@ -680,7 +680,7 @@ const FinancialStatements = () => {
                               />
                             </label>
                             <label>
-                              Taux (%) :
+                              Rate (%):
                               <input
                                 type="number"
                                 step="0.01"
@@ -691,7 +691,7 @@ const FinancialStatements = () => {
                               />
                             </label>
                             <label>
-                              Montant :
+                              Amount:
                               <input
                                 type="number"
                                 value={tax.amount}
@@ -704,22 +704,22 @@ const FinancialStatements = () => {
                               className="remove-tax-button"
                               onClick={() => removeEditTax(index)}
                             >
-                              Supprimer
+                              Remove
                             </button>
                           </div>
                         ))}
                         <button className="add-tax-button" onClick={addEditTax}>
-                          Ajouter une taxe
+                          Add Tax
                         </button>
                         <div className="form-actions">
                           <button className="submit-button" onClick={updateFinancialStatement}>
-                            Enregistrer
+                            Save
                           </button>
                           <button
                             className="cancel-button"
                             onClick={() => setEditingStatement(null)}
                           >
-                            Annuler
+                            Cancel
                           </button>
                         </div>
                       </div>
@@ -727,22 +727,22 @@ const FinancialStatements = () => {
                       <>
                         {statement.hasNewerTransactions && (
                           <p className="update-alert">
-                            De nouvelles transactions ont été ajoutées pour cette période. Veuillez régénérer l'état financier.
+                            New transactions have been added for this period. Please regenerate the financial statement.
                           </p>
                         )}
                         <div className="statement-details">
                           <p><strong>Date:</strong> {new Date(statement.date).toLocaleDateString()}</p>
                           <p><strong>Type:</strong> {statement.type}</p>
-                          <p><strong>Revenus:</strong> {statement.total_revenue} {walletData.currency}</p>
-                          <p><strong>Dépenses:</strong> {statement.total_expenses} {walletData.currency}</p>
-                          <p><strong>Bénéfice Net:</strong> {statement.net_profit} {walletData.currency}</p>
+                          <p><strong>Revenue:</strong> {statement.total_revenue} {walletData.currency}</p>
+                          <p><strong>Expenses:</strong> {statement.total_expenses} {walletData.currency}</p>
+                          <p><strong>Net Profit:</strong> {statement.net_profit} {walletData.currency}</p>
                         </div>
                         <div className="section-header">
                           <h4>Taxes</h4>
                           <span
                             className="toggle-icon"
                             onClick={() => toggleTaxesTable(statement._id)}
-                            title={showTaxesTable[statement._id] ? "Masquer le tableau" : "Afficher le tableau"}
+                            title={showTaxesTable[statement._id] ? "Hide Table" : "Show Table"}
                           >
                             {showTaxesTable[statement._id] ? <FaEyeSlash /> : <FaEye />}
                           </span>
@@ -757,39 +757,39 @@ const FinancialStatements = () => {
                                   responsive: true,
                                   plugins: {
                                     legend: { position: "top" },
-                                    title: { display: true, text: "Répartition des Taxes" },
+                                    title: { display: true, text: "Tax Distribution" },
                                   },
                                 }}
                               />
                             </div>
                           </>
                         ) : showTaxesTable[statement._id] ? (
-                          <p className="tax-generation-message">Aucune taxe disponible.</p>
+                          <p className="tax-generation-message">No taxes available.</p>
                         ) : null}
                         <div className="statement-actions">
                           <button
                             className="edit-button"
                             onClick={() => startEditing(statement)}
                           >
-                            Modifier
+                            Edit
                           </button>
                           <button
                             className="delete-button"
                             onClick={() => deleteFinancialStatement(statement._id)}
                           >
-                            Supprimer
+                            Delete
                           </button>
                           <button
                             className="regenerate-button"
                             onClick={() => regenerateFinancialStatement(statement._id)}
                           >
-                            Régénérer
+                            Regenerate
                           </button>
                           <button
                             className="export-button"
                             onClick={() => exportToPDF(statement)}
                           >
-                            <FaDownload /> Exporter
+                            <FaDownload /> Export
                           </button>
                         </div>
                       </>
@@ -798,7 +798,7 @@ const FinancialStatements = () => {
                 ))}
               </div>
             ) : (
-              <p className="no-statements">Aucun état financier trouvé.</p>
+              <p className="no-statements">No financial statements found.</p>
             )}
           </div>
         </div>

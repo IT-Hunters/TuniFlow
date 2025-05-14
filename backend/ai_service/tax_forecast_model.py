@@ -4,7 +4,7 @@ class TaxForecastModel:
         self.tax_types = set()
 
     def prepare_features(self, data):
-        """Prépare les caractéristiques pour l'entraînement."""
+        """Prepares features for training."""
         features = []
         for entry in data:
             feature = {
@@ -16,22 +16,22 @@ class TaxForecastModel:
         return features
 
     def train(self, historical_data):
-        """Entraîne le modèle avec les données historiques."""
+        """Trains the model with historical data."""
         self.historical_data = historical_data
-        # Collecter tous les types de taxes
+        # Collect all tax types
         for entry in historical_data:
             for tax in entry['taxes']:
                 self.tax_types.add(tax['type'])
 
     def predict(self, current_data):
-        """Fait des prédictions pour les données actuelles."""
+        """Makes predictions for current data."""
         if not self.historical_data:
-            print("Aucune donnée historique disponible")
+            print("No historical data available")
             return []
 
         predictions = []
         for tax_type in self.tax_types:
-            # Calculer la moyenne des taxes historiques pour ce type
+            # Calculate the average of historical taxes for this type
             historical_taxes = []
             for entry in self.historical_data:
                 for tax in entry['taxes']:
@@ -39,70 +39,70 @@ class TaxForecastModel:
                         try:
                             amount = float(tax['amount'])
                             if not isinstance(amount, float) or amount < 0:
-                                print(f"Montant invalide pour {tax_type}: {amount}")
+                                print(f"Invalid amount for {tax_type}: {amount}")
                                 continue
                             historical_taxes.append(amount)
                         except (ValueError, TypeError) as e:
-                            print(f"Erreur de conversion pour {tax_type}: {e}")
+                            print(f"Conversion error for {tax_type}: {e}")
                             continue
             
-            print(f"Taxes historiques pour {tax_type}: {historical_taxes}")
+            print(f"Historical taxes for {tax_type}: {historical_taxes}")
             
             if historical_taxes:
                 avg_tax = sum(historical_taxes) / len(historical_taxes)
-                # Calculer le niveau de confiance
+                # Calculate confidence level
                 confidence = self.calculate_confidence(historical_taxes, current_data)
                 predictions.append({
                     'type': tax_type,
                     'predicted_amount': float(round(avg_tax, 2)),
                     'confidence': float(confidence)
                 })
-                print(f"Prédiction pour {tax_type}: montant={avg_tax}, confiance={confidence}")
+                print(f"Prediction for {tax_type}: amount={avg_tax}, confidence={confidence}")
             else:
-                print(f"Aucune donnée historique trouvée pour {tax_type}")
+                print(f"No historical data found for {tax_type}")
 
         return predictions
 
     def calculate_confidence(self, historical_taxes, current_data):
-        """Calcule le niveau de confiance de la prédiction."""
+        """Calculates the confidence level of the prediction."""
         if not historical_taxes:
-            return 0.5  # Confiance minimale si pas de données historiques
+            return 0.5  # Minimum confidence if no historical data
 
         try:
-            # Calculer la variance des taxes historiques
+            # Calculate variance of historical taxes
             mean = sum(historical_taxes) / len(historical_taxes)
             if mean == 0:
-                return 0.5  # Confiance minimale si moyenne nulle
+                return 0.5  # Minimum confidence if mean is zero
             
             variance = sum((x - mean) ** 2 for x in historical_taxes) / len(historical_taxes)
             
-            # Plus la variance est faible, plus la confiance est élevée
+            # The lower the variance, the higher the confidence
             base_confidence = 1.0 - min(variance / (mean * mean), 0.5)
             
-            # Ajuster la confiance en fonction du nombre de données historiques
-            data_points_factor = min(len(historical_taxes) / 12, 1.0)  # Normaliser sur 12 mois
+            # Adjust confidence based on number of historical data points
+            data_points_factor = min(len(historical_taxes) / 12, 1.0)  # Normalize over 12 months
             
-            # Ajuster la confiance en fonction de la récence des données
+            # Adjust confidence based on data recency
             recency_factor = 1.0 if len(historical_taxes) >= 3 else 0.7
             
             final_confidence = base_confidence * data_points_factor * recency_factor
             
-            # Limiter la confiance entre 0.5 et 0.95
+            # Limit confidence between 0.5 and 0.95
             return max(0.5, min(0.95, final_confidence))
         except Exception as e:
-            print(f"Erreur lors du calcul de la confiance: {e}")
-            return 0.5  # Retourner une confiance minimale en cas d'erreur
+            print(f"Error calculating confidence: {e}")
+            return 0.5  # Return minimum confidence in case of error
 
     def calculate_recent_trend(self, historical_data):
-        """Calcule la tendance récente des données financières."""
+        """Calculates recent trend in financial data."""
         if len(historical_data) < 2:
             return 0
 
-        recent_data = historical_data[:3]  # Prendre les 3 derniers mois
+        recent_data = historical_data[:3]  # Take the last 3 months
         if len(recent_data) < 2:
             return 0
 
-        # Calculer la tendance pour chaque métrique
+        # Calculate trend for each metric
         revenue_trend = self._calculate_trend([d['total_revenue'] for d in recent_data])
         expenses_trend = self._calculate_trend([d['total_expenses'] for d in recent_data])
         profit_trend = self._calculate_trend([d['net_profit'] for d in recent_data])
@@ -114,10 +114,10 @@ class TaxForecastModel:
         }
 
     def _calculate_trend(self, values):
-        """Calcule la tendance d'une série de valeurs."""
+        """Calculates trend for a series of values."""
         if len(values) < 2:
             return 0
 
-        # Calculer la différence moyenne entre les valeurs consécutives
+        # Calculate average difference between consecutive values
         differences = [values[i] - values[i-1] for i in range(1, len(values))]
         return sum(differences) / len(differences) 

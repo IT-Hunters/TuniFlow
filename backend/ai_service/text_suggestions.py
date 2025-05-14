@@ -7,9 +7,9 @@ import os
 from tax_forecast_model import TaxForecastModel
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://192.168.100.111:3000", "http://localhost:5173"]}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Initialiser le modèle de prédiction des taxes
+# Initialize the tax prediction model
 tax_model = TaxForecastModel()
 
 # Dictionnaire de suggestions basé sur des patterns courants
@@ -185,27 +185,30 @@ def health_check():
 @app.route('/forecast-taxes', methods=['POST'])
 def forecast_taxes():
     """
-    Endpoint pour prédire les taxes futures basé sur les données historiques.
+    Endpoint to predict future taxes based on historical data.
     """
     try:
         data = request.get_json()
         if not data or 'historical_data' not in data or 'current_data' not in data:
-            return jsonify({"error": "Données manquantes"}), 400
+            return jsonify({"error": "Missing data"}), 400
 
         historical_data = data['historical_data']
         current_data = data['current_data']
 
-        # Entraîner le modèle avec les données historiques
+        # Train the model with historical data
         tax_model.train(historical_data)
 
-        # Faire des prédictions pour les données actuelles
+        # Make predictions for current data
         predictions = tax_model.predict(current_data)
 
         return jsonify(predictions)
 
     except Exception as e:
-        print("Erreur lors de la prédiction:", str(e))
+        print("Error during prediction:", str(e))
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
+    print("Starting text suggestion service on port 5001...")
+    print("API is accessible at http://localhost:5001")
+    print("Try http://localhost:5001/health to check status")
     app.run(host="0.0.0.0", port=5001, debug=True) 

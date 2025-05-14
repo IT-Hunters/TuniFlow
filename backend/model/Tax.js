@@ -8,7 +8,7 @@ const taxSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["TVA", "Corporate Tax"],
+    enum: ["TVA", "Corporate Tax","TAX","CNSS","OTHER"],
     required: true,
   },
   rate: {
