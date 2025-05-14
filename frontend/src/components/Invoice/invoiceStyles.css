@@ -27,6 +27,17 @@
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 15px 30px rgba(0, 0, 0, 0.08);
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --transition-fast: 0.15s ease-out;
+  --transition-normal: 0.25s ease-out;
+  --transition-slow: 0.35s ease-out;
+  --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --card-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Styles de base et réinitialisation */
@@ -97,15 +108,34 @@ body {
   max-width: 700px;
   margin: 40px auto;
   padding: 40px;
-  background-color: var(--white);
+  background: var(--white);
+  box-shadow: var(--card-shadow);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
   border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-lg);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--gray-200);
+}
+
+.invoice-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    var(--primary-color), 
+    var(--secondary-color), 
+    var(--primary-color)
+  );
+  background-size: 200% 100%;
+  animation: gradientMove 3s linear infinite;
 }
 
 .invoice-container:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-xl);
+  transform: translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
 }
 
 /* Sidebar des actions */
@@ -136,18 +166,22 @@ body {
   margin-bottom: 40px;
   position: relative;
   padding-bottom: 20px;
+  background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-600) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: fadeSlideDown 0.5s var(--ease-out-expo);
 }
 
-.invoice-header:after {
+.invoice-header::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background-color: var(--primary-color);
-  border-radius: 3px;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  transform: translateX(-50%) scaleX(0);
+  animation: expandLine 0.6s var(--ease-out-expo) forwards;
 }
 
 /* Information du destinataire */
@@ -171,6 +205,11 @@ body {
 
 .input-group {
   position: relative;
+  transition: transform var(--transition-normal);
+}
+
+.input-group:hover {
+  transform: translateY(-2px);
 }
 
 .input-label {
@@ -179,6 +218,11 @@ body {
   font-weight: 500;
   color: var(--gray-600);
   font-size: 16px;
+  transition: color var(--transition-fast);
+}
+
+.input-group:focus-within .input-label {
+  color: var(--primary-color);
 }
 
 /* Champs de formulaire */
@@ -187,17 +231,38 @@ body {
   padding: 16px 20px;
   font-size: 16px;
   color: var(--gray-700);
-  background-color: var(--light-bg);
-  border: 2px solid var(--gray-200);
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
   border-radius: var(--border-radius-lg);
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
+  background-clip: padding-box;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.invoice-input::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: -2px;
+  border-radius: inherit;
+  background: linear-gradient(to right, var(--gray-200), var(--gray-300));
+  z-index: -1;
+}
+
+.invoice-input:hover {
+  border-color: var(--gray-300);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .invoice-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
-  background-color: var(--white);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+  background: var(--white);
 }
 
 .invoice-input::placeholder {
@@ -253,17 +318,20 @@ textarea.invoice-input {
 
 /* Prévisualisation logo */
 .logo-preview {
-  margin-top: 15px;
+  margin-top: 16px;
+  padding: 16px;
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
   text-align: center;
+  transition: all var(--transition-normal);
 }
 
 .logo-preview-image {
-  max-width: 150px;
-  max-height: 150px;
-  border: 1px solid var(--gray-200);
+  max-width: 200px;
+  max-height: 200px;
   border-radius: var(--border-radius-md);
-  padding: 5px;
-  background-color: var(--white);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Boutons */
@@ -276,27 +344,52 @@ textarea.invoice-input {
   font-size: 16px;
   font-weight: 600;
   color: var(--white);
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, 
+    var(--primary-color), 
+    var(--primary-hover)
+  );
   border: none;
   border-radius: var(--border-radius-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.15);
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.invoice-button:hover:not(:disabled),
+.invoice-button::after,
+.view-invoices-button::after,
+.scanner-toggle-button::after,
+.export-button::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.6s var(--ease-out-expo), opacity 0.4s ease;
+}
+
+.invoice-button:hover::after,
+.view-invoices-button:hover::after,
+.scanner-toggle-button:hover::after,
+.export-button:hover::after {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.invoice-button:hover,
 .view-invoices-button:hover,
 .scanner-toggle-button:hover,
-.export-button:hover:not(:disabled),
-.history-toggle-button:hover {
-  background-color: var(--primary-hover);
+.export-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(14, 165, 233, 0.25);
+  box-shadow: 0 4px 8px rgba(14, 165, 233, 0.2);
 }
 
 .invoice-button:active:not(:disabled),
@@ -304,8 +397,8 @@ textarea.invoice-input {
 .scanner-toggle-button:active,
 .export-button:active:not(:disabled),
 .history-toggle-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.1);
 }
 
 .invoice-button:disabled {
@@ -353,227 +446,36 @@ textarea.invoice-input {
   margin-top: 10px;
 }
 
-/* Effet ripple sur les boutons */
-.invoice-button:after,
-.view-invoices-button:after,
-.scanner-toggle-button:after,
-.export-button:after,
-.history-toggle-button:after {
+/* Messages */
+.error-message,
+.success-message {
+  background-color: rgba(185, 28, 28, 0.05);
+  color: var(--danger-color);
+  padding: 16px 20px;
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 25px;
+  font-size: 16px;
+  animation: slideUp 0.4s var(--ease-out-expo);
+  position: relative;
+  border-left: 4px solid transparent;
+}
+
+.error-message::before,
+.success-message::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.5);
-  opacity: 0;
-  border-radius: 100%;
-  transform: scale(1, 1) translate(-50%);
-  transform-origin: 50% 50%;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
 }
 
-.invoice-button:focus:not(:active)::after,
-.view-invoices-button:focus:not(:active)::after,
-.scanner-toggle-button:focus:not(:active)::after,
-.export-button:focus:not(:active)::after,
-.history-toggle-button:focus:not(:active)::after {
-  animation: ripple 1s ease-out;
+.error-message::before {
+  background-color: var(--danger-color);
 }
 
-/* Historique */
-.history-section {
-  background-color: var(--gray-100);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--border-radius-md);
-  margin-top: 15px;
-  padding: 15px;
-}
-
-.history-section h4 {
-  margin-bottom: 10px;
-  color: var(--gray-700);
-  font-weight: 600;
-}
-
-.history-section ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.history-section li {
-  color: var(--gray-600);
-  margin-bottom: 8px;
-}
-
-/* Table d'affichage des factures */
-.invoices-list {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.invoices-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background-color: var(--white);
-  border-radius: var(--border-radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-}
-
-.invoices-table th,
-.invoices-table td {
-  padding: 15px;
-  text-align: left;
-}
-
-.invoices-table th {
-  background-color: var(--secondary-color);
-  color: var(--white);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 14px;
-}
-
-.invoices-table tr {
-  transition: background-color 0.3s ease;
-  border-bottom: 1px solid var(--gray-200);
-}
-
-.invoices-table tr:last-child {
-  border-bottom: none;
-}
-
-.invoices-table tr:hover {
-  background-color: var(--gray-100);
-}
-
-.invoices-table td {
-  color: var(--gray-700);
-  font-size: 15px;
-}
-
-/* Statuts de facture */
-.status-paid {
-  color: var(--success-color);
-  font-weight: bold;
-}
-
-.status-pending {
-  color: var(--warning-color);
-  font-weight: bold;
-}
-
-.accepted-label {
-  color: var(--success-color);
-  font-weight: bold;
-  font-size: 14px;
-}
-
-/* Bouton d'acceptation */
-.accept-button {
-  padding: 8px 15px;
+.success-message::before {
   background-color: var(--success-color);
-  color: var(--white);
-  border: none;
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-}
-
-.accept-button:hover {
-  background-color: var(--success-hover);
-}
-
-/* Section filtres et export */
-.export-section {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-}
-
-.export-filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-}
-
-.export-filter label {
-  font-weight: 600;
-  color: var(--gray-700);
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.export-filter select {
-  padding: 10px 15px;
-  border-radius: var(--border-radius-md);
-  border: 1px solid var(--gray-200);
-  background-color: var(--white);
-  font-size: 14px;
-  color: var(--gray-700);
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-  flex: 1;
-}
-
-.export-filter select:focus {
-  outline: none;
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
-}
-
-/* Section recherche */
-.search-section {
-  margin-bottom: 25px;
-  display: flex;
-  justify-content: center;
-}
-
-.search-input {
-  width: 100%;
-  max-width: 500px;
-  padding: 12px 20px;
-  border: 2px solid var(--gray-200);
-  border-radius: var(--border-radius-lg);
-  font-size: 16px;
-  color: var(--gray-700);
-  background-color: var(--white);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 5px rgba(14, 165, 233, 0.3);
-}
-
-/* Messages */
-.error-message {
-  background-color: #fee2e2;
-  color: var(--danger-color);
-  padding: 16px;
-  border-radius: var(--border-radius-md);
-  margin-bottom: 25px;
-  font-size: 16px;
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-.success-message {
-  background-color: #dcfce7;
-  color: var(--success-color);
-  padding: 16px;
-  border-radius: var(--border-radius-md);
-  margin-bottom: 25px;
-  font-size: 16px;
-  animation: fadeIn 0.3s ease-out forwards;
 }
 
 /* Animations de chargement */
@@ -605,16 +507,11 @@ textarea.invoice-input {
 }
 
 .loading-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background-color: var(--gray-400);
+  width: 6px;
+  height: 6px;
+  background-color: var(--primary-color);
   border-radius: 50%;
-  animation: dotPulse 1.4s infinite ease-in-out;
-}
-
-.loading-dot:nth-child(1) {
-  animation-delay: 0s;
+  animation: loadingPulse 1.5s var(--ease-out-expo) infinite;
 }
 
 .loading-dot:nth-child(2) {
@@ -625,22 +522,11 @@ textarea.invoice-input {
   animation-delay: 0.4s;
 }
 
-@keyframes dotPulse {
-  0%, 100% {
-    transform: scale(0.8);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-
 /* Animations */
-@keyframes fadeIn {
+@keyframes fadeSlideDown {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(-15px);
   }
   to {
     opacity: 1;
@@ -648,18 +534,43 @@ textarea.invoice-input {
   }
 }
 
-@keyframes ripple {
-  0% {
-    transform: scale(0, 0);
-    opacity: 0.5;
+@keyframes expandLine {
+  from {
+    transform: translateX(-50%) scaleX(0);
   }
-  20% {
-    transform: scale(25, 25);
-    opacity: 0.3;
+  to {
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loadingPulse {
+  0%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 100% 0;
   }
   100% {
-    opacity: 0;
-    transform: scale(40, 40);
+    background-position: -100% 0;
   }
 }
 
@@ -843,4 +754,235 @@ textarea.invoice-input {
   color: #6c757d;
   font-style: italic;
   font-size: 0.9em;
+}
+
+/* File input styling */
+.file-input-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.file-input {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.file-input-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: var(--white);
+  border-radius: var(--border-radius-lg);
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  min-height: 56px;
+}
+
+.file-input-button::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.6s var(--ease-out-expo), opacity 0.4s ease;
+}
+
+.file-input-wrapper:hover .file-input-button {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.file-input-wrapper:hover .file-input-button::after {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.file-input-wrapper:active .file-input-button {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.file-name-display {
+  margin-top: 8px;
+  padding: 12px;
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  border-radius: var(--border-radius-md);
+  font-size: 14px;
+  text-align: center;
+  transition: all var(--transition-normal);
+  border: 1px solid var(--gray-200);
+}
+
+.file-name-display:empty {
+  display: none;
+}
+
+/* Hide default file input button */
+input[type="file"]::-webkit-file-upload-button,
+input[type="file"]::file-selector-button {
+  display: none;
+}
+
+/* AI Generate Description Button */
+.ai-generate-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #2D3A8C, #1E88E5);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius-lg);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.ai-generate-button::before {
+  content: '🤖';
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.ai-generate-button::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.6s var(--ease-out-expo), opacity 0.4s ease;
+}
+
+.ai-generate-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, #3949AB, #2196F3);
+}
+
+.ai-generate-button:hover::after {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.ai-generate-button:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.ai-generate-button.generating {
+  background: linear-gradient(135deg, #1A237E, #1565C0);
+  cursor: wait;
+  opacity: 0.9;
+}
+
+.ai-generate-button .loading-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.ai-generate-button .loading-dots span {
+  width: 4px;
+  height: 4px;
+  background-color: var(--white);
+  border-radius: 50%;
+  animation: loadingDot 1.4s infinite ease-in-out;
+}
+
+.ai-generate-button .loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ai-generate-button .loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loadingDot {
+  0%, 100% {
+    transform: scale(0.3);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.ai-description-container {
+  position: relative;
+  margin-top: 8px;
+}
+
+.ai-description-container textarea {
+  padding: 16px;
+  font-size: 14px;
+}
+
+.ai-description-container textarea:not(:empty) {
+  background: linear-gradient(to bottom right, var(--white), var(--gray-50));
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #6366F1, #A855F7);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 12px;
+  margin-left: 8px;
+  vertical-align: middle;
+  box-shadow: var(--shadow-sm);
+}
+
+.ai-badge::before {
+  content: '🤖';
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+.invoice-input[name="customNotes"] {
+  font-family: var(--font-family);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  background-color: var(--white);
+}
+
+.invoice-input[name="customNotes"]:not(:empty) {
+  background-color: var(--gray-50);
+  border-color: var(--gray-300);
 }

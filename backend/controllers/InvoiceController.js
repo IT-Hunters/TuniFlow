@@ -1,5 +1,6 @@
 const path = require("path");
-const fs = require("fs").promises; // Use promises for async file operations
+const fs = require("fs"); // Import standard fs
+const fsPromises = require("fs").promises; // Import promises separately
 const { PythonShell } = require("python-shell");
 const Bill = require("../model/Bill");
 const User = require("../model/user");
@@ -14,12 +15,16 @@ const multer = require("multer");
 
 // Configurer Multer pour le téléchargement de fichiers
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "../uploads/logos");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+  destination: async (req, file, cb) => {
+    try {
+      const uploadDir = path.join(__dirname, "../uploads/logos");
+      if (!fs.existsSync(uploadDir)) {
+        await fsPromises.mkdir(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    } catch (error) {
+      cb(error);
     }
-    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
@@ -118,7 +123,7 @@ const generateInvoicePDF = async (invoice) => {
 
   const dir = path.join(__dirname, "../invoices");
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    await fsPromises.mkdir(dir, { recursive: true });
     console.log("Invoices directory created:", dir);
   }
 

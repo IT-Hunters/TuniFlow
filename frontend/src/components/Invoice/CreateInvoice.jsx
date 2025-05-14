@@ -22,6 +22,7 @@ const CreateInvoice = () => {
   const [logoFile, setLogoFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   const navigate = useNavigate();
 
   const categoryOptions = [
@@ -80,7 +81,15 @@ const CreateInvoice = () => {
     }
   };
 
-  const generateDescription = async () => {
+  const generateAIDescription = async () => {
+    if (!invoiceData.amount || !invoiceData.category) {
+      setError(t("Please fill in the amount and category first"));
+      return;
+    }
+
+    setIsGenerating(true);
+    setError('');
+
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:3000/project/my-project', {
@@ -88,15 +97,64 @@ const CreateInvoice = () => {
       });
       const project = response.data;
       const amount = Number(invoiceData.amount);
-      const description = await axios.post(
-        'http://localhost:3000/invoices/generate-description',
-        { amount, category: invoiceData.category, project },
-        { headers: { Authorization: `Bearer ${token}` } }
+
+      // Créer un template de description basé sur la catégorie
+      const getTemplateByCategory = (category, amount) => {
+        const templates = {
+          'Consulting': `Services de consultation professionnelle fournis à votre entreprise, comprenant conseils stratégiques, analyses et recommandations. Montant total de la consultation : ${amount} TND.`,
+          'Services': `Services professionnels fournis selon notre accord. Prestation de services complétée selon les spécifications. Montant total : ${amount} TND.`,
+          'Products': `Livraison et implémentation des produits selon les spécifications. Tous les éléments livrés en parfait état. Valeur totale : ${amount} TND.`,
+          'Freelance': `Travail freelance complété selon les exigences du projet. Livrables soumis et approuvés. Valeur totale du projet : ${amount} TND.`,
+          'Maintenance': `Services de maintenance et support fournis, incluant mises à jour système et assistance technique. Frais total de maintenance : ${amount} TND.`,
+          'Other': `Services professionnels et livrables fournis selon notre accord. Montant total : ${amount} TND.`
+        };
+
+        return templates[category] || templates['Other'];
+      };
+
+      // Générer une description détaillée
+      const generateDetailedDescription = (category, amount, project) => {
+        const baseDescription = getTemplateByCategory(category, amount);
+        const date = new Date().toLocaleDateString();
+        const recipientDetails = project.businessOwner ? 
+          `${project.businessOwner.fullname} ${project.businessOwner.lastname}` : 
+          'Destinataire';
+
+        return `
+Facture - ${date}
+
+Destinataire: ${recipientDetails}
+
+${baseDescription}
+
+Détails de la prestation:
+- Type de service: ${category}
+- Montant: ${amount} TND
+- Date de service: ${date}
+
+Informations complémentaires:
+- Travail réalisé conformément aux spécifications convenues
+- Contrôles qualité effectués
+- Standards professionnels respectés
+- Documentation et livrables inclus
+
+Merci de votre confiance!
+        `.trim();
+      };
+
+      const generatedDescription = generateDetailedDescription(
+        invoiceData.category,
+        amount,
+        project
       );
-      setInvoiceData(prev => ({ ...prev, customNotes: description.data.description }));
+
+      setInvoiceData(prev => ({ ...prev, customNotes: generatedDescription }));
+      
     } catch (error) {
       console.error('Error generating description:', error);
-      setError(t("Failed to generate description"));
+      setError(t("Failed to generate AI description"));
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -253,18 +311,25 @@ const CreateInvoice = () => {
                 )}
 
                 <div className="input-group">
-                  <label className="input-label" htmlFor="logo">{t("Logo (Optional)")}</label>
-                  <input
-                    id="logo"
-                    type="file"
-                    name="logo"
-                    className="invoice-input"
-                    accept="image/jpeg,image/png"
-                    onChange={handleLogoChange}
-                  />
-                  {logoFile && (
-                    <p className="file-info">{t("Selected file")}: {logoFile.name}</p>
-                  )}
+                  <label className="input-label" htmlFor="logo">Logo (Optional)</label>
+                  <div className="file-input-wrapper">
+                    <input
+                      id="logo"
+                      type="file"
+                      name="logo"
+                      className="file-input"
+                      accept="image/jpeg,image/png"
+                      onChange={handleLogoChange}
+                    />
+                    <div className="file-input-button">
+                      {logoFile ? logoFile.name : 'Choose a file'}
+                    </div>
+                    {logoFile && (
+                      <div className="file-name-display">
+                        Selected file: {logoFile.name}
+                      </div>
+                    )}
+                  </div>
                   {logoPreview && (
                     <div className="logo-preview">
                       <img src={logoPreview} alt="Logo Preview" className="logo-preview-image" />
@@ -273,19 +338,42 @@ const CreateInvoice = () => {
                 </div>
 
                 <div className="input-group">
-                  <label className="input-label" htmlFor="customNotes">{t("Custom Notes (Optional)")}</label>
-                  <textarea
-                    id="customNotes"
-                    name="customNotes"
-                    className="invoice-input"
-                    placeholder={t("Add custom notes")}
-                    value={invoiceData.customNotes}
-                    onChange={handleChange}
-                    rows="4"
-                  />
-                  <button type="button" onClick={generateDescription} className="generate-button">
-                    {t("Generate Description")}
-                  </button>
+                  <label className="input-label" htmlFor="customNotes">
+                    {t("Custom Notes (Optional)")}
+                    {invoiceData.customNotes && (
+                      <span className="ai-badge">{t("AI Generated")}</span>
+                    )}
+                  </label>
+                  <div className="ai-description-container">
+                    <textarea
+                      id="customNotes"
+                      name="customNotes"
+                      className="invoice-input"
+                      placeholder={t("Add custom notes or let AI generate them")}
+                      value={invoiceData.customNotes}
+                      onChange={handleChange}
+                      rows="6"
+                    />
+                    <button 
+                      type="button" 
+                      onClick={generateAIDescription}
+                      className={`ai-generate-button ${isGenerating ? 'generating' : ''}`}
+                      disabled={isGenerating}
+                    >
+                      {isGenerating ? (
+                        <>
+                          {t("Generating with AI")}
+                          <div className="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                        </>
+                      ) : (
+                        t("Generate with AI")
+                      )}
+                    </button>
+                  </div>
                 </div>
                 
                 <button type="submit" disabled={loading} className="invoice-button">
