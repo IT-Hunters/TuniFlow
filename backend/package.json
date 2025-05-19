@@ -2,10 +2,11 @@
   "name": "backend",
   "version": "0.0.0",
   "private": true,
-  "scripts": {
-    "test": "mocha *.test.js",
-    "start": "node ./bin/www"
-  },
+   "scripts": {
+  "test": "mocha *.test.js",
+  "start": "node ./bin/www",
+  "build": "cd ../frontend && npm install && npm run build"
+},
   "dependencies": {
     "bcryptjs": "^3.0.1",
     "cookie-parser": "~1.4.4",
