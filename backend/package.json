@@ -5,8 +5,7 @@
 "scripts": {
   "test": "mocha *.test.js",
   "start": "node ./bin/www",
-  "build": "cd ../frontend && npm install && npm run build && cp -r dist ../backend/public"
-
+  "build": "cd ../frontend && npm install && npm run build && mkdir -p ../backend/public && cp -r dist ../backend/public"
 },
   "dependencies": {
     "bcryptjs": "^3.0.1",
