@@ -88,6 +88,10 @@ const fs = require("fs");
 
 // Serve static files from React
 const frontendBuildPath = path.join(__dirname, "../frontend/build");
+// 🟢 Test API
+app.get('/api/test', (req, res) => {
+  res.status(200).json({ message: 'Project tested' });
+});
 
 if (fs.existsSync(frontendBuildPath)) {
   app.use(express.static(frontendBuildPath));
@@ -97,10 +101,7 @@ if (fs.existsSync(frontendBuildPath)) {
   });
 }
 
-// 🟢 Test API
-app.get('/api/test', (req, res) => {
-  res.status(200).json({ message: 'Project tested' });
-});
+
 
 // 🟢 WebSocket Server Setup
 const server = http.createServer(app);
