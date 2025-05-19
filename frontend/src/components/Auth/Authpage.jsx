@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+//import axios from "axios";
+import axios from '@/axios'
 import "./Authpage.css";
 
 const AuthPage = () => {
@@ -117,7 +118,7 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        const response = await axios.post("http://localhost:3000/users/login", {
+        const response = await axios.post("/users/login", {
           email: formData.email,
           password: formData.password,
         });
@@ -140,7 +141,7 @@ const AuthPage = () => {
           formDataToSend.append("evidence", file);
         }
 
-        const response = await axios.post("http://localhost:3000/users/register", formDataToSend);
+        const response = await axios.post("/users/register", formDataToSend);
 
         setIsLogin(true);
         setMessage("Registration successful! Please log in.");

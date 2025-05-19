@@ -2,7 +2,8 @@ import './profile.css';
 import Navbar from '../navbarHome/NavbarHome';
 import Sidebar from '../sidebarHome/newSidebar';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios';
 import { useEffect, useState } from 'react';
 
 const ViewProfile = () => {
