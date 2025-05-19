@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./AuthPage.css";
+import "./Authpage.css";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
