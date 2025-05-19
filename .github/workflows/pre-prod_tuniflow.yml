@@ -17,17 +17,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+          cache: 'npm'  # Active le cache pour accélérer l'installation des dépendances
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install backend dependencies
         working-directory: backend
         run: npm install
 
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
       - name: Build frontend into backend
+        working-directory: frontend
         run: |
-          cd frontend
-          npm install
           npm run build
-          cp -r build ../backend/
+          cp -r dist ../backend/public  # Remplacer 'build' par 'dist' et copier dans backend/public
 
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
@@ -35,4 +40,4 @@ jobs:
           app-name: TuniFlow
           slot-name: Production
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          package: backend
+          package: backend  # Assurez-vous que ce chemin contient bien le dossier 'public' avec les fichiers frontend

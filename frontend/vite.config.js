@@ -12,24 +12,22 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      // Ajout d'un alias pour les images
+      '/images': path.resolve(__dirname, 'images'),
     },
   },
   build: {
-    // Activer ou désactiver les sourcemaps selon vos besoins
-    sourcemap: true, // Changez à false si vous voulez désactiver pour le prod
-    // Optimisation des chunks
+    sourcemap: false, // Désactiver les sourcemaps pour éviter les erreurs
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            return 'vendor'; // Sépare les dépendances dans un chunk 'vendor'
+            return 'vendor'; // Séparer les dépendances dans un chunk 'vendor'
           }
         },
       },
     },
-    // Ajuster la limite d'avertissement de taille des chunks
-    chunkSizeWarningLimit: 1000, // Augmente à 1000 kB pour réduire les warnings
+    chunkSizeWarningLimit: 1000, // Limite d'avertissement à 1000 kB
   },
-  // Configuration des assets pour résoudre les images comme darkBG.png
-  assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg'],
+  assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg'], // Inclure les assets
 });
