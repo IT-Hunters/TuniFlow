@@ -23,13 +23,11 @@ jobs:
         run: npm install
 
       - name: Build frontend and copy it to backend
-        working-directory: backend
-        run: npm run build
-
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+        working-directory: frontend
+        run: |
+          npm install
+          npm run build
+          cp -r dist/* ../backend/public
 
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
