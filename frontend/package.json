@@ -51,7 +51,7 @@
     "recharts": "^2.15.1",
     "socket.io-client": "^4.8.1",
     "styled-components": "^6.1.15",
-    "sweetalert2": "^11.21.0",
+    "sweetalert2": "^11.6.13",
     "yup": "^1.6.1"
   },
   "devDependencies": {
