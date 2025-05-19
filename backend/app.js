@@ -87,19 +87,15 @@ app.use('/predict', predictRoutes);
 const fs = require("fs");
 
 // Serve static files from React
-const frontendBuildPath = path.join(__dirname, "../frontend/build");
-// 🟢 Test API
-app.get('/api/test', (req, res) => {
-  res.status(200).json({ message: 'Project tested' });
-});
+const frontendPath = path.join(__dirname, 'public');
+if (fs.existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
 
-if (fs.existsSync(frontendBuildPath)) {
-  app.use(express.static(frontendBuildPath));
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(frontendBuildPath, "index.html"));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
   });
 }
+
 
 
 
