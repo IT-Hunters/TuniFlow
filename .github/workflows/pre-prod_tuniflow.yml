@@ -22,9 +22,12 @@ jobs:
         working-directory: backend
         run: npm install
 
-      - name: Build frontend and copy it to backend
-        working-directory: backend
-        run: npm run build
+      - name: Build frontend into backend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+          cp -r build ../backend/
 
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
