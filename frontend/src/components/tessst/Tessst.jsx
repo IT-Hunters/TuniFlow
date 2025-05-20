@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+//import axios from "axios";
+import axios from '@/axios'
 import { FaArrowDown, FaArrowUp, FaExchangeAlt, FaHistory, FaChartLine, FaCalendar, FaChartBar, FaTimes } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
 import {
@@ -43,7 +44,7 @@ const Wallet = () => {
 
   const fetchUserProfile = async (token) => {
     try {
-      const response = await axios.get("http://localhost:3000/users/findMyProfile", {
+      const response = await axios.get("/users/findMyProfile", {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
@@ -183,7 +184,7 @@ const fetchWalletData = async () => {
         });
         return;
       }
-      const response = await axios.get(`http://localhost:3000/predict/predict/${projectId}`, {
+      const response = await axios.get(`/predict/predict/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPredictionHtml(response.data.html);

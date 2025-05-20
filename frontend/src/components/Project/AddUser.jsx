@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate } from 'react-router-dom';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import './MyProject.css'; // Corrected CSS import
 
-const API_URL = 'http://localhost:3000/users';
+const API_URL = '/users';
 
 const AddUser = () => {
   const [formData, setFormData] = useState({

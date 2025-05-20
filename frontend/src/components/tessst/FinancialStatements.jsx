@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+//import axios from "axios";
+import axios from '@/axios'
 import { FaFileInvoice, FaDownload, FaEye, FaEyeSlash } from "react-icons/fa";
 import { Doughnut, Line } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, LineElement, PointElement, LinearScale, TimeScale } from "chart.js";
@@ -35,7 +36,7 @@ const FinancialStatements = () => {
 
   const fetchUserProfile = async (token) => {
     try {
-      const response = await axios.get("http://localhost:3000/users/findMyProfile", {
+      const response = await axios.get("/users/findMyProfile", {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data._id;
@@ -46,7 +47,7 @@ const FinancialStatements = () => {
 
   const fetchWallet = async (userId, token) => {
     try {
-      const response = await axios.get(`http://localhost:3000/wallets/user/${userId}`, {
+      const response = await axios.get(`/wallets/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
@@ -57,7 +58,7 @@ const FinancialStatements = () => {
 
   const fetchFinancialStatements = async (walletId, token) => {
     try {
-      const response = await axios.get(`http://localhost:3000/financial_statements/wallet/${walletId}`, {
+      const response = await axios.get(`/financial_statements/wallet/${walletId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const statementsWithTvaRate = response.data.map((statement) => ({
@@ -131,7 +132,7 @@ const FinancialStatements = () => {
       };
       console.log("Données envoyées:", payload);
       const response = await axios.post(
-        "http://localhost:3000/financial_statements/generate",
+        "/financial_statements/generate",
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -162,7 +163,7 @@ const FinancialStatements = () => {
         setError("Veuillez vous connecter pour supprimer un état financier.");
         return;
       }
-      await axios.delete(`http://localhost:3000/financial_statements/${statementId}`, {
+      await axios.delete(`/financial_statements/${statementId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setFinancialStatements(financialStatements.filter((statement) => statement._id !== statementId));
@@ -187,7 +188,7 @@ const FinancialStatements = () => {
         rate: tax.rate,
       }));
       const response = await axios.post(
-        `http://localhost:3000/financial_statements/regenerate/${statementId}`,
+        `/financial_statements/regenerate/${statementId}`,
         { customTaxes },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -243,7 +244,7 @@ const FinancialStatements = () => {
         return;
       }
       const response = await axios.put(
-        `http://localhost:3000/financial_statements/${editingStatement}`,
+        `/financial_statements/${editingStatement}`,
         editForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -314,7 +315,7 @@ const FinancialStatements = () => {
 
       // Récupérer les états financiers pour les données historiques
       const statements = await axios.get(
-        `http://localhost:3000/financial_statements/wallet/${walletId}`,
+        `/financial_statements/wallet/${walletId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

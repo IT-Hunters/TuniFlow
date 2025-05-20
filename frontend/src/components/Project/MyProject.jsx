@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate, useLocation } from 'react-router-dom';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import './MyProject.css';
 import { Edit, Trash2 } from 'react-feather';
 
-const API_URL = 'http://localhost:3000/users';
-const API_Project = 'http://localhost:3000/project';
-const API_Conversation = 'http://localhost:5000/project-conversations';
+const API_URL = '/users';
+const API_Project = '/project';
+const API_Conversation = '/project-conversations';
 
 const MyProject = () => {
   const [project, setProject] = useState(null);
@@ -152,7 +153,7 @@ const MyProject = () => {
   
       // Récupération des utilisateurs assignés
       const response = await axios.get(
-        `http://localhost:3000/project/${project._id}/assigned-users`,
+        `/project/${project._id}/assigned-users`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
   

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate } from 'react-router-dom';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import { UserPlus, RefreshCw, FolderPlus, Users, UserCheck, Edit, Trash2 } from 'react-feather';
 import './AddProject.css';
 
-const API_URL = 'http://localhost:3000/users';
+const API_URL = '/users';
 
 const ManagerList = () => {
   const [managers, setManagers] = useState([]);

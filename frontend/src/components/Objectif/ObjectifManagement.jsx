@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import Sidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import { useNavigate } from 'react-router-dom';
 import './Objectifmanagement.css';
 
-const API_Users = 'http://localhost:3000/users';
-const API_Objectif = 'http://localhost:3000/objectif';
+const API_Users = '/users';
+const API_Objectif = '/objectif';
 
 const ITEMS_PER_PAGE = 6; // Increased from 4 to 6 to display 6 cards per page
 

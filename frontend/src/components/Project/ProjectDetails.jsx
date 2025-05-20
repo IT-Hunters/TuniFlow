@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import './ProjectDetails.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
@@ -7,8 +8,8 @@ import { AlertCircle, CheckCircle, HelpCircle, TrendingUp, DollarSign, AlertTria
 import Navbar from '../navbarHome/NavbarHome';
 import recommendationService from '../../services/AiService';
 
-const API_URL = 'http://localhost:3000/project/getbyid';
-const GENERATE_REPORT_URL = 'http://localhost:3000/project/generate-report';
+const API_URL = '/project/getbyid';
+const GENERATE_REPORT_URL = '/project/generate-report';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -63,7 +64,7 @@ const ProjectDetails = () => {
     try {
       const token = localStorage.getItem('token');
       const requests = project.objectifs.map((objId) =>
-        axios.get(`http://localhost:3000/objectif/getbyid/${objId}`, {
+        axios.get(`/objectif/getbyid/${objId}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
       );
@@ -85,7 +86,7 @@ const ProjectDetails = () => {
 
   const handleDelete = async (projectId) => {
     try {
-      const response = await fetch(`http://localhost:3000/project/deleteProjectById/${projectId}`, {
+      const response = await fetch(`/project/deleteProjectById/${projectId}`, {
         method: 'DELETE',
       });
 

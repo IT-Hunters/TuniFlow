@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate, useParams } from 'react-router-dom';
 import './UserUpdate.css'; // Créez ce fichier CSS pour le style
 
-const API_URL = 'http://localhost:3000/users';
+const API_URL = '/users';
 
 const Updatebymanager = () => {
   const { id } = useParams();

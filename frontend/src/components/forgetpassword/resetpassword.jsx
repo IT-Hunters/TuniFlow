@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from '@/axios'
 import "./resetpassword.css"; // Assurez-vous que le fichier CSS est bien importé
 
 const ResetPassword = () => {
@@ -11,7 +12,7 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("http://localhost:3000/users/reset-password", {
+    const response = await fetch("/users/reset-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, newPassword }),

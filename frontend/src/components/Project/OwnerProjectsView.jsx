@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate } from 'react-router-dom';
 import './OwnerProjectsView.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 
-const API_URL = 'http://localhost:3000'; // Replace with your backend URL
+const API_URL = ''; // Replace with your backend URL
 const PROJECTS_PER_PAGE = 6; // 6 projects = 2 rows of 3 cards
 
 const OwnerProjectsView = () => {

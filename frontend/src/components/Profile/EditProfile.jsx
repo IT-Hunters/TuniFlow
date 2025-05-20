@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import Navbar from '../navbarHome/NavbarHome';
 import Sidebar from '../sidebarHome/newSidebar';
 import './EditProfile.css';
@@ -67,7 +68,7 @@ const EditProfile = () => {
           return;
         }
 
-        const response = await axios.get('http://localhost:3000/users/findMyProfile', {
+        const response = await axios.get('/users/findMyProfile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -119,7 +120,7 @@ const EditProfile = () => {
         lastname: formData.lastname,
         email: formData.email,
         picture: formData.picture && !formData.picture.startsWith('http') 
-          ? `http://localhost:3000/images/${formData.picture}` 
+          ? `/images/${formData.picture}` 
           : formData.picture || '',
       };
   
@@ -166,7 +167,7 @@ const EditProfile = () => {
   
       console.log('Données envoyées à updateprofile :', JSON.stringify(cleanedFormData, null, 2));
   
-      const response = await axios.put('http://localhost:3000/users/updateprofile', cleanedFormData, {
+      const response = await axios.put('/users/updateprofile', cleanedFormData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -224,7 +225,7 @@ const EditProfile = () => {
       }
 
       console.log('Début de l’upload vers le serveur');
-      axios.put('http://localhost:3000/users/uploadimage', imageFormData, {
+      axios.put('/users/uploadimage', imageFormData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -234,7 +235,7 @@ const EditProfile = () => {
         console.log('Chemin brut reçu :', imagePath);
         const imageUrl = imagePath.startsWith('http') 
           ? imagePath 
-          : `http://localhost:3000/images/${imagePath}`;
+          : `/images/${imagePath}`;
         console.log('URL construite :', imageUrl);
         
         setUserData((prevState) => ({
@@ -298,7 +299,7 @@ const EditProfile = () => {
         }
 
         console.log('Données envoyées à updateprofile :', JSON.stringify(updatedProfile, null, 2));
-        axios.put('http://localhost:3000/users/updateprofile', updatedProfile, {
+        axios.put('/users/updateprofile', updatedProfile, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',

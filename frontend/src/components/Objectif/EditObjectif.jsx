@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import Sidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Objectifmanagement.css';
 
-const API_Objectif = 'http://localhost:3000/objectif'; // Updated to match your backend port
+const API_Objectif = '/objectif'; // Updated to match your backend port
 
 const EditObjective = () => {
   const navigate = useNavigate();

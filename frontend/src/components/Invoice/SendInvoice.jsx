@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import CoolSidebar from "../sidebarHome/newSidebar"; 
 import Navbar from "../navbarHome/NavbarHome"; 
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import './invoiceStyles.css'; // Ensure this file exists
 
 const SendInvoice = () => {
@@ -22,7 +23,7 @@ const SendInvoice = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post(`http://localhost:3000/invoices/send/${encodeURIComponent(invoiceId)}`);
+            const response = await axios.post(`/invoices/send/${encodeURIComponent(invoiceId)}`);
             alert(response.data.message);
         } catch (error) {
             console.error('Erreur lors de l\'envoi de la facture:', error);

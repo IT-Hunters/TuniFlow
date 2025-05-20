@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import CoolSidebar from "../sidebarHome/newSidebar";
 import Navbar from "../navbarHome/NavbarHome";
-import axios from "axios";
+//import axios from "axios";
+import axios from '@/axios'
 import "./invoiceStyles.css";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +26,7 @@ const ManagerInvoices = () => {
         const token = localStorage.getItem("token");
         console.log("Fetching invoices with token:", token);
         const response = await axios.get(
-          "http://localhost:3000/invoices/my-sent-invoices",
+          "/invoices/my-sent-invoices",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -47,7 +48,7 @@ const ManagerInvoices = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.post(
-          "http://localhost:3000/invoices/batch-predict-payment",
+          "/invoices/batch-predict-payment",
           { invoices: fetchedInvoices },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -85,7 +86,7 @@ const ManagerInvoices = () => {
     try {
       setExporting(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/invoices/export", {
+      const response = await axios.get("/invoices/export", {
         headers: { Authorization: `Bearer ${token}` },
         responseType: "blob",
         params: { status: exportStatus },

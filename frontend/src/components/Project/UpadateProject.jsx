@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import './UpdateProject.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 
-const API_URL = 'http://localhost:3000/project/getbyid';
-const UPDATE_PROJECT_URL = 'http://localhost:3000/project/updateproject';
+const API_URL = '/project/getbyid';
+const UPDATE_PROJECT_URL = '/project/updateproject';
 
 const UpdateProject = () => {
   const { id } = useParams();

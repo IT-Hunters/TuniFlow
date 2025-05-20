@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaPen, FaTrash, FaArchive, FaUndo } from 'react-icons/fa';
@@ -25,7 +26,7 @@ const ToDoList = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get('http://localhost:3000/api/tasks', {
+        const response = await axios.get('/api/tasks', {
           headers: { Authorization: `Bearer ${token}` },
           params: { showArchived },
         });
@@ -69,7 +70,7 @@ const ToDoList = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/tasks',
+        '/api/tasks',
         { description: newTask, status: 'À faire', dueDate: newDueDate || null },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -90,7 +91,7 @@ const ToDoList = () => {
   const handleUpdateTaskStatus = async (taskId, newStatus) => {
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/tasks/${taskId}`,
+        `/api/tasks/${taskId}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -128,7 +129,7 @@ const ToDoList = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/tasks/${taskId}`,
+        `/api/tasks/${taskId}`,
         { description: editedDescription },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -154,7 +155,7 @@ const ToDoList = () => {
   const handleArchiveTask = async (taskId, isArchived) => {
     try {
       await axios.put(
-        `http://localhost:3000/api/tasks/${taskId}/archive`,
+        `/api/tasks/${taskId}/archive`,
         { isArchived },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -177,7 +178,7 @@ const ToDoList = () => {
   // Supprimer une tâche
   const handleDeleteTask = async (taskId) => {
     try {
-      await axios.delete(`http://localhost:3000/api/tasks/${taskId}`, {
+      await axios.delete(`/api/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(tasks.filter(task => task._id !== taskId));

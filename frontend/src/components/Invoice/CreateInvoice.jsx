@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import CoolSidebar from "../sidebarHome/newSidebar"; 
 import Navbar from "../navbarHome/NavbarHome"; 
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate, useLocation } from 'react-router-dom';
 import './invoiceStyles.css';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +43,7 @@ const CreateInvoice = () => {
     const fetchProjectData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/project/my-project', {
+        const response = await axios.get('/project/my-project', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const project = response.data;
@@ -96,7 +97,7 @@ const CreateInvoice = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/project/my-project', {
+      const response = await axios.get('/project/my-project', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const project = response.data;
@@ -175,7 +176,7 @@ Merci de votre confiance!
       if (logoFile) {
         const formData = new FormData();
         formData.append('logo', logoFile);
-        const uploadResponse = await axios.post('http://localhost:3000/invoices/upload-logo', formData, {
+        const uploadResponse = await axios.post('/invoices/upload-logo', formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -185,7 +186,7 @@ Merci de votre confiance!
         setLogoUrl(uploadedLogoUrl);
       }
 
-      const response = await axios.post('http://localhost:3000/invoices/create', {
+      const response = await axios.post('/invoices/create', {
         ...invoiceData,
         logoUrl: uploadedLogoUrl
       }, {
@@ -194,7 +195,7 @@ Merci de votre confiance!
 
       const invoiceId = response.data.invoice._id;
 
-      await axios.post(`http://localhost:3000/invoices/send/${invoiceId}`, {}, {
+      await axios.post(`/invoices/send/${invoiceId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

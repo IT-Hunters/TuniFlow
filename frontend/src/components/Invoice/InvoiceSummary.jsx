@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import CoolSidebar from "../sidebarHome/newSidebar"; 
 import Navbar from "../navbarHome/NavbarHome"; 
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 
 import { useNavigate } from 'react-router-dom';
 import './invoiceStyles.css';
@@ -43,7 +44,7 @@ const InvoiceSummary = () => {
         params.year = year;
       }
 
-      const response = await axios.get('http://localhost:3000/invoices/summary', {
+      const response = await axios.get('/invoices/summary', {
         params,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`

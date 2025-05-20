@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+//import axios from "axios";
+import axios from '@/axios'
 import "./Tessst.css";
 
 const SalaryScheduler = ({ goBack, walletId }) => {
@@ -15,7 +16,7 @@ const SalaryScheduler = ({ goBack, walletId }) => {
   const fetchScheduledSalaries = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`http://localhost:3000/salary-scheduler/${walletId}`, {
+      const response = await axios.get(`/salary-scheduler/${walletId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setScheduledSalaries(response.data);
@@ -39,7 +40,7 @@ const SalaryScheduler = ({ goBack, walletId }) => {
       }
 
       const response = await axios.post(
-        `http://localhost:3000/salary-scheduler/${walletId}`,
+        `/salary-scheduler/${walletId}`,
         {
           amount: parseFloat(salaryAmount),
           payDay: parseInt(payDay)
@@ -61,7 +62,7 @@ const SalaryScheduler = ({ goBack, walletId }) => {
   const handleDelete = async (scheduleId) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:3000/salary-scheduler/${scheduleId}`, {
+      await axios.delete(`/salary-scheduler/${scheduleId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchScheduledSalaries();

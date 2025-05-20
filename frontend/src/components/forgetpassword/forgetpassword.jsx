@@ -1,7 +1,8 @@
 // src/components/ForgotPassword.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+//import axios from "axios";
+import axios from '@/axios'
 import "./forgetpassword.css";
 
 const ForgotPassword = () => {
@@ -21,7 +22,7 @@ const ForgotPassword = () => {
     setError("");
     setMessage("");
     try {
-      const response = await axios.post("http://localhost:3000/users/forgot-password", {
+      const response = await axios.post("/users/forgot-password", {
         email: email,
       });
       setMessage(response.data.message);

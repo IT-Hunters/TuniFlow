@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import './Conversation.css';
@@ -65,10 +66,10 @@ const Conversation = () => {
         }
 
         const [userResponse, projectResponse] = await Promise.all([
-          axios.get('http://localhost:3000/users/findMyProfile', {
+          axios.get('/users/findMyProfile', {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get('http://localhost:3000/users/findMyProject', {
+          axios.get('/users/findMyProject', {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);

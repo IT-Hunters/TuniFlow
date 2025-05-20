@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate, Link } from 'react-router-dom';
 import './ProjectView.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
@@ -8,7 +9,7 @@ import GoogleTranslate from './GoogleTranslate';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_URL = 'http://localhost:3000/users';
+const API_URL = '/users';
 
 const decodeJWT = (token) => {
   try {
@@ -91,7 +92,7 @@ const ProjectView = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:3000/project/generate-report/${projectId}`,
+        `/project/generate-report/${projectId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: 'blob',
@@ -138,7 +139,7 @@ const ProjectView = () => {
       formData.append('file', file);
 
       const response = await axios.post(
-        'http://localhost:3000/users/upload-employees',
+        '/users/upload-employees',
         formData,
         {
           headers: {
@@ -208,7 +209,7 @@ const ProjectView = () => {
 
       // Créer la réunion dans le backend
       const roomResponse = await axios.post(
-        'http://localhost:3000/api/rooms',
+        '/api/rooms',
         { projectId: project.id, title: formData.title, date: formData.date },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -269,7 +270,7 @@ const ProjectView = () => {
 
       // Appeler la route backend pour créer l'événement
       const calendarResponse = await axios.post(
-        'http://localhost:3000/api/calendar/create-event',
+        '/api/calendar/create-event',
         {
           calendarId: 'primary',
           event: calendarEvent,

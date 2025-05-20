@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 import './EmpoyeeTable.css'; // Crée ce fichier ou copie depuis UpdateProject.css
@@ -12,7 +13,7 @@ const EmployeeTable = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/users/getempl');
+        const response = await axios.get('/users/getempl');
         setEmployees(response.data);
       } catch (err) {
         setError(err.message || "Erreur de chargement");

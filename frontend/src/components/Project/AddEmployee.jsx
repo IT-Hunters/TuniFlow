@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate } from 'react-router-dom';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
@@ -91,7 +92,7 @@ const AddEmployee = () => {
       }
 
       const response = await axios.post(
-        'http://localhost:3000/users/addemployee',
+        '/users/addemployee',
         {
           ...formData,
           name: formData.name.trim(),

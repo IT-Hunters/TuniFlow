@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -10,7 +11,7 @@ import GoogleTranslate from '../Project/GoogleTranslate';
 import './Room.css';
 import '../Project/ProjectView.css';
 
-const API_URL = 'http://localhost:3000/api/rooms';
+const API_URL = '/api/rooms';
 
 const Room = () => {
   const { projectId } = useParams();

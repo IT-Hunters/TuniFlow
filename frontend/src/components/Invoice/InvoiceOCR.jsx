@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import CoolSidebar from "../sidebarHome/newSidebar"; 
 import Navbar from "../navbarHome/NavbarHome"; 
-import axios from 'axios';
-
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate } from 'react-router-dom';
 import './invoiceStyles.css';
 
@@ -66,7 +66,7 @@ const InvoiceOCR = () => {
     formData.append('scan', file);
 
     try {
-      const response = await axios.post('http://localhost:3000/invoices/extract-ocr', formData, {
+      const response = await axios.post('/invoices/extract-ocr', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${localStorage.getItem('token')}`

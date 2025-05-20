@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -39,7 +40,7 @@ const ObjectiveAnalytics = ({ objectiveId }) => {
     const fetchAnalyticsAndPrediction = async () => {
       setLoading(true);
       try {
-        const analyticsResponse = await axios.get(`http://localhost:3000/objectif/analytics/${objectiveId}`, {
+        const analyticsResponse = await axios.get(`/objectif/analytics/${objectiveId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         const data = analyticsResponse.data;

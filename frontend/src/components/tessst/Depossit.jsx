@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
+//import axios from "axios";
+import axios from '@/axios'
 import "./Tessst.css";
 import Swal from "sweetalert2";
 
@@ -28,7 +29,7 @@ const Deposit = ({ goBack, walletId }) => {
       }
 
       const response = await axios.post(
-        `http://localhost:3000/transactions/deposit/${walletId}`,
+        `/transactions/deposit/${walletId}`,
         {
           amount: parseFloat(amount),
           is_taxable: isTaxable,

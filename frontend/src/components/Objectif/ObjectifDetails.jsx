@@ -5,11 +5,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Objectifmanagement.css';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import ObjectiveAnalytics from '../Objectif/ObjectiveAnalytics';
 
 // API base URL (replace with your backend URL)
-const API_URL = 'http://localhost:3000/objectif';
+const API_URL = '/objectif';
 
 const ObjectifDetails = () => {
   const navigate = useNavigate();

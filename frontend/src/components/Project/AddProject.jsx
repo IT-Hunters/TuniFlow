@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate, useLocation } from 'react-router-dom';
 import './AddProject.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 
-const API_URL = 'http://localhost:3000/users';
-const API_PROJECT = 'http://localhost:3000/project';
+const API_URL = '/users';
+const API_PROJECT = '/project';
 
 const CreateProject = () => {
   const [availableManagers, setAvailableManagers] = useState([]);

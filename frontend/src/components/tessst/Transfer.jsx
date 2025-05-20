@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+//import axios from "axios";
+import axios from '@/axios'
 import "./Tessst.css";
 import Swal from "sweetalert2";
 
@@ -19,7 +20,7 @@ const Transfer = ({ goBack, walletId }) => {
         return;
       }
 
-      const response = await axios.get("http://localhost:3000/wallets/getWallets", {
+      const response = await axios.get("/wallets/getWallets", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -55,7 +56,7 @@ const Transfer = ({ goBack, walletId }) => {
       }
 
       const response = await axios.post(
-        `http://localhost:3000/transactions/transfer/${walletId}/${receiverWalletId}`,
+        `/transactions/transfer/${walletId}/${receiverWalletId}`,
         {
           amount: parseFloat(amount),
           is_taxable: isTaxable,

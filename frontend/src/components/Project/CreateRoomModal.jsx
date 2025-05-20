@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { toast } from 'react-toastify';
 import './CreateRoomModal.css';
 
-const API_URL = 'http://localhost:3000/api/rooms';
+const API_URL = '/api/rooms';
 
 const CreateRoomModal = ({ projectId, isOpen, onClose, onRoomCreated }) => {
   const [title, setTitle] = useState('');
