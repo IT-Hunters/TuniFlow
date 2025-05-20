@@ -1,5 +1,5 @@
 const token = localStorage.getItem("token");
-const API_URL = "http://localhost:3000/transactions";
+const API_URL = "https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/transactions";
 export const getRevenueData = async (userId) => {
       const response = await fetch(`${API_URL}/getRevenue/${userId}`, {
         method: "GET",
@@ -12,7 +12,7 @@ export const getRevenueData = async (userId) => {
       return response.json(); 
   };
   export const calculateProfitMargin = async (userId) => {
-    const response = await fetch(`http://localhost:3000/wallets/calculateProfitMargin/${userId}`, {
+    const response = await fetch(`https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/wallets/calculateProfitMargin/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

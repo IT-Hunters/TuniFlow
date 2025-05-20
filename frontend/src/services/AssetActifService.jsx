@@ -2,7 +2,7 @@
 const token = localStorage.getItem("token");
 export const submitAsset = async (formData) => {
     try {
-        const response = await fetch("http://localhost:3000/assetsactifs", {
+        const response = await fetch("https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/assetsactifs", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -26,7 +26,7 @@ export const submitAsset = async (formData) => {
 
 export const getAllAssets = async () => {
     try {
-        const response = await fetch("http://localhost:3000/assetsactifs", {
+        const response = await fetch("https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/assetsactifs", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

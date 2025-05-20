@@ -1,7 +1,7 @@
 const token = localStorage.getItem("token");
 export const fetchWorkingCapital = async (projectId) => {
     try {
-      const response = await fetch(`http://localhost:3000/assetCalculation/${projectId}`, {
+      const response = await fetch(`https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/assetCalculation/${projectId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

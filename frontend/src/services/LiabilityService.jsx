@@ -3,7 +3,7 @@ const token = localStorage.getItem("token");
 export const submitLiability = async (formData) => {
     try {
         console.log("fooooooooooorm " + JSON.stringify(formData))
-        const response = await fetch("http://localhost:3000/assetspassifs", {
+        const response = await fetch("https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/assetspassifs", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

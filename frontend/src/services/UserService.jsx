@@ -4,7 +4,7 @@ export const findMyProfile = async () => {
         const token = localStorage.getItem("token")
         if (!token) return
 
-        const response = await fetch("http://localhost:3000/users/findMyProfile", {
+        const response = await fetch("https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/users/findMyProfile", {
           headers: { Authorization: `Bearer ${token}` },
           "cache-control": "no-cache",
         })
@@ -21,7 +21,7 @@ export const getAllUsers = async () => {
     const token = localStorage.getItem("token")
     if (!token) return
 
-    const response = await fetch("http://localhost:3000/users/getall", {
+    const response = await fetch("https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/users/getall", {
       headers: { Authorization: `Bearer ${token}` },
     })
     const data = await response.json();
@@ -35,7 +35,7 @@ export const logout = async () => {
   try {
     const token = localStorage.getItem("token")
     if (!token) return
-    const response = await fetch("http://localhost:3000/users/logout", {
+    const response = await fetch("https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/users/logout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

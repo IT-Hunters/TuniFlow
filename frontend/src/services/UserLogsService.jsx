@@ -3,7 +3,7 @@ export const getDailyLogins = async () => {
       const token = localStorage.getItem("token")
       if (!token) return
 
-      const response = await fetch("http://localhost:3000/userLogs/getDailyLogins", {
+      const response = await fetch("https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net/userLogs/getDailyLogins", {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json();

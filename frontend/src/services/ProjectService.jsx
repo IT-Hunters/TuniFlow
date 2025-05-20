@@ -1,5 +1,5 @@
 const token = localStorage.getItem("token");
-const API_URL = "http://localhost:3000/project";
+const API_URL = "https://tuniflow-dhaygzhmbrarfghy.francecentral-01.azurewebsites.net:3000/project";
 export const fetchProject = async (userId) => {
     try {
         const url = new URL(`${API_URL}/getProjectByUser/${userId}`);
