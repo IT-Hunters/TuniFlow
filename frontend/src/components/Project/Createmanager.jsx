@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
+import axios from '@/axios'
 import { useNavigate } from 'react-router-dom';
 import './AddProject.css';
 import CoolSidebar from '../sidebarHome/newSidebar';
 import Navbar from '../navbarHome/NavbarHome';
 
-const API_URL = 'http://localhost:3000/users';
+const API_URL = '/users';
 
 const CreateManager = () => {
   const [formData, setFormData] = useState({
