@@ -29,7 +29,7 @@ const AuthPage = () => {
     const token = localStorage.getItem("token");
     if (token) {
       axios
-        .get("http://localhost:3000/users/findMyProfile", {
+        .get("/users/findMyProfile", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -60,7 +60,7 @@ const AuthPage = () => {
     setError("");
     setMessage("");
     try {
-      const response = await axios.post("http://localhost:3000/users/forgot-password", {
+      const response = await axios.post("/users/forgot-password", {
         email: formData.email,
       });
       setMessage(response.data.message);
