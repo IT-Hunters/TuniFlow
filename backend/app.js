@@ -36,9 +36,12 @@ var mongoose = require("mongoose");
 var connection = require("./config/database.json");
 
 // 🟢 MongoDB Connection
-mongoose.connect(connection.url)
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch((err) => console.error("❌ Error connecting to MongoDB:", err));
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('✅ Connected to MongoDB Atlas'))
+.catch((err) => console.error('❌ MongoDB connection error:', err));
 
 // 🟢 Enable CORS
 app.use(cors({
