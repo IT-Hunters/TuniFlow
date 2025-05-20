@@ -27,7 +27,7 @@ const Conversation = () => {
 
   // Initialiser Socket.IO
   useEffect(() => {
-    socketRef.current = io('http://localhost:5000', {
+    socketRef.current = io('', {
       withCredentials: true,
       transports: ['websocket', 'polling']
     });
@@ -144,7 +144,7 @@ const Conversation = () => {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get(
-          `http://localhost:5000/project-conversations/${projectId}`,
+          `/project-conversations/${projectId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -212,7 +212,7 @@ const Conversation = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/project-conversations/${projectId}/messages`,
+        `/project-conversations/${projectId}/messages`,
         { content: newMessage },
         { headers: { Authorization: `Bearer ${token}` } }
       );
