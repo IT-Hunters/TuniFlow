@@ -2,8 +2,7 @@ import './profile.css';
 import Navbar from '../navbarHome/NavbarHome';
 import Sidebar from '../sidebarHome/newSidebar';
 import { useNavigate } from 'react-router-dom';
-//import axios from 'axios';
-import axios from '@/axios';
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 const ViewProfile = () => {
@@ -24,7 +23,7 @@ const ViewProfile = () => {
           return;
         }
 
-        const response = await axios.get('/users/findMyProfile', {
+        const response = await axios.get('http://localhost:3000/users/findMyProfile', {
           headers: {
             Authorization: `Bearer ${token}`, // Attach the token to the request headers
           },
@@ -33,7 +32,7 @@ const ViewProfile = () => {
         setUserData(response.data); // Set user data in state
         // Fetch wallet balance if user data is available
         if (response.data._id) {
-          const balanceResponse = await axios.get(`/wallets/balance/user/${response.data._id}`, {
+          const balanceResponse = await axios.get(`http://localhost:3000/wallets/balance/user/${response.data._id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setWalletBalance(balanceResponse.data.balance);
